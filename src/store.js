@@ -40,8 +40,10 @@ const state = {
 };
 
 const listeners = new Set();
+let version = 0; // 바뀔 때마다 1씩 증가
 function set(patch) {
   Object.assign(state, patch);
+  version++;
   listeners.forEach((fn) => fn());
 }
 export function getState() {
@@ -50,9 +52,12 @@ export function getState() {
 /** 화면에서 상태를 쓰는 훅. 상태가 바뀌면 화면을 다시 그려요. */
 export function useStore() {
   const [, force] = useState(0);
+  const seen = version;
   useEffect(() => {
     const fn = () => force((n) => n + 1);
     listeners.add(fn);
+    // 화면을 그린 뒤 듣기 시작하기 전에 바뀐 것이 있으면 다시 그려요
+    if (version !== seen) fn();
     return () => listeners.delete(fn);
   }, []);
   return state;
