@@ -26,7 +26,15 @@ function makeSheet(name) {
         },
         setValue(v) { return this.setValues([[v]]); },
         setFontWeight: () => chain, setBackground: () => chain,
-        setNumberFormat: () => chain, setDataValidation: () => chain,
+        setNumberFormat() { return this; },
+        // 실제 시트처럼: 체크박스 칸은 빈 칸도 FALSE 값으로 채워져 getLastRow가 1000이 됨
+        setDataValidation() {
+          for (let i = 0; i < nr; i++) {
+            while (data.length < r + i) data.push([]);
+            if (data[r - 1 + i][c - 1] === undefined || data[r - 1 + i][c - 1] === '') data[r - 1 + i][c - 1] = false;
+          }
+          return this;
+        },
       };
     },
     setFrozenRows() {}, autoResizeColumns() {},
@@ -76,9 +84,11 @@ ctx.setup();
 assert.deepStrictEqual(Object.keys(sheets).sort(), ['멤버', '여행정보', '예약정보', '일정', '장소', '체크 리스트'].sort());
 assert.strictEqual(sheets['여행정보'].data[0][0], '여행id');
 ctx.setup(); // 두 번 실행해도 안전
-assert.strictEqual(sheets['여행정보'].data.length, 2);
+const tripRows = sheets['여행정보'].data.slice(1).filter((r) => r.some((v) => v !== '' && v !== false && v !== undefined));
+assert.strictEqual(tripRows.length, 1); // 두 번 실행해도 샘플은 하나
+assert.strictEqual(sheets['여행정보'].data[1][1], '샘플 여행'); // 맨 아래가 아니라 2행
 
-const code = sheets['여행정보'].data[1][6];
+const code = sheets['여행정보'].data[1][6]; // 샘플 여행은 맨 아래가 아니라 2행에 있어야 함
 assert.strictEqual(code.length, 20);
 
 // 2. ping, trips, load
@@ -144,7 +154,7 @@ const ps = sheets['장소'];
 const row = ps.data[0].map(() => '');
 row[ps.data[0].indexOf('여행id')] = trip.id;
 row[ps.data[0].indexOf('장소이름')] = 'PC에서 쓴 식당';
-ps.data.push(row);
+ps.data[1] = row;
 const places = get({ action: 'load', code }).places;
 assert.strictEqual(places[0].name, 'PC에서 쓴 식당');
 assert.ok(places[0].id.startsWith('p_'));
@@ -157,5 +167,10 @@ assert.ok(r.url.includes('thumbnail?id=FILE1'));
 assert.strictEqual(post({ action: 'upload', code, mimeType: 'text/html', data: 'eA==' }).error, 'invalid');
 const memoCell = sheets['일정'].data.find((x) => x.includes(s1.id));
 assert.ok(!sheets['일정'].data.flat().includes('=HACK()'));
+
+// 10. 공백 붙은 초대코드도 찾음, 새 줄은 위에서부터 차곡차곡
+assert.ok(get({ action: 'load', code: ' ' + code + ' ' }).ok);
+assert.strictEqual(sheets['일정'].data[1][0], s1.id);
+assert.strictEqual(sheets['멤버'].data[2][2], '친구1');
 
 console.log('모든 테스트 통과 ✓');

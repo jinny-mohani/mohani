@@ -413,9 +413,14 @@ function readTable_(name) {
 
   const rows = [];
   const tz = ss_().getSpreadsheetTimeZone();
+  let firstEmpty = 0; // 처음 나오는 빈 줄 (새 항목을 넣을 자리)
   for (let r = 1; r < values.length; r++) {
     const line = values[r];
-    if (line.every((v) => v === '' || v === null || v === false)) continue; // 빈 줄
+    // 빈 체크박스(FALSE)만 있는 줄도 빈 줄로 본다
+    if (line.every((v) => v === '' || v === null || v === false)) {
+      if (!firstEmpty) firstEmpty = r + 1;
+      continue;
+    }
     const obj = { _row: r + 1 };
     Object.keys(index).forEach((key) => {
       obj[key] = normalize_(key, line[index[key]], tz);
@@ -426,7 +431,8 @@ function readTable_(name) {
     }
     rows.push(obj);
   }
-  return { name: name, sheet: sheet, header: header, index: index, rows: rows };
+  const nextRow = firstEmpty || values.length + 1;
+  return { name: name, sheet: sheet, header: header, index: index, rows: rows, nextRow: nextRow };
 }
 
 function normalize_(key, v, tz) {
@@ -458,8 +464,8 @@ function insertRow_(name, obj) {
   Object.keys(table.index).forEach((key) => {
     if (key in obj) line[table.index[key]] = toCell_(key, obj[key]);
   });
-  const rowNum = table.sheet.getLastRow() + 1;
-  table.sheet.getRange(rowNum, 1, 1, line.length).setValues([line]);
+  // getLastRow()는 빈 체크박스도 내용으로 세서 맨 아래에 붙어 버림 → 첫 빈 줄에 넣는다
+  table.sheet.getRange(table.nextRow, 1, 1, line.length).setValues([line]);
 }
 
 function toCell_(key, v) {
@@ -493,7 +499,8 @@ function publicTrip_(trip) {
 
 function tripByCode_(code) {
   if (!code) throw apiError_('no_code', '초대 링크가 필요해요.');
-  const trip = readTable_('trips').rows.find((t) => t.inviteCode === String(code) && !t.deleted);
+  code = String(code).trim();
+  const trip = readTable_('trips').rows.find((t) => String(t.inviteCode).trim() === code && !t.deleted);
   if (!trip) throw apiError_('trip_not_found', '여행을 찾을 수 없어요. 초대 링크를 다시 확인해 주세요.');
   return trip;
 }
@@ -669,5 +676,5 @@ function setup() {
     });
     Logger.log('샘플 여행 초대코드: ' + res.trip.inviteCode);
   }
-  Logger.log('설정 완료! 이제 [배포] → [새 배포]로 웹 앱을 만들어 주세요.');
+  Logger.log('설정 완료! 처음이면 [배포 → 새 배포], 코드를 고친 뒤라면 [배포 → 배포 관리 → 새 버전]으로 배포해 주세요.');
 }
