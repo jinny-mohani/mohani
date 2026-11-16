@@ -403,7 +403,7 @@
 .tl__body { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-bottom: 20px; min-height: 74px; }
 .tl__edit { position: absolute; inset: 0; } /* 항목 전체를 누르면 수정 */
 .tl__title { position: relative; align-self: flex-start; font-size: 17px; font-weight: var(--fw-medium); pointer-events: none; }
-.tl__title--link { pointer-events: auto; text-decoration: underline; text-decoration-color: var(--color-border); text-underline-offset: 4px; min-height: 26px; }
+.tl__title--link { pointer-events: auto; min-height: 26px; text-align: left; }
 .tl__sub { position: relative; font-size: 14px; color: var(--color-text-weak); pointer-events: none; }
 .tl__res {
   flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px;
@@ -545,3 +545,6 @@
 /* S-5 저장 실패 표시 */
 .save-fail { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--color-text); }
 .save-fail u { font-weight: var(--fw-medium); }
+
+.detail__imgbtn { display: block; width: 100%; padding: 0; }
+.detail__photos button { display: block; padding: 0; }

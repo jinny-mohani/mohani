@@ -9,7 +9,7 @@ import { getState, refresh, myName } from '../store.js';
 import { api } from '../api.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import { tripDays, dayDate, datePart, formatDay, formatTime } from '../date.js';
-import { TYPE_ICON, OTHER_ICON, firstPhoto } from '../reservation-util.js';
+import { TYPE_ICON, OTHER_ICON, firstPhoto, sized } from '../reservation-util.js';
 import { toast } from '../ui/toast.js';
 
 const TRANSPORTS = ['도보', '렌터카', '버스', '택시'];
@@ -24,7 +24,8 @@ function placeOf(data, s) {
 /** 장소 한 줄 설명: 음식점 · 운영 07:00 – 20:00 (브레이크타임이 있으면 그걸) */
 export function placeLine(p) {
   if (!p) return '';
-  const hours = p.breakTime && p.breakTime !== '없음' ? '브레이크타임 ' + p.breakTime : p.hours ? '운영 ' + p.hours : '';
+  // 브레이크타임 시간이 있으면 그걸, 아니면 운영시간
+  const hours = /\d/.test(p.breakTime || '') ? '브레이크타임 ' + p.breakTime : p.hours ? '운영 ' + p.hours : '';
   return [p.category, hours].filter(Boolean).join(' · ');
 }
 
@@ -255,7 +256,7 @@ export function ScheduleForm({ day, row, placeId }) {
         <span class="field__label">장소</span>
         ${place
           ? html`<div class="place-pick">
-              <span class="place-pick__img">${firstPhoto(place) ? html`<img src=${firstPhoto(place)} alt="" />` : html`<${Icon} name="image" size=${18} />`}</span>
+              <span class="place-pick__img">${firstPhoto(place) ? html`<img src=${sized(firstPhoto(place), 200)} alt="" />` : html`<${Icon} name="image" size=${18} />`}</span>
               <span class="place-pick__text"><b>${place.name}</b><small>${placeLine(place)}</small></span>
               <button class="place-pick__change" onClick=${pickPlace}>변경</button>
             </div>`
@@ -309,7 +310,7 @@ function PlacePicker({ selected, onPick }) {
     <ul>
       ${list.map((p) => html`<li key=${p.id}>
         <button class=${'pick-row' + (pick === p.id ? ' pick-row--on' : '')} aria-pressed=${pick === p.id ? 'true' : 'false'} onClick=${() => setPick(pick === p.id ? '' : p.id)}>
-          <span class="pick-row__img">${firstPhoto(p) ? html`<img src=${firstPhoto(p)} alt="" />` : html`<${Icon} name="image" size=${16} />`}</span>
+          <span class="pick-row__img">${firstPhoto(p) ? html`<img src=${sized(firstPhoto(p), 200)} alt="" />` : html`<${Icon} name="image" size=${16} />`}</span>
           <span class="pick-row__text"><b>${p.name}</b><small>${placeLine(p)}</small></span>
           ${pick === p.id && html`<span class="pick-row__check"><${Icon} name="check" size=${14} stroke=${2.5} /></span>`}
         </button>

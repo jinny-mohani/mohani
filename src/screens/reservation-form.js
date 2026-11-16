@@ -213,8 +213,11 @@ export function ReservationForm({ type, row }) {
       <${TextField} title="숙소 이름" placeholder="예) 성산 오션뷰 펜션" value=${f.title} onInput=${set('title')} />
       <div class="field">
         <span class="field__label">체크인 · 체크아웃</span>
-        <${DateTime} label="체크인" date=${f.startDate} time=${f.startTime} onDate=${set('startDate')} onTime=${set('startTime')} />
-        <${DateTime} label="체크아웃" date=${f.endDate} time=${f.endTime} onDate=${set('endDate')} onTime=${set('endTime')} min=${f.startDate} />
+        <div class="field-pair">
+          <${DateField} label="체크인" placeholder="체크인" value=${f.startDate} onChange=${set('startDate')} trip=${getState().data.trip} />
+          <span class="field-pair__dash">–</span>
+          <${DateField} label="체크아웃" placeholder="체크아웃" value=${f.endDate} onChange=${set('endDate')} trip=${getState().data.trip} min=${f.startDate} />
+        </div>
       </div>
       <${TextField} title="지도 링크" placeholder="https://maps.app.goo.gl/…" value=${f.mapUrl} onInput=${set('mapUrl')}
         help="구글 지도 앱에서 공유 → 링크 복사로 붙여 넣어요" />

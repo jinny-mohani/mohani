@@ -55,9 +55,10 @@ export function ddayText(trip, now = new Date()) {
   if (!s) return '';
   const today = startOfDay(now);
   const diff = Math.round((startOfDay(s) - today) / 86400000);
-  if (diff > 0) return `여행까지 ${diff}일 남았어요`;
-  if (today <= startOfDay(e)) return `여행 ${1 - diff}일째예요`;
-  return '지난 여행이에요';
+  if (diff > 0) return `D-${diff}`;
+  if (diff === 0) return 'D-day';
+  if (today <= startOfDay(e)) return `여행 ${1 - diff}일째`;
+  return '지난 여행';
 }
 
 /** 마지막 동기화: 방금 / 5분 전 / 12.02 21:10 */

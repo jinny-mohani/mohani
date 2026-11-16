@@ -9,6 +9,7 @@ import { activeMembers, memberName, profileSrc } from '../members.js';
 import { GROUPS, byGroup, homePick, isDone } from '../checklist.js';
 import { toast } from '../ui/toast.js';
 import { TripSettings } from './trip-settings.js';
+import { sized } from '../reservation-util.js';
 import { ChecklistSheet } from './checklist.js';
 
 const RES_TYPES = [
@@ -54,7 +55,7 @@ export function Home({ data, me }) {
     <section class="home-hero" aria-label="여행 정보">
       <div class="home-hero__card">
         ${trip.coverImage
-          ? html`<img class="home-hero__img" src=${trip.coverImage} alt="" />`
+          ? html`<img class="home-hero__img" src=${sized(trip.coverImage, 1000)} alt="" />`
           : html`<span class="home-hero__fallback" aria-hidden="true">${trip.destination || trip.title}</span>`}
         <span class="home-hero__shade" aria-hidden="true"></span>
         <button class="home-hero__settings" aria-label="여행 설정" onClick=${() => openOverlay(html`<${TripSettings} />`)}>
@@ -86,7 +87,7 @@ export function Home({ data, me }) {
       <section class="home-section">
         <button class="home-section__head" onClick=${() => go('/reservations')}>
           <h2>예약정보</h2>
-          <span>전체 보기</span><${Icon} name="chevron-right" size=${16} />
+          <${Icon} name="chevron-right" size=${20} label="전체 보기" />
         </button>
         <div class="res-cards">
           ${RES_TYPES.map(({ type, icon }) => {
@@ -104,7 +105,7 @@ export function Home({ data, me }) {
       <section class="home-section">
         <button class="home-section__head" onClick=${() => go('/home/checklist')}>
           <h2>체크 리스트</h2>
-          <span>${left}개 남음 · 전체 보기</span><${Icon} name="chevron-right" size=${16} />
+          <${Icon} name="chevron-right" size=${20} label="전체 보기" />
         </button>
         <div class="check-cards">
           ${GROUPS.map((group, gi) => {

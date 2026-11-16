@@ -1,5 +1,5 @@
 // 휴대폰 사진을 올리기 전에 크기를 줄여요 (로딩을 빠르게, 기획안 결정 5번)
-export function resizeImage(file, maxSize = 1600, quality = 0.85) {
+export function resizeImage(file, maxSize = 1280, quality = 0.8) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);

@@ -10,9 +10,10 @@ import { toast } from '../ui/toast.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import {
   TYPES, TYPE_ICON, STATUSES, STATUS_ICON, OTHER_ICON,
-  parseAirport, parseFlight, firstPhoto, flightBg, photoList, summary, sortReservations,
+  parseAirport, parseFlight, firstPhoto, flightBg, photoList, summary, sortReservations, sized,
 } from '../reservation-util.js';
 import { ReservationForm } from './reservation-form.js';
+import { openPhotos } from '../ui/viewer.js';
 
 const openForm = (type, row) => openOverlay(html`<${ReservationForm} type=${type} row=${row} />`);
 
@@ -45,7 +46,7 @@ function FlightCard({ r }) {
   const cells = [flightNo || r.title, r.aircraft, r.seat].filter(Boolean);
   return html`<div class="res-item">
     <button class="photo-card" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
-      ${photo ? html`<img src=${photo} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name="plane" size=${40} /></span>`}
+      ${photo ? html`<img src=${sized(photo, 800)} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name="plane" size=${40} /></span>`}
       <span class="photo-card__top">
         <span class="status status--done">${r.direction || '항공권'}${r.startAt ? ' · ' + formatDay(r.startAt) : ''}</span>
         <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
@@ -81,7 +82,7 @@ function StayCard({ r }) {
   const tags = [r.roomType, r.roomSize, r.checkInTime || formatTime(r.startAt) ? '체크인 ' + (r.checkInTime || formatTime(r.startAt)) : ''].filter(Boolean);
   return html`<div class="res-item">
     <button class="photo-card photo-card--dark" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
-      ${photo ? html`<img src=${photo} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name="bed-double" size=${40} /></span>`}
+      ${photo ? html`<img src=${sized(photo, 800)} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name="bed-double" size=${40} /></span>`}
       <span class="photo-card__shade"></span>
       <span class="photo-card__top"><${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} /></span>
       <span class="stay-info">
@@ -255,7 +256,7 @@ export function ReservationDetail({ data, id }) {
             </span>
           </div>`
         : html`${photos[0]
-            ? html`<img class="detail__img" src=${photos[0]} alt="" />`
+            ? html`<button class="detail__imgbtn" aria-label="사진 크게 보기" onClick=${() => openPhotos(photos, 0)}><img class="detail__img" src=${sized(photos[0], 1000)} alt="" /></button>`
             : html`<span class="detail__img detail__img--ph"><${Icon} name="image" size=${28} /></span>`}
           <div class="detail__labels">
             <span class="kind-chip">${r.type === '기타' ? r.subType || '기타' : r.type}</span>
@@ -278,7 +279,7 @@ export function ReservationDetail({ data, id }) {
         <div class="detail__tags">${tagList.map((t) => html`<span class="kind-chip">${t}</span>`)}</div>
       </div>`}
       ${r.memo && html`<p class="memo-box"><${Icon} name="file-text" size=${16} /><span>${r.memo}</span></p>`}
-      ${photos.length > 1 && html`<div class="detail__photos">${photos.slice(1).map((p) => html`<img src=${p} alt="" loading="lazy" />`)}</div>`}
+      ${photos.length > 1 && html`<div class="detail__photos">${photos.slice(1).map((p, i) => html`<button aria-label=${'사진 ' + (i + 2) + ' 크게 보기'} onClick=${() => openPhotos(photos, i + 1)}><img src=${sized(p, 500)} alt="" loading="lazy" /></button>`)}</div>`}
       ${r.updatedBy && html`<p class="detail__edited">마지막 수정 · ${r.updatedBy}${r.updatedAt ? ' · ' + syncText(Date.parse(r.updatedAt)) : ''}</p>`}
     </div>
   </main>`;

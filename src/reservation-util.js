@@ -59,3 +59,11 @@ export function sortReservations(list) {
     return x === y ? (Number(a.order) || 0) - (Number(b.order) || 0) : x.localeCompare(y);
   });
 }
+
+/**
+ * 구글 드라이브 사진은 원하는 크기로 받아올 수 있어요 (주소의 sz=w숫자).
+ * 작은 카드에 큰 사진을 받으면 느려서, 보여줄 크기에 맞춰 받아요.
+ */
+export function sized(url, width) {
+  return /drive\.google\.com\/thumbnail/.test(url || '') ? url.replace(/sz=w\d+/, 'sz=w' + width) : url;
+}

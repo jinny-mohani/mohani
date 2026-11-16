@@ -7,6 +7,7 @@ import { replace } from '../router.js';
 import { parseDate } from '../date.js';
 import { inviteUrl, copyText } from '../share.js';
 import { NewTripModal } from './newtrip.js';
+import { sized } from '../reservation-util.js';
 
 function dateRange(trip) {
   const s = parseDate(trip.startDate);
@@ -64,7 +65,7 @@ export function TripList() {
           return html`<li key=${code} class=${'trip-card' + (d.past ? ' trip-card--past' : '')}>
             <button class="trip-card__open" onClick=${() => open(code)} aria-label=${trip.title + ' 열기'}>
               <span class="trip-card__img">
-                ${trip.coverImage ? html`<img src=${trip.coverImage} alt="" loading="lazy" />` : html`<${Icon} name="image" size=${28} />`}
+                ${trip.coverImage ? html`<img src=${sized(trip.coverImage, 800)} alt="" loading="lazy" />` : html`<${Icon} name="image" size=${28} />`}
               </span>
               <span class="trip-card__info">
                 <span class="trip-card__text">

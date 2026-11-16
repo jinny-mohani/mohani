@@ -8,10 +8,11 @@ import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
 import { getState, uploadPhoto } from '../store.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import { activeMembers } from '../members.js';
-import { photoList, firstPhoto } from '../reservation-util.js';
+import { photoList, firstPhoto, sized } from '../reservation-util.js';
 import { copyText } from '../share.js';
 import { syncText } from '../date.js';
 import { toast } from '../ui/toast.js';
+import { PhotoViewer } from '../ui/viewer.js';
 
 export const CATEGORIES = ['음식점', '즐길거리', '쇼핑', '디저트'];
 
@@ -22,7 +23,7 @@ function PlaceCard({ p }) {
   const photo = firstPhoto(p);
   return html`<div class="place-card">
     <button class="place-card__open" onClick=${() => go('/places/' + p.id)} aria-label=${p.name + ' 상세 보기'}>
-      ${photo ? html`<img src=${photo} alt="" loading="lazy" />` : html`<span class="place-card__empty"><${Icon} name="image" size=${28} /></span>`}
+      ${photo ? html`<img src=${sized(photo, 600)} alt="" loading="lazy" />` : html`<span class="place-card__empty"><${Icon} name="image" size=${28} /></span>`}
       <span class="place-card__shade"></span>
       <span class="place-card__text">
         <b>${p.name}</b>
@@ -98,7 +99,7 @@ export function PlaceDetail({ data, id }) {
   return html`<main class="screen screen--sub place-detail">
     <div class="place-detail__hero">
       ${photos[0]
-        ? html`<button class="place-detail__heroimg" aria-label="사진 크게 보기" onClick=${() => openOverlay(html`<${PhotoViewer} photos=${photos} index=${0} />`)}><img src=${photos[0]} alt="" /></button>`
+        ? html`<button class="place-detail__heroimg" aria-label="사진 크게 보기" onClick=${() => openOverlay(html`<${PhotoViewer} photos=${photos} index=${0} />`)}><img src=${sized(photos[0], 1000)} alt="" /></button>`
         : html`<span class="place-detail__ph"><${Icon} name="image" size=${32} /></span>`}
       <button class="round-float round-float--left" aria-label="뒤로" onClick=${() => back('/places')}><${Icon} name="chevron-left" /></button>
       <button class="round-float round-float--right" aria-label="더 보기" onClick=${more}><${Icon} name="ellipsis" /></button>
@@ -119,27 +120,11 @@ export function PlaceDetail({ data, id }) {
       ${p.memo && html`<p class="memo-box">${p.memo}</p>`}
       ${photos.length > 0 && html`<section class="place-detail__photos">
         <h2>사진 <small>${photos.length}</small></h2>
-        <div>${photos.map((src, i) => html`<button aria-label=${'사진 ' + (i + 1) + ' 크게 보기'} onClick=${() => openOverlay(html`<${PhotoViewer} photos=${photos} index=${i} />`)}><img src=${src} alt="" loading="lazy" /></button>`)}</div>
+        <div>${photos.map((src, i) => html`<button aria-label=${'사진 ' + (i + 1) + ' 크게 보기'} onClick=${() => openOverlay(html`<${PhotoViewer} photos=${photos} index=${i} />`)}><img src=${sized(src, 400)} alt="" loading="lazy" /></button>`)}</div>
       </section>`}
       ${p.updatedBy && html`<p class="detail__edited">마지막 수정 · ${p.updatedBy}${p.updatedAt ? ' · ' + syncText(Date.parse(p.updatedAt)) : ''}</p>`}
     </div>
   </main>`;
-}
-
-/** 사진 전체 화면 미리보기 (팝업) — 좌우로 밀어 넘기기, ✕로 닫기 */
-export function PhotoViewer({ photos, index = 0 }) {
-  const [i, setI] = useState(index);
-  let x0 = null;
-  const go2 = (d) => setI((n) => Math.min(photos.length - 1, Math.max(0, n + d)));
-  return html`<div class="viewer" role="dialog" aria-modal="true" aria-label="사진 크게 보기"
-    onTouchStart=${(e) => { x0 = e.touches[0].clientX; }}
-    onTouchEnd=${(e) => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) go2(dx < 0 ? 1 : -1); x0 = null; }}>
-    <img src=${photos[i]} alt=${'사진 ' + (i + 1)} />
-    <button class="viewer__close" aria-label="닫기" onClick=${() => closeOverlay()}><${Icon} name="x" size=${28} stroke=${2} /></button>
-    ${photos.length > 1 && html`<span class="viewer__count">${i + 1} / ${photos.length}</span>
-      ${i > 0 && html`<button class="viewer__nav viewer__nav--prev" aria-label="이전 사진" onClick=${() => go2(-1)}><${Icon} name="chevron-left" size=${28} /></button>`}
-      ${i < photos.length - 1 && html`<button class="viewer__nav viewer__nav--next" aria-label="다음 사진" onClick=${() => go2(1)}><${Icon} name="chevron-right" size=${28} /></button>`}`}
-  </div>`;
 }
 
 function splitRange(s) {
@@ -182,7 +167,8 @@ export function PlaceForm({ row, category }) {
         mapUrl: f.mapUrl.trim(),
         address: f.address.trim(),
         hours: f.open || f.close ? `${f.open} – ${f.close}` : '',
-        breakTime: f.hasBreak === false ? '없음' : f.hasBreak && (f.breakStart || f.breakEnd) ? `${f.breakStart} – ${f.breakEnd}` : '',
+        // 시간 입력은 다음 버전. 예전에 시간이 들어간 값은 그대로 둬요
+        breakTime: f.hasBreak === false ? '없음' : f.hasBreak ? (r.breakTime && r.breakTime !== '없음' ? r.breakTime : '있음') : '',
         waiting: f.waiting,
         memo: f.memo.trim(),
       };
@@ -234,7 +220,7 @@ export function PlaceForm({ row, category }) {
           <button class="chip" aria-pressed=${f.hasBreak === true ? 'true' : 'false'} onClick=${() => set('hasBreak')(f.hasBreak === true ? null : true)}>있음</button>
           <button class="chip" aria-pressed=${f.hasBreak === false ? 'true' : 'false'} onClick=${() => set('hasBreak')(f.hasBreak === false ? null : false)}>없음</button>
         </div>
-        ${f.hasBreak === true && timePair('breakStart', 'breakEnd', '브레이크타임 시작', '브레이크타임 끝')}
+
       </div>
       <${ChipField} title="웨이팅" value=${f.waiting} onChange=${set('waiting')}
         options=${['있음', '없음'].map((v) => ({ value: v, label: v, toggle: true }))} help="선택" />
