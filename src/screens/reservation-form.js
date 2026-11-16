@@ -2,19 +2,23 @@
 // 07-1-1 추가 정보 펼침 · 07-3-1 종류 직접 입력
 import { html, useState } from '../vendor/preact-htm.js';
 import { Button, ChipField, Collapsible, Modal, PhotoField, TextArea, TextField } from '../ui/components.js';
-import { closeOverlay } from '../overlay.js';
+import { closeOverlay, openOverlay } from '../overlay.js';
 import { getState, uploadPhoto } from '../store.js';
-import { saveWithCheck, deleteWithUndo } from '../save.js';
+import { saveLater, deleteWithUndo } from '../save.js';
 import { back } from '../router.js';
 import { datePart, timePart, joinDateTime } from '../date.js';
 import { activeMembers } from '../members.js';
 import { toast } from '../ui/toast.js';
-import { OTHER_KINDS, SEATS, STATUSES, TERMINALS, photoList } from '../reservation-util.js';
+import { OTHER_KINDS, SEATS, STATUSES, TERMINALS, photoList, parseFlight } from '../reservation-util.js';
+import { AIRPORTS, AIRLINES, airlineCode } from '../airports.js';
+import { SelectField, OptionSheet, DateField } from '../ui/pickers.js';
 
 function initial(type, row) {
   const r = row || {};
   return {
     title: r.title || '',
+    airline: r.airline || parseFlight(r.title).airline || '',
+    flightNum: String(r.flightNo || parseFlight(r.title).flightNo || '').replace(/^[A-Za-z0-9]{2}(?=\d)/, ''),
     direction: r.direction || '가는 편',
     fromAirport: r.fromAirport || '',
     toAirport: r.toAirport || '',
@@ -53,9 +57,13 @@ function toRow(type, f) {
     cost: String(f.cost).trim(),
   };
   if (type === '항공권') {
+    const code = airlineCode(f.airline);
+    const flightNo = f.flightNum ? (code || '') + String(f.flightNum).trim() : '';
     return {
       ...base,
-      title: f.title.trim(),
+      title: [f.airline, flightNo].filter(Boolean).join(' '),
+      airline: f.airline,
+      flightNo,
       direction: f.direction,
       fromAirport: f.fromAirport.trim(),
       toAirport: f.toAirport.trim(),
@@ -94,15 +102,17 @@ function toRow(type, f) {
 }
 
 function validate(type, f) {
-  if (!f.title.trim()) return type === '항공권' ? '항공편을 입력해 주세요.' : type === '숙소' ? '숙소 이름을 입력해 주세요.' : '예약명을 입력해 주세요.';
+  if (type === '항공권') return f.airline ? '' : '항공사를 골라 주세요.';
+  if (!f.title.trim()) return type === '숙소' ? '숙소 이름을 입력해 주세요.' : '예약명을 입력해 주세요.';
   if (type === '기타' && !f.subType.trim()) return '종류를 골라 주세요.';
   return '';
 }
 
 /** 날짜 + 시간 한 쌍 */
-function DateTime({ label, date, time, onDate, onTime }) {
+function DateTime({ label, date, time, onDate, onTime, min }) {
+  const trip = getState().data.trip;
   return html`<div class="field-pair">
-    <input class=${'input' + (date ? '' : ' input--empty')} type="date" aria-label=${label + ' 날짜'} value=${date} onInput=${(e) => onDate(e.currentTarget.value)} />
+    <${DateField} label=${label + ' 날짜'} value=${date} onChange=${onDate} trip=${trip} min=${min} placeholder=${label} />
     <input class=${'input' + (time ? '' : ' input--empty')} type="time" aria-label=${label + ' 시간'} value=${time} onInput=${(e) => onTime(e.currentTarget.value)} style="flex:0 0 112px" />
   </div>`;
 }
@@ -128,14 +138,14 @@ export function ReservationForm({ type, row }) {
     setBusy(true);
     setError('');
     try {
-      // 새로 고른 사진만 올리고, 이미 있던 주소는 그대로
+      // 새로 고른 사진만 올리고(이건 기다려요), 저장은 뒤에서
       const urls = [];
       for (const p of f.photos) urls.push(typeof p === 'string' ? p : await uploadPhoto(p.dataUrl, p.mimeType));
       const out = { ...toRow(type, f), photos: urls.join(',') };
       if (isEdit) out.id = row.id;
-      const saved = await saveWithCheck('reservations', out, isEdit ? row.updatedAt : undefined);
+      saveLater('reservations', out, isEdit ? row.updatedAt : undefined);
       closeOverlay();
-      if (saved) toast(isEdit ? '저장했어요' : '예약을 추가했어요');
+      toast(isEdit ? '저장했어요' : '예약을 추가했어요');
     } catch (err) {
       setError((err.message || '저장 안 됨') + ' · 다시 시도해 주세요');
       setBusy(false);
@@ -143,13 +153,9 @@ export function ReservationForm({ type, row }) {
   };
 
   const remove = () => {
-    closeOverlay(async () => {
-      try {
-        await deleteWithUndo('reservations', row.id, row.title);
-        back('/reservations');
-      } catch (e) {
-        toast('삭제하지 못했어요 · 다시 시도해 주세요');
-      }
+    closeOverlay(() => {
+      deleteWithUndo('reservations', row.id, row.title).catch(() => toast('삭제하지 못했어요 · 다시 시도해 주세요'));
+      back('/reservations');
     });
   };
 
@@ -167,20 +173,28 @@ export function ReservationForm({ type, row }) {
   if (type === '항공권') {
     body = html`
       <${ChipField} title="구분" options=${['가는 편', '오는 편']} value=${f.direction} onChange=${set('direction')} />
-      <${TextField} title="항공편" placeholder="예) 제주항공 7C101" value=${f.title} onInput=${set('title')} />
+      <div class="field">
+        <span class="field__label">항공편</span>
+        <div class="field-pair">
+          <${SelectField} label="항공사" value=${f.airline} placeholder="항공사"
+            onClick=${() => openOverlay(html`<${OptionSheet} title="항공사" options=${AIRLINES} value=${f.airline} onPick=${set('airline')} />`)} />
+          <input class="input" style="flex:0 0 120px" inputmode="numeric" placeholder=${'편명 ' + (airlineCode(f.airline) || '')} aria-label="편명 숫자"
+            value=${f.flightNum} onInput=${(e) => set('flightNum')(e.currentTarget.value.replace(/[^0-9]/g, ''))} />
+        </div>
+        <span class="field__help">편명은 숫자만 · 예) 7C<b>101</b> 이면 101</span>
+      </div>
       <div class="field">
         <span class="field__label">출발 · 도착</span>
         <div class="field-pair">
-          <input class="input" placeholder="출발 공항" aria-label="출발 공항" value=${f.fromAirport} onInput=${set('fromAirport')} />
-          <input class="input" placeholder="도착 공항" aria-label="도착 공항" value=${f.toAirport} onInput=${set('toAirport')} />
+          <${SelectField} label="출발 공항" value=${f.fromAirport} placeholder="출발 공항"
+            onClick=${() => openOverlay(html`<${OptionSheet} title="출발 공항" options=${AIRPORTS} groups=${['국내', '일본', '중화권', '동남아', '그 외']} value=${f.fromAirport} onPick=${set('fromAirport')} />`)} />
+          <${SelectField} label="도착 공항" value=${f.toAirport} placeholder="도착 공항"
+            onClick=${() => openOverlay(html`<${OptionSheet} title="도착 공항" options=${AIRPORTS} groups=${['국내', '일본', '중화권', '동남아', '그 외']} value=${f.toAirport} onPick=${set('toAirport')} />`)} />
         </div>
-        <span class="field__help">공항 코드를 앞에 쓰면 크게 보여요 · 예) ICN 인천</span>
       </div>
       <div class="field">
         <span class="field__label">날짜 · 시간</span>
-        <div class="field-pair">
-          <input class=${'input' + (f.date ? '' : ' input--empty')} type="date" aria-label="날짜" value=${f.date} onInput=${set('date')} />
-        </div>
+        <${DateField} label="날짜" value=${f.date} onChange=${set('date')} trip=${getState().data.trip} />
         <div class="field-pair">
           <input class=${'input' + (f.startTime ? '' : ' input--empty')} type="time" aria-label="출발 시간" value=${f.startTime} onInput=${set('startTime')} />
           <span class="field-pair__dash">–</span>
@@ -188,11 +202,11 @@ export function ReservationForm({ type, row }) {
         </div>
       </div>
       ${bookingNo}${status}${assignee}
-      <${Collapsible} title="추가 정보" sub="예약처 · 터미널 · 좌석 · 사진 · 메모" open=${more} onToggle=${() => setMore(!more)}>
+      <${Collapsible} title="추가 정보" sub="예약처 · 터미널 · 좌석 · 메모" open=${more} onToggle=${() => setMore(!more)}>
         ${vendor}
         <${ChipField} title="터미널" options=${[...TERMINALS.map((t) => ({ value: t, label: t, toggle: true }))]} value=${f.fromTerminal} onChange=${set('fromTerminal')} />
         <${ChipField} title="좌석" options=${SEATS.map((t) => ({ value: t, label: t, toggle: true }))} value=${f.seat} onChange=${set('seat')} />
-        ${photos}${memo}
+        ${memo}
       <//>`;
   } else if (type === '숙소') {
     body = html`
@@ -200,7 +214,7 @@ export function ReservationForm({ type, row }) {
       <div class="field">
         <span class="field__label">체크인 · 체크아웃</span>
         <${DateTime} label="체크인" date=${f.startDate} time=${f.startTime} onDate=${set('startDate')} onTime=${set('startTime')} />
-        <${DateTime} label="체크아웃" date=${f.endDate} time=${f.endTime} onDate=${set('endDate')} onTime=${set('endTime')} />
+        <${DateTime} label="체크아웃" date=${f.endDate} time=${f.endTime} onDate=${set('endDate')} onTime=${set('endTime')} min=${f.startDate} />
       </div>
       <${TextField} title="지도 링크" placeholder="https://maps.app.goo.gl/…" value=${f.mapUrl} onInput=${set('mapUrl')}
         help="구글 지도 앱에서 공유 → 링크 복사로 붙여 넣어요" />
@@ -234,7 +248,7 @@ export function ReservationForm({ type, row }) {
       <div class="field">
         <span class="field__label">날짜 · 시간</span>
         <${DateTime} label="시작" date=${f.startDate} time=${f.startTime} onDate=${set('startDate')} onTime=${set('startTime')} />
-        <${DateTime} label="종료" date=${f.endDate} time=${f.endTime} onDate=${set('endDate')} onTime=${set('endTime')} />
+        <${DateTime} label="종료" date=${f.endDate} time=${f.endTime} onDate=${set('endDate')} onTime=${set('endTime')} min=${f.startDate} />
         <span class="field__help">투어처럼 하루짜리면 시작만 입력해도 돼요</span>
       </div>
       <${TextField} title="장소" placeholder="구글 지도 링크 또는 주소" value=${f.address || f.mapUrl} onInput=${set('address')} />
@@ -250,9 +264,9 @@ export function ReservationForm({ type, row }) {
   const footer = isEdit
     ? html`<div class="modal__foot--split">
         <${Button} variant="secondary" onClick=${remove} disabled=${busy}>삭제<//>
-        <${Button} onClick=${save} disabled=${busy}>${busy ? '저장 중…' : '저장하기'}<//>
+        <${Button} onClick=${save} disabled=${busy}>${busy ? '사진 올리는 중…' : '저장하기'}<//>
       </div>`
-    : html`<${Button} onClick=${save} disabled=${busy}>${busy ? '저장 중…' : '저장하기'}<//>`;
+    : html`<${Button} onClick=${save} disabled=${busy}>${busy ? '사진 올리는 중…' : '저장하기'}<//>`;
 
   return html`<${Modal} title=${title} footer=${footer}>
     <div class="form">

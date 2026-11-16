@@ -107,33 +107,28 @@ export function Modal({ title, children, footer }) {
 }
 
 /** 바텀시트 (짧은 입력·선택): ✕ 또는 바깥 누르기 / 아래로 내리기로 닫기 */
-export function Sheet({ title, children }) {
+export function Sheet({ title, children, footer, label }) {
+  // 손잡이·제목 부분을 아래로 끌면 닫혀요 (내용 부분은 스크롤)
   let startY = null;
-  const onTouchStart = (e) => {
-    startY = e.currentTarget.scrollTop <= 0 ? e.touches[0].clientY : null;
-  };
+  const onTouchStart = (e) => { startY = e.touches[0].clientY; };
   const onTouchEnd = (e) => {
-    if (startY != null && e.changedTouches[0].clientY - startY > 80) closeOverlay();
+    if (startY != null && e.changedTouches[0].clientY - startY > 60) closeOverlay();
     startY = null;
   };
   return html`<div>
     <div class="dim" onClick=${() => closeOverlay()}></div>
-    <section
-      class="sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-label=${title}
-      onTouchStart=${onTouchStart}
-      onTouchEnd=${onTouchEnd}
-    >
-      <span class="sheet__handle" aria-hidden="true"></span>
-      <div class="sheet__head">
-        <h2>${title}</h2>
-        <button class="icon-btn" aria-label="닫기" onClick=${() => closeOverlay()}>
-          <${Icon} name="x" />
-        </button>
+    <section class="sheet" role="dialog" aria-modal="true" aria-label=${label || title}>
+      <div class="sheet__top" onTouchStart=${onTouchStart} onTouchEnd=${onTouchEnd}>
+        <span class="sheet__handle" aria-hidden="true"></span>
+        <div class="sheet__head">
+          <h2>${title}</h2>
+          <button class="icon-btn" aria-label="닫기" onClick=${() => closeOverlay()}>
+            <${Icon} name="x" />
+          </button>
+        </div>
       </div>
-      ${children}
+      <div class="sheet__body">${children}</div>
+      ${footer && html`<div class="sheet__foot">${footer}</div>`}
     </section>
   </div>`;
 }
@@ -258,7 +253,7 @@ export function TextArea({ title, help, value, onInput, placeholder, maxLines = 
   };
   return html`<label class="field">
     <span class="field__label">${title}</span>
-    <textarea class="input textarea" rows=${maxLines} placeholder=${placeholder} value=${value} onInput=${limit}></textarea>
+    <textarea class="input textarea" rows=${Math.max(2, maxLines)} placeholder=${placeholder} value=${value} onInput=${limit}></textarea>
     <span class="field__help">${help || `최대 ${maxLines}줄 · 줄바꿈 가능`}</span>
   </label>`;
 }

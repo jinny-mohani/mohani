@@ -3,7 +3,7 @@ import { html, useEffect, useState } from '../vendor/preact-htm.js';
 import { Button, ChipField, Icon, Sheet, SubHeader, TextField, CheckRow } from '../ui/components.js';
 import { openOverlay, closeOverlay } from '../overlay.js';
 import { getState, toggleDone, failed } from '../store.js';
-import { saveWithCheck, deleteWithUndo } from '../save.js';
+import { saveLater, deleteWithUndo } from '../save.js';
 import { activeMembers, memberName } from '../members.js';
 import { GROUPS, byGroup, isDone } from '../checklist.js';
 import { formatDay } from '../date.js';
@@ -30,39 +30,28 @@ export function ChecklistSheet({ row, group }) {
 
   const save = async () => {
     if (!f.title.trim()) return setError('할 일을 입력해 주세요.');
-    setBusy(true);
-    try {
-      const out = { ...f, title: f.title.trim() };
-      if (isEdit) out.id = row.id;
-      await saveWithCheck('checklist', out, isEdit ? row.updatedAt : undefined);
-      closeOverlay();
-    } catch (e) {
-      setError((e.message || '저장 안 됨') + ' · 다시 시도해 주세요');
-      setBusy(false);
-    }
+    const out = { group: f.group, title: f.title.trim(), assignee: f.assignee };
+    if (isEdit) out.id = row.id;
+    saveLater('checklist', out, isEdit ? row.updatedAt : undefined);
+    closeOverlay();
   };
   const remove = () =>
     closeOverlay(() => deleteWithUndo('checklist', row.id, row.title).catch(() => toast('삭제하지 못했어요 · 다시 시도해 주세요')));
 
-  return html`<${Sheet} title=${isEdit ? '체크 리스트 수정' : '체크 리스트 추가'}>
+  const footer = isEdit
+    ? html`<div class="modal__foot--split">
+        <${Button} variant="secondary" onClick=${remove} disabled=${busy}>삭제<//>
+        <${Button} onClick=${save} disabled=${busy}>${busy ? '저장 중…' : '저장하기'}<//>
+      </div>`
+    : html`<${Button} onClick=${save} disabled=${busy}>${busy ? '저장 중…' : '저장하기'}<//>`;
+  return html`<${Sheet} title=${isEdit ? '체크 리스트 수정' : '체크 리스트 추가'} footer=${footer}>
     <div class="form">
       <${ChipField} title="구분" options=${GROUPS} value=${f.group} onChange=${set('group')} />
       <${TextField} title="할 일" placeholder="예) 환전하기" value=${f.title} maxLength="40" onInput=${set('title')} />
       <${ChipField} title="담당" value=${f.assignee} onChange=${set('assignee')}
         options=${[{ value: '각자', label: '각자' }, ...members.map((m) => ({ value: m.id, label: m.name }))]}
         help="각자: 멤버 모두가 해야 하는 일 (각자 체크해요)" />
-      <label class="field">
-        <span class="field__label">기한</span>
-        <input class=${'input' + (f.dueDate ? '' : ' input--empty')} type="date" value=${f.dueDate} onInput=${set('dueDate')} />
-        <span class="field__help">선택</span>
-      </label>
       ${error && html`<p class="form__error" role="alert">${error}</p>`}
-      ${isEdit
-        ? html`<div class="modal__foot--split">
-            <${Button} variant="secondary" onClick=${remove} disabled=${busy}>삭제<//>
-            <${Button} onClick=${save} disabled=${busy}>${busy ? '저장 중…' : '저장하기'}<//>
-          </div>`
-        : html`<${Button} onClick=${save} disabled=${busy}>${busy ? '저장 중…' : '저장하기'}<//>`}
     </div>
   <//>`;
 }

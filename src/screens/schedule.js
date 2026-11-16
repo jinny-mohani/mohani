@@ -7,7 +7,7 @@ import { go, replace } from '../router.js';
 import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
 import { getState, refresh, myName } from '../store.js';
 import { api } from '../api.js';
-import { saveWithCheck, deleteWithUndo } from '../save.js';
+import { saveLater, deleteWithUndo } from '../save.js';
 import { tripDays, dayDate, datePart, formatDay, formatTime } from '../date.js';
 import { TYPE_ICON, OTHER_ICON, firstPhoto } from '../reservation-util.js';
 import { toast } from '../ui/toast.js';
@@ -219,20 +219,16 @@ export function ScheduleForm({ day, row, placeId }) {
 
   const save = async () => {
     if (!f.placeId && !f.placeName.trim()) return setError('장소를 고르거나 직접 입력해 주세요.');
-    setBusy(true);
-    try {
+    {
       const out = { ...f, placeName: f.placeId ? '' : f.placeName.trim(), memo: f.memo.trim() };
       if (isEdit) out.id = row.id;
       // 다른 Day로 옮기면 그 Day 맨 아래로
       if (!isEdit || Number(row.day) !== f.day) {
         out.order = data.schedule.filter((s) => !s.deleted && Number(s.day) === f.day).reduce((m, s) => Math.max(m, Number(s.order) || 0), 0) + 1;
       }
-      const saved = await saveWithCheck('schedule', out, isEdit ? row.updatedAt : undefined);
+      saveLater('schedule', out, isEdit ? row.updatedAt : undefined);
       closeOverlay();
-      if (saved && !isEdit) toast(`Day ${f.day}에 추가했어요`);
-    } catch (e) {
-      setError((e.message || '저장 안 됨') + ' · 다시 시도해 주세요');
-      setBusy(false);
+      if (!isEdit) toast(`Day ${f.day}에 추가했어요`);
     }
   };
   const remove = () =>
@@ -298,7 +294,7 @@ function PlacePicker({ selected, onPick }) {
     replaceOverlay(html`<${PlaceForm} />`);
   };
 
-  return html`<${Sheet} title="장소 선택">
+  return html`<${Sheet} title="장소 선택" footer=${html`<${Button} disabled=${!pick} onClick=${() => { onPick(pick); closeOverlay(); }}>선택 완료<//>`}>
     <div class="search">
       <${Icon} name="search" size=${18} />
       <input placeholder="장소 이름 검색" aria-label="장소 이름 검색" value=${q} onInput=${(e) => setQ(e.currentTarget.value)} />
@@ -320,8 +316,5 @@ function PlacePicker({ selected, onPick }) {
       </li>`)}
     </ul>
     ${!list.length && html`<p class="muted" style="padding:12px 0">${q ? '찾는 장소가 없어요' : '아직 등록한 장소가 없어요'}</p>`}
-    <div style="margin-top:16px">
-      <${Button} disabled=${!pick} onClick=${() => { onPick(pick); closeOverlay(); }}>선택 완료<//>
-    </div>
   <//>`;
 }

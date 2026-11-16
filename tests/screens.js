@@ -28,7 +28,7 @@ const data = {
     { id: 'c_7', tripId: 't_1', title: '유심 사기', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 7, ...base, deleted: true, deletedBy: '친구1', deletedAt: '2026-11-15T10:00:00.000Z' },
   ],
   places: [
-    { id: 'p_1', tripId: 't_1', category: '음식점', name: '이치란 라멘 도톤보리', hours: '10:00 – 22:00', breakTime: '15:00 – 17:00', waiting: '있음', address: '오사카 주오구 도톤보리 7-18, 2층', mapUrl: 'https://maps.app.goo.gl/y', memo: '웨이팅 있음, 오픈 시간에 맞춰 가기', order: 1, ...base },
+    { id: 'p_1', tripId: 't_1', category: '음식점', name: '이치란 라멘 도톤보리', hours: '10:00 – 22:00', breakTime: '15:00 – 17:00', waiting: '있음', address: '오사카 주오구 도톤보리 7-18, 2층', mapUrl: 'https://maps.app.goo.gl/y', memo: '웨이팅 있음, 오픈 시간에 맞춰 가기', photos: 'images/flight/departure.jpg,images/flight/return.jpg', order: 1, ...base },
     { id: 'p_3', tripId: 't_1', category: '음식점', name: '쿠시카츠 다루마', hours: '11:00 – 22:30', memo: '소스 두 번 찍기 금지', order: 3, ...base },
     { id: 'p_4', tripId: 't_1', category: '디저트', name: '릭로 아저씨 치즈케이크', hours: '09:00 – 20:00', order: 4, ...base },
     { id: 'p_2', tripId: 't_1', category: '즐길거리', name: '오사카성', order: 2, ...base, deleted: true, deletedBy: '지니', deletedAt: '2026-11-14T10:00:00.000Z' },
@@ -93,6 +93,11 @@ const data = {
     route.fulfill({ json: data });
   });
   const B = 'http://127.0.0.1:8123/';
+  // 달력 시트에서 날짜 고르기
+  const pickDate = async (label, day) => {
+    await page.click(`[aria-label="${label}"]`); await page.waitForSelector('.cal');
+    await page.click(`.cal__d >> text="${day}"`); await page.click('.sheet__foot >> text=선택 완료'); await page.waitForTimeout(150);
+  };
   const shot = async (n) => {
     await page.waitForTimeout(400);
     await page.screenshot({ path: `${OUT}/${n}.png` });
@@ -104,14 +109,14 @@ const data = {
   await page.click('text=만들고 초대 링크 받기'); await page.waitForTimeout(200);
   console.log('validation:', await page.textContent('.form__error'));
   await page.fill('input[placeholder="예) 제주 우정여행"]', '부산 먹방여행');
-  await page.fill('input[aria-label="출발일"]', '2026-12-24');
-  await page.fill('input[aria-label="도착일"]', '2026-12-26');
+  await pickDate('출발일', 24);
+  await pickDate('도착일', 26);
   await page.fill('input[placeholder="예) 지니"]', '지니');
   await page.click('[aria-label="멤버 추가"]'); await page.waitForSelector('.sheet');
   await page.fill('.sheet input[placeholder="예) 도윤"]', '수아');
   await page.fill('.sheet input[placeholder="예) 지니의 사촌"]', '대학 동기');
   await shot('13-2-member-sheet');
-  await page.click('.sheet >> text=추가하기'); await page.waitForTimeout(300);
+  await page.click('.sheet__foot >> text=추가하기'); await page.waitForTimeout(300);
   console.log('sheet closed, modal kept:', !(await page.$('.sheet')), !!(await page.$('.modal')));
   await shot('13-new-trip');
   await page.click('text=만들고 초대 링크 받기'); await page.waitForSelector('.done-hero'); await shot('13-1-created');
@@ -129,7 +134,7 @@ const data = {
   await page.click('.home-members button >> nth=1'); await shot('03-8-friend');
   await page.click('.dialog [aria-label="닫기"]'); await page.waitForTimeout(200);
   await page.click('[aria-label="여행 설정"]'); await page.waitForSelector('.modal');
-  await page.fill('input[aria-label="도착일"]', '2026-12-20'); await page.waitForTimeout(100); await shot('03-4-settings');
+  await pickDate('도착일', 20); await shot('03-4-settings');
   await page.click('text=최근 삭제한 항목'); await page.waitForTimeout(500); await shot('03-7-deleted');
   console.log('deleted url:', page.url(), 'items:', await page.$$eval('.deleted-row', (r) => r.length));
   await page.click('.pill-btn >> nth=0'); await page.waitForTimeout(300);
@@ -143,9 +148,12 @@ const data = {
   await page.click('.chips >> text=전체'); await page.waitForTimeout(200);
   await page.click('[aria-label="예약 추가"]'); await shot('07-0-sheet');
   await page.click('.sheet >> text=항공권'); await page.waitForSelector('.modal');
-  await page.fill('input[placeholder="예) 제주항공 7C101"]', '대한항공 KE724');
-  await page.fill('input[aria-label="출발 공항"]', 'KIX 오사카 간사이');
-  await page.fill('input[aria-label="도착 공항"]', 'ICN 인천');
+  await page.click('[aria-label="항공사"]'); await page.waitForSelector('.opt-list'); await shot('07-1-airline-picker');
+  await page.click('.opt >> text=대한항공');
+  await page.fill('[aria-label="편명 숫자"]', '724');
+  await page.click('[aria-label="출발 공항"]'); await page.fill('.sheet input[aria-label="검색"]', 'kix'); await shot('07-1-airport-picker'); await page.click('.opt >> nth=0');
+  await page.click('[aria-label="도착 공항"]'); await page.click('.sheet >> text=인천');
+  await pickDate('날짜', 26); await shot('07-1-flight-form-top');
   await page.click('text=펼치기'); await page.waitForTimeout(100); await shot('07-1-1-flight-form');
   await page.click('.modal >> text=저장하기'); await page.waitForTimeout(400);
   const saved = posts.filter((p) => p.action === 'save' && p.table === 'reservations').pop();
@@ -158,7 +166,7 @@ const data = {
   await page.click('.detail__labels .status'); await page.waitForSelector('.sheet'); await page.click('.sheet >> text=예약 완료'); await page.waitForTimeout(400);
   console.log('status saved:', JSON.stringify(posts.filter((p) => p.action === 'save').pop().row));
   await page.goto(B + '?t=CODE#/reservations/r_2'); await page.waitForSelector('.detail');
-  await page.click('.detail__foot >> text=수정'); await page.waitForSelector('.modal'); await shot('07-2-stay-edit');
+  await page.click('[aria-label="더 보기"]'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('07-2-stay-edit');
   await page.click('.modal >> text=저장하기'); await page.waitForSelector('.conflict'); await shot('12-conflict');
   await page.click('text=내 글로 바꾸기'); await page.waitForTimeout(500);
   console.log('forced save:', posts.filter((p) => p.action === 'save').pop().force === true, 'modal closed:', !(await page.$('.modal')));
@@ -187,7 +195,7 @@ const data = {
   await page.click('.tabbar >> text=장소'); await page.waitForTimeout(300); await shot('09-places');
   await page.click('.place-group__head >> nth=0'); await page.waitForTimeout(300); await shot('09-2-category');
   await page.click('.place-card__open >> nth=0'); await page.waitForSelector('.place-detail'); await shot('10-place-detail');
-  await page.click('.detail__foot >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
+  await page.click('.place-detail__photos button >> nth=1'); await page.waitForSelector('.viewer'); await shot('10-viewer'); console.log('viewer:', await page.textContent('.viewer__count')); await page.click('.viewer__close'); await page.waitForTimeout(200); await page.click('[aria-label="더 보기"]'); await shot('10-menu'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
   await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
   await page.goto(B + '?t=CODE#/friends'); await page.waitForSelector('.friends'); await shot('11-friends');
   await page.click('[aria-label="내 프로필 수정"]'); await page.waitForSelector('.modal'); await shot('11-1-profile');

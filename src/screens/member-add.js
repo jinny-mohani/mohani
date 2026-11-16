@@ -10,11 +10,12 @@ import { closeOverlay } from '../overlay.js';
 export function MemberAddSheet({ onAdd, profile, title = '멤버 추가', button = '추가하기' }) {
   const [name, setName] = useState('');
   const [relation, setRelation] = useState('');
+  const [intro, setIntro] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   const submit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!name.trim()) {
       setError('이름을 입력해 주세요.');
       return;
@@ -22,7 +23,7 @@ export function MemberAddSheet({ onAdd, profile, title = '멤버 추가', button
     setBusy(true);
     setError('');
     try {
-      await onAdd({ name: name.trim(), relation: relation.trim(), profile });
+      await onAdd({ name: name.trim(), relation: relation.trim(), intro: intro.trim(), profile });
       closeOverlay();
     } catch (err) {
       setError(err.message || '저장하지 못했어요. 다시 시도해 주세요.');
@@ -30,7 +31,7 @@ export function MemberAddSheet({ onAdd, profile, title = '멤버 추가', button
     }
   };
 
-  return html`<${Sheet} title=${title}>
+  return html`<${Sheet} title=${title} footer=${html`<${Button} onClick=${submit} disabled=${busy}>${busy ? '저장 중…' : button}<//>`}>
     <p class="lead" style="margin-top:-8px">추가하면 이 친구도 초대 링크로 들어와서 자기 프로필을 고를 수 있어요</p>
     <form class="form" style="margin-top:20px" onSubmit=${submit}>
       <div class="member-add__avatar">
@@ -51,8 +52,15 @@ export function MemberAddSheet({ onAdd, profile, title = '멤버 추가', button
         maxLength="30"
         onInput=${(e) => setRelation(e.currentTarget.value)}
       />
+      <${TextField}
+        title="소개 (선택)"
+        placeholder="예) 운전 가능해요"
+        value=${intro}
+        maxLength="40"
+        onInput=${(e) => setIntro(e.currentTarget.value)}
+        help="한 줄 · 친구들 목록에 보여요"
+      />
       ${error && html`<p class="form__error" role="alert">${error}</p>`}
-      <${Button} type="submit" disabled=${busy}>${busy ? '저장 중…' : button}<//>
     </form>
   <//>`;
 }

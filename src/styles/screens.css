@@ -44,8 +44,10 @@
 /* 대표 사진 아래에 걸친 멤버 캐릭터 + 이름 */
 .home-members {
   position: absolute; left: -20px; right: -20px; top: 136px; z-index: 2;
-  display: flex; gap: var(--gap-s); padding: 0 24px; overflow-x: auto; scrollbar-width: none;
+  overflow-x: auto; scrollbar-width: none;
 }
+/* 가운데 정렬. 멤버가 많아 넘치면 왼쪽부터 보이고 옆으로 밀어요 */
+.home-members__row { display: flex; gap: var(--gap-s); width: max-content; margin: 0 auto; padding: 0 24px; }
 .home-members::-webkit-scrollbar { display: none; }
 .home-members button { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 72px; }
 .home-members__name {
@@ -332,7 +334,7 @@
 .menu-row[aria-pressed='true'] { font-weight: var(--fw-bold); }
 
 /* ───── 05-4~6 상세 ───── */
-.detail { padding-bottom: calc(100px + var(--safe-bottom)); }
+.detail { padding-bottom: calc(40px + var(--safe-bottom)); }
 .detail__img { display: block; width: 100%; aspect-ratio: 335 / 200; object-fit: cover; border-radius: 16px; background: var(--color-surface); }
 .detail__img--ph { display: flex; align-items: center; justify-content: center; color: var(--grey-400); }
 .detail__labels { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
@@ -467,7 +469,9 @@
 .place-card__map { position: absolute; right: 2px; bottom: 2px; display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit); color: var(--white); }
 
 /* ───── 10 장소 상세 ───── */
-.place-detail { padding-bottom: calc(100px + var(--safe-bottom)); }
+.place-detail { padding-bottom: calc(40px + var(--safe-bottom)); }
+.place-detail__heroimg { display: block; width: 100%; height: 100%; }
+.place-detail__photos button { display: block; padding: 0; }
 .place-detail__hero { position: relative; height: 300px; background: var(--color-divider); }
 .place-detail__hero img { width: 100%; height: 100%; object-fit: cover; }
 .place-detail__ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--grey-500); }
@@ -530,7 +534,6 @@
 .char__check { background: var(--color-primary); }
 
 /* S-2 홈 화면 추가 안내 */
-.guide-title { font-size: var(--fs-heading); font-weight: var(--fw-bold); margin-top: -40px; padding-right: 48px; }
 .guide-steps { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
 .guide-steps li { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 15px; }
 .guide-steps li > span:nth-child(2) { flex: 1; }

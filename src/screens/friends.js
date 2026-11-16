@@ -3,7 +3,7 @@ import { html, useState } from '../vendor/preact-htm.js';
 import { Avatar, Button, Icon, Modal, Sheet, TextArea, TextField } from '../ui/components.js';
 import { openOverlay, closeOverlay } from '../overlay.js';
 import { getState, saveRow, uploadPhoto } from '../store.js';
-import { saveWithCheck } from '../save.js';
+import { saveLater } from '../save.js';
 import { activeMembers, profileSrc, randomCharacter, CHARACTER_COUNT } from '../members.js';
 import { inviteUrl, copyText } from '../share.js';
 import { resizeImage } from '../image.js';
@@ -38,7 +38,7 @@ export function Friends({ data, me }) {
   const sorted = [...members.filter((m) => m.id === me), ...members.filter((m) => m.id !== me)];
   const addMember = () => openOverlay(html`<${MemberAddSheet}
     profile=${randomCharacter(members.map((m) => m.profile))}
-    onAdd=${(m) => saveRow('members', m).then((row) => toast(`${row.name}님을 추가했어요. 초대 링크를 보내 주세요`))} />`);
+    onAdd=${(m) => { saveLater('members', m); toast(`${m.name}님을 추가했어요. 초대 링크를 보내 주세요`); }} />`);
 
   return html`<main class="screen">
     <header class="big-title friends-title">
@@ -73,9 +73,9 @@ function ProfileEdit() {
     setBusy(true);
     try {
       const profile = photo ? await uploadPhoto(photo.dataUrl, photo.mimeType) : f.profile;
-      const saved = await saveWithCheck('members', { id: me, name: f.name.trim(), relation: f.relation.trim(), intro: f.intro.trim(), profile }, mine.updatedAt);
+      saveLater('members', { id: me, name: f.name.trim(), relation: f.relation.trim(), intro: f.intro.trim(), profile }, mine.updatedAt);
       closeOverlay();
-      if (saved) toast('프로필을 저장했어요');
+      toast('프로필을 저장했어요');
     } catch (e) {
       setError((e.message || '저장 안 됨') + ' · 다시 시도해 주세요');
       setBusy(false);
@@ -91,8 +91,8 @@ function ProfileEdit() {
       </button>
       <${TextField} title="이름" value=${f.name} maxLength="20" onInput=${set('name')} />
       <${TextField} title="간단 소개" placeholder="예) 지니의 대학 동기" value=${f.relation} maxLength="30" onInput=${set('relation')} />
-      <${TextArea} title="소개" placeholder=${'예) 사진 담당이에요.\n가고 싶은 곳 있으면 장소에 올려주세요!'} value=${f.intro} onInput=${set('intro')}
-        help="최대 5줄 · 줄바꿈 가능 · 목록에서는 2줄까지 보여요" />
+      <${TextArea} title="소개" maxLines=${3} placeholder=${'예) 사진 담당이에요.\n가고 싶은 곳 있으면 장소에 올려주세요!'} value=${f.intro} onInput=${set('intro')}
+        help="최대 3줄 · 줄바꿈 가능 · 목록에서는 2줄까지 보여요" />
       ${error && html`<p class="form__error" role="alert">${error}</p>`}
     </div>
   <//>`;
@@ -113,16 +113,9 @@ function ProfilePicker({ current, photo, onPick }) {
   const isPhoto = sel && typeof sel === 'object';
   const ownPhoto = isPhoto ? sel.dataUrl : /^https?:/.test(String(sel)) ? sel : '';
 
-  return html`<${Sheet} title="프로필 사진 선택">
+  return html`<${Sheet} title="프로필 사진 선택" footer=${html`<${Button} disabled=${!sel} onClick=${() => { onPick(sel); closeOverlay(); }}>선택 완료<//>`}>
     <p class="lead" style="margin-top:-8px">다른 친구가 쓰고 있는 캐릭터는 고를 수 없어요</p>
     <div class="char-grid">
-      <label class=${'char' + (ownPhoto ? ' char--on' : '')}>
-        <span class="char__img char__img--upload">
-          ${ownPhoto ? html`<img src=${ownPhoto} alt="" style="border-radius:50%;object-fit:cover" />` : html`<${Icon} name="image-plus" size=${24} />`}
-        </span>
-        <b>직접 등록</b>
-        <input type="file" accept="image/*" class="sr-only" onChange=${upload} />
-      </label>
       ${Array.from({ length: CHARACTER_COUNT }, (_, i) => String(i + 1)).map((n) => {
         const taken = usedBy[n];
         const on = sel === n;
@@ -136,9 +129,13 @@ function ProfilePicker({ current, photo, onPick }) {
           ${taken ? html`<span>${taken}</span><small>사용 중</small>` : on ? html`<b>${String(current) === n ? '지금 내 사진' : '고른 사진'}</b>` : html`<span>선택 가능</span>`}
         </button>`;
       })}
-    </div>
-    <div style="margin-top:20px">
-      <${Button} disabled=${!sel} onClick=${() => { onPick(sel); closeOverlay(); }}>선택 완료<//>
+      <label class=${'char' + (ownPhoto ? ' char--on' : '')}>
+        <span class="char__img char__img--upload">
+          ${ownPhoto ? html`<img src=${ownPhoto} alt="" style="border-radius:50%;object-fit:cover" />` : html`<${Icon} name="image-plus" size=${24} />`}
+        </span>
+        <b>직접 등록</b>
+        <input type="file" accept="image/*" class="sr-only" onChange=${upload} />
+      </label>
     </div>
   <//>`;
 }

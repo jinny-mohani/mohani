@@ -7,7 +7,7 @@ import { formatDay, rangeText, nightsBetween, durationText, formatTime, syncText
 import { memberName } from '../members.js';
 import { copyText } from '../share.js';
 import { toast } from '../ui/toast.js';
-import { saveWithCheck, deleteWithUndo } from '../save.js';
+import { saveLater, deleteWithUndo } from '../save.js';
 import {
   TYPES, TYPE_ICON, STATUSES, STATUS_ICON, OTHER_ICON,
   parseAirport, parseFlight, firstPhoto, flightBg, photoList, summary, sortReservations,
@@ -24,9 +24,7 @@ function pickStatus(r) {
         <button class="menu-row" aria-pressed=${r.status === s ? 'true' : 'false'}
           onClick=${() => closeOverlay(() => {
             if (r.status === s) return;
-            saveWithCheck('reservations', { id: r.id, status: s }, r.updatedAt)
-              .then((saved) => saved && toast(`'${s}'로 바꿨어요`))
-              .catch(() => toast('저장 안 됨 · 다시 시도해 주세요'));
+            saveLater('reservations', { id: r.id, status: s }, r.updatedAt);
           })}>
           <${Icon} name=${STATUS_ICON[s]} size=${20} /><span>${s}</span>
           ${r.status === s && html`<${Icon} name="check" size=${20} stroke=${2} />`}
@@ -213,11 +211,9 @@ export function ReservationDetail({ data, id }) {
     <ul>
       <li><button class="menu-row" onClick=${() => replaceOverlay(html`<${ReservationForm} type=${r.type} row=${r} />`)}>
         <${Icon} name="pencil" size=${20} /><span>수정</span></button></li>
-      <li><button class="menu-row" onClick=${() => closeOverlay(async () => {
-        try {
-          await deleteWithUndo('reservations', r.id, r.title);
-          back('/reservations?type=' + r.type);
-        } catch (e) { toast('삭제하지 못했어요 · 다시 시도해 주세요'); }
+      <li><button class="menu-row" onClick=${() => closeOverlay(() => {
+        deleteWithUndo('reservations', r.id, r.title).catch(() => toast('삭제하지 못했어요 · 다시 시도해 주세요'));
+        back('/reservations?type=' + r.type);
       })}><${Icon} name="trash-2" size=${20} /><span>삭제</span></button></li>
     </ul>
   <//>`);
@@ -285,6 +281,5 @@ export function ReservationDetail({ data, id }) {
       ${photos.length > 1 && html`<div class="detail__photos">${photos.slice(1).map((p) => html`<img src=${p} alt="" loading="lazy" />`)}</div>`}
       ${r.updatedBy && html`<p class="detail__edited">마지막 수정 · ${r.updatedBy}${r.updatedAt ? ' · ' + syncText(Date.parse(r.updatedAt)) : ''}</p>`}
     </div>
-    <div class="detail__foot"><${Button} onClick=${() => openForm(r.type, r)}>수정<//></div>
   </main>`;
 }

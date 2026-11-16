@@ -8,6 +8,7 @@ import { randomCharacter } from '../members.js';
 import { resizeImage } from '../image.js';
 import { inviteUrl, shortUrl, copyText, shareInvite } from '../share.js';
 import { MemberAddSheet } from './member-add.js';
+import { DateField } from '../ui/pickers.js';
 import { toast } from '../ui/toast.js';
 
 export function NewTripModal() {
@@ -56,7 +57,7 @@ export function NewTripModal() {
       const res = await createTrip({
         trip: { title: title.trim(), destination: destination.trim(), startDate, endDate },
         me: { name: myName.trim(), profile: myProfile },
-        members: members.map(({ name, relation, profile }) => ({ name, relation, profile })),
+        members: members.map(({ name, relation, intro, profile }) => ({ name, relation, intro, profile })),
       });
       // 대표 이미지는 여행이 만들어진 뒤에 올려요 (사진 폴더가 여행별이라서)
       if (cover) {
@@ -85,11 +86,11 @@ export function NewTripModal() {
       <div class="field">
         <span class="field__label" id="date-label">날짜</span>
         <div class="field-pair" role="group" aria-labelledby="date-label">
-          <input class=${'input' + (startDate ? '' : ' input--empty')} type="date" aria-label="출발일"
-            value=${startDate} onInput=${(e) => setStartDate(e.currentTarget.value)} />
+          <${DateField} label="출발일" placeholder="출발일" value=${startDate}
+            onChange=${(v) => { setStartDate(v); if (endDate && endDate < v) setEndDate(''); }} />
           <span class="field-pair__dash">–</span>
-          <input class=${'input' + (endDate ? '' : ' input--empty')} type="date" aria-label="도착일"
-            value=${endDate} min=${startDate || null} onInput=${(e) => setEndDate(e.currentTarget.value)} />
+          <${DateField} label="도착일" placeholder="도착일" value=${endDate} min=${startDate}
+            trip=${startDate ? { startDate, endDate: startDate } : null} onChange=${setEndDate} />
         </div>
         <span class="field__help">날짜를 고르면 Day 탭이 자동으로 만들어져요</span>
       </div>
@@ -194,15 +195,14 @@ export function TripCreated({ trip }) {
 /** 02-1 초대 안내 (개설자 · 처음 1회) */
 export function InviteSheet({ trip }) {
   const url = inviteUrl(trip.inviteCode);
-  return html`<${Sheet} title="친구들을 아직 초대하지 않았어요">
-    <p class="lead" style="margin-top:-8px">링크를 보내면 친구가 바로 들어와서 함께 쓸 수 있어요.<br />링크는 여행 카드에서도 언제든 복사할 수 있어요.</p>
-    <div class="link-box" style="margin:20px 0">
-      <span>${shortUrl(url)}</span>
-      <button class="icon-btn" aria-label="링크 복사" onClick=${() => copyText(url)}><${Icon} name="copy" size=${20} /></button>
-    </div>
-    <div class="stack-btns">
+  return html`<${Sheet} title="친구들을 아직 초대하지 않았어요" footer=${html`<div class="stack-btns">
       <${Button} onClick=${() => shareInvite(trip, trip.inviteCode).then(() => closeOverlay())}>카카오톡으로 보내기<//>
       <${Button} variant="secondary" onClick=${() => { copyText(url); closeOverlay(); }}>링크 복사<//>
+    </div>`}>
+    <p class="lead" style="margin-top:-8px">링크를 보내면 친구가 바로 들어와서 함께 쓸 수 있어요.<br />링크는 여행 카드에서도 언제든 복사할 수 있어요.</p>
+    <div class="link-box" style="margin-top:20px">
+      <span>${shortUrl(url)}</span>
+      <button class="icon-btn" aria-label="링크 복사" onClick=${() => copyText(url)}><${Icon} name="copy" size=${20} /></button>
     </div>
   <//>`;
 }

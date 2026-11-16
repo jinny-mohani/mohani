@@ -8,6 +8,7 @@ import { formatDay, nightsLabel, tripDays } from '../date.js';
 import { resizeImage } from '../image.js';
 import { inviteUrl, copyText } from '../share.js';
 import { toast } from '../ui/toast.js';
+import { DateField } from '../ui/pickers.js';
 
 export function TripSettings() {
   const { data, current } = getState();
@@ -75,9 +76,9 @@ export function TripSettings() {
       <div class="field">
         <span class="field__label" id="set-date">날짜</span>
         <div class="field-pair" role="group" aria-labelledby="set-date">
-          <input class="input" type="date" aria-label="출발일" value=${startDate} onInput=${(e) => setStartDate(e.currentTarget.value)} />
+          <${DateField} label="출발일" value=${startDate} trip=${{ startDate, endDate }} onChange=${setStartDate} />
           <span class="field-pair__dash">–</span>
-          <input class="input" type="date" aria-label="도착일" value=${endDate} min=${startDate || null} onInput=${(e) => setEndDate(e.currentTarget.value)} />
+          <${DateField} label="도착일" value=${endDate} min=${startDate} trip=${{ startDate, endDate }} onChange=${setEndDate} />
         </div>
         <p class="info-box">
           <${Icon} name="info" size=${16} />

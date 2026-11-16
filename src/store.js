@@ -105,6 +105,7 @@ let inFlight = null;
 /** 시트에서 지금 여행을 다시 불러와요. 실패하면 마지막 데이터로 '보기만' 해요. */
 export function refresh() {
   if (!state.current) return Promise.resolve();
+  if (syncing.count > 0) return Promise.resolve(); // 저장이 끝난 뒤 다음 주기에 불러와요
   if (inFlight) return inFlight;
   const code = state.current;
   set({ status: state.data ? 'syncing' : 'loading' });
@@ -283,4 +284,35 @@ export async function restoreRow(table, id) {
     patchRow(table, id, { deleted: true });
     throw e;
   }
+}
+
+/** 저장 중인 개수 — 저장이 끝나기 전에는 자동 새로고침을 미뤄요 (화면이 잠깐 옛 내용으로 돌아가지 않게) */
+export const syncing = { count: 0 };
+
+const PREFIX = { members: 'm_', reservations: 'r_', checklist: 'c_', places: 'p_', schedule: 's_' };
+export function newId(table) {
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+  let id = '';
+  const rnd = crypto.getRandomValues(new Uint8Array(8));
+  for (let i = 0; i < 8; i++) id += chars[rnd[i] % chars.length];
+  return (PREFIX[table] || 'x_') + id;
+}
+
+/** 화면에 먼저 반영 (시트 저장은 뒤에서) */
+export function applyLocal(table, row) {
+  const d = state.data;
+  if (!d) return;
+  if (table === 'trips') return cacheCurrent({ ...d, trip: { ...d.trip, ...row } });
+  const list = d[table] || [];
+  const exists = list.some((r) => r.id === row.id);
+  const maxOrder = list.reduce((m, r) => Math.max(m, Number(r.order) || 0), 0);
+  const next = exists
+    ? list.map((r) => (r.id === row.id ? { ...r, ...row, updatedBy: myName() } : r))
+    : [...list, { order: maxOrder + 1, ...row, tripId: d.trip.id, deleted: false, updatedBy: myName() }];
+  cacheCurrent({ ...d, [table]: next });
+}
+
+/** 데이터는 그대로 두고 화면만 다시 그리기 (저장 실패 표시 등) */
+export function touch() {
+  set({});
 }

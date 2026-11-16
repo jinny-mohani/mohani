@@ -68,7 +68,8 @@ export function Home({ data, me }) {
           <p class="home-hero__date">${formatDay(trip.startDate)} 출발 · ${nightsLabel(trip)}</p>
         </div>
       </div>
-      <ul class="home-members" aria-label="멤버">
+      <div class="home-members">
+      <ul class="home-members__row" aria-label="멤버">
         ${members.map(
           (m) => html`<li key=${m.id}>
             <button onClick=${() => openOverlay(html`<${FriendProfile} member=${m} />`)} aria-label=${m.name + ' 프로필 보기'}>
@@ -78,6 +79,7 @@ export function Home({ data, me }) {
           </li>`
         )}
       </ul>
+      </div>
     </section>
 
     <div class="page">

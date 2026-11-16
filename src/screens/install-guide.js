@@ -34,9 +34,11 @@ export function maybeShowInstallGuide() {
 
 function InstallGuide() {
   const [os, setOs] = useState(/android/i.test(navigator.userAgent) ? '안드로이드' : '아이폰');
-  return html`<${Sheet} title="">
-    <h2 class="guide-title">홈 화면에 추가하면<br />앱처럼 바로 열 수 있어요</h2>
-    <p class="lead" style="margin-top:8px">다음부터 링크를 찾지 않아도 돼요</p>
+  return html`<${Sheet} title=${html`홈 화면에 추가하면<br />앱처럼 바로 열 수 있어요`} label="홈 화면 추가 안내" footer=${html`<div class="stack-btns">
+      <${Button} onClick=${() => closeOverlay()}>확인했어요<//>
+      <button class="link-center" style="text-decoration:none" onClick=${() => closeOverlay()}>다음에 할게요</button>
+    </div>`}>
+    <p class="lead" style="margin-top:0">다음부터 링크를 찾지 않아도 돼요</p>
     <div style="margin:16px 0 8px">
       <${ChipGroup} label="휴대폰 종류" value=${os} onChange=${setOs} options=${['아이폰', '안드로이드'].map((v) => ({ value: v, label: v }))} />
     </div>
@@ -46,9 +48,5 @@ function InstallGuide() {
       </li>`)}
     </ol>
     ${os === '아이폰' && html`<p class="field__help" style="margin-bottom:12px">카톡에서 열었다면 오른쪽 아래 ⋯ → '다른 브라우저로 열기'로 사파리에서 열어 주세요</p>`}
-    <div class="stack-btns">
-      <${Button} onClick=${() => closeOverlay()}>확인했어요<//>
-      <button class="link-center" style="text-decoration:none" onClick=${() => closeOverlay()}>다음에 할게요</button>
-    </div>
   <//>`;
 }
