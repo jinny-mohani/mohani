@@ -68,8 +68,14 @@
 }
 
 /* ───── 칩 ───── */
-.chips { display: flex; gap: var(--gap-s); overflow-x: auto; scrollbar-width: none; }
-.chips::-webkit-scrollbar { display: none; }
+/* 가로 스와이프: 처음엔 좌우 여백 20px, 움직일 때는 화면 끝까지 (페이지 여백 밖으로 넓힘) */
+.chips {
+  display: flex; gap: var(--gap-s);
+  overflow-x: auto; scrollbar-width: none;
+  margin: 0 calc(-1 * var(--page-x));
+  padding: 0 var(--page-x);
+  scroll-padding: 0 var(--page-x);
+}.chips::-webkit-scrollbar { display: none; }
 .chip {
   flex-shrink: 0; min-height: 40px; padding: 8px 16px;
   border-radius: var(--radius-full);
@@ -195,3 +201,69 @@
 
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes slide-up { from { transform: translateY(24px); opacity: 0; } }
+
+/* 팝업 겹: 나중에 연 겹이 위에 */
+.layer { position: relative; z-index: 30; }
+
+/* ───── 아바타 ───── */
+.avatar {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden; border-radius: var(--radius-full);
+  background: var(--color-surface); color: var(--color-text-sub); font-weight: var(--fw-bold);
+}
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--color-surface); }
+
+.member-stack { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.member-stack__faces { display: flex; flex-shrink: 0; }
+.member-stack__faces .avatar { margin-right: -6px; border: 1.5px solid var(--color-surface-weak); }
+.member-stack__faces .avatar:last-child { margin-right: 0; }
+.member-stack__names {
+  flex: 1; min-width: 0; font-size: 14px; color: var(--color-text-sub);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ───── 디데이 라벨 ───── */
+.label-dday {
+  display: inline-flex; align-items: center; flex-shrink: 0;
+  padding: 3px 12px; border-radius: var(--radius-full);
+  border: 1px solid var(--grey-400); background: var(--color-bg);
+  font-size: var(--fs-caption); font-weight: var(--fw-medium); color: var(--color-text);
+}
+.label-dday--past { border-color: var(--color-divider); background: var(--color-divider); color: var(--color-text-weak); }
+
+/* ───── 알림 (토스트) ───── */
+.toast {
+  position: fixed; left: 50%; bottom: calc(100px + var(--safe-bottom)); z-index: 60;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: var(--gap-l);
+  width: calc(min(100vw, var(--app-max)) - 2 * var(--page-x));
+  padding: 14px 16px; border-radius: var(--radius-m);
+  background: var(--grey-900); color: var(--white); font-size: 15px;
+  animation: fade-in var(--dur) var(--ease);
+}
+.toast span { flex: 1; }
+.toast__action { color: var(--white); font-weight: var(--fw-bold); text-decoration: underline; min-height: var(--hit); }
+
+/* 입력칸 두 개 나란히 (출발일 – 도착일) */
+.field-pair { display: flex; align-items: center; gap: var(--gap-s); }
+.field-pair .input { flex: 1; min-width: 0; }
+.field-pair__dash { color: var(--color-text-weak); }
+.input[type='date'] { -webkit-appearance: none; appearance: none; text-align: left; }
+.input[type='date']:invalid, .input--empty { color: var(--color-text-weak); }
+.form { display: flex; flex-direction: column; gap: var(--gap-xl); }
+.form__error { font-size: var(--fs-small); color: var(--color-text); font-weight: var(--fw-medium); }
+.lead { font-size: var(--fs-small); color: var(--color-text-weak); margin-top: -4px; }
+.divider { height: 1px; background: var(--color-divider); border: 0; margin: 0; }
+
+/* 큰 제목 화면 (01, 02, 13-1) */
+.page-title { font-size: 26px; font-weight: var(--fw-bold); line-height: var(--lh); }
+.page-sub { font-size: var(--fs-body); color: var(--color-text-weak); margin-top: var(--gap-s); }
+.full {
+  display: flex; flex-direction: column; min-height: 100dvh;
+  padding: calc(20px + var(--safe-top)) var(--page-x) calc(34px + var(--safe-bottom));
+}
+.full__spacer { flex: 1; min-height: var(--gap-2xl); }
+.link-center {
+  align-self: center; min-height: var(--hit); padding: 0 var(--gap-s);
+  font-size: var(--fs-label); font-weight: var(--fw-medium); color: var(--color-text-sub); text-decoration: underline;
+}

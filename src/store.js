@@ -34,6 +34,7 @@ const state = {
   data: initialCache ? initialCache.data : null,
   lastSync: initialCache ? initialCache.savedAt : null,
   me: initialCode ? store.get(KEY.me(initialCode), null) : null,
+  tripList: store.get('hg.tripList', []), // 02 여행 목록용 요약 [{ code, trip, members }]
   // idle | loading(처음) | syncing(새로고침) | ok | offline | error | not_found
   status: 'idle',
   error: '',
@@ -135,4 +136,95 @@ export function startSync() {
     if (document.visibilityState === 'visible') refresh();
   });
   window.addEventListener('online', refresh);
+}
+
+/** 지금 여행에서 고른 '나' (없으면 null) */
+export function getMe() {
+  const d = state.data;
+  if (!d || !state.me) return null;
+  return d.members.find((m) => m.id === state.me && !m.deleted) || null;
+}
+
+/** 수정자로 남길 이름 */
+export function myName() {
+  const me = getMe();
+  return me ? me.name : '';
+}
+
+function cacheCurrent(data) {
+  const savedAt = Date.now();
+  store.set(KEY.cache(state.current), { data, savedAt });
+  set({ data, lastSync: savedAt, status: 'ok', error: '' });
+}
+
+/** 02 여행 목록: 휴대폰에 기억된 초대코드들의 여행 요약을 불러와요 */
+export async function loadTripList() {
+  if (!state.codes.length) return;
+  try {
+    const res = await api.trips(state.codes);
+    const list = res.trips.map((t) => ({ code: t.trip.inviteCode, ...t }));
+    store.set('hg.tripList', list);
+    set({ tripList: list });
+  } catch (e) {
+    /* 오프라인이면 마지막 목록을 보여줘요 */
+  }
+}
+
+/**
+ * 13 새 여행 만들기. 만든 사람은 자동으로 '나'가 돼요.
+ * me: { name, profile }, members: [{ name, relation, profile }]
+ */
+export async function createTrip({ trip, me, members }) {
+  const res = await api.createTrip({
+    trip,
+    members: [{ ...me, relation: me.relation || '개설자', isOwner: true }, ...members],
+    by: me.name,
+  });
+  const code = res.trip.inviteCode;
+  selectTrip(code);
+  const owner = res.members.find((m) => m.isOwner);
+  if (owner) setMe(owner.id);
+  cacheCurrent({
+    trip: res.trip,
+    members: res.members,
+    reservations: [],
+    checklist: [],
+    places: [],
+    schedule: [],
+  });
+  loadTripList();
+  return res;
+}
+
+/**
+ * 한 줄 저장 (추가·수정). 화면에 먼저 반영하고, 시트 저장은 뒤에서 해요.
+ * 실패하면 원래대로 돌리고 에러를 던져요.
+ */
+export async function saveRow(table, row, opts = {}) {
+  const res = await api.save({
+    code: state.current,
+    table,
+    row,
+    baseUpdatedAt: opts.baseUpdatedAt,
+    force: opts.force,
+    by: opts.by || myName(),
+  });
+  const saved = res.row;
+  const d = state.data;
+  if (d) {
+    if (table === 'trips') {
+      cacheCurrent({ ...d, trip: saved });
+    } else {
+      const list = d[table] || [];
+      const exists = list.some((r) => r.id === saved.id);
+      cacheCurrent({ ...d, [table]: exists ? list.map((r) => (r.id === saved.id ? saved : r)) : [...list, saved] });
+    }
+  }
+  return saved;
+}
+
+/** 대표 이미지·사진 올리기 → 주소 */
+export async function uploadPhoto(dataUrl, mimeType) {
+  const res = await api.upload({ code: state.current, data: dataUrl, mimeType, name: 'photo-' + Date.now() + '.jpg' });
+  return res.url;
 }

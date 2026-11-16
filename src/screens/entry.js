@@ -1,15 +1,21 @@
-// 00 시작 화면 · 불러오는 중 · 여행을 찾지 못함
+// 00 시작 화면 · 불러오는 중 · 불러오기 실패 · 여행을 찾지 못함
 import { html } from '../vendor/preact-htm.js';
-import { Button, Empty } from '../ui/components.js';
+import { Button, Empty, Icon } from '../ui/components.js';
+import { openOverlay } from '../overlay.js';
+import { NewTripModal } from './newtrip.js';
 
-/** 00 시작 화면 (저장된 여행 없음) — 초기 버전은 초대 링크로만 입장 */
+/** 00 시작 화면 (첫 접속 · 저장된 여행 없음) */
 export function Start() {
-  return html`<main class="screen screen--sub">
-    <${Empty}
-      icon="link"
-      title="함께 가요!"
-      text="받았던 초대 링크를 다시 눌러 주세요. 링크가 없다면 여행을 만든 친구에게 받아 주세요."
-    />
+  return html`<main class="full start">
+    <div class="full__spacer"></div>
+    <div class="start__hero">
+      <${Icon} name="plane" size=${28} />
+      <h1>함께 가요!</h1>
+      <p>친구와 함께 쓰는 여행 노트<br />예약·준비물·일정을 한곳에서 같이 정리해요</p>
+    </div>
+    <div class="full__spacer" style="flex:2"></div>
+    <${Button} onClick=${() => openOverlay(html`<${NewTripModal} />`)}>새 여행 만들기<//>
+    <p class="start__hint">초대받았다면 받은 링크를 눌러 주세요</p>
   </main>`;
 }
 
@@ -30,12 +36,13 @@ export function LoadError({ message, onRetry }) {
   </main>`;
 }
 
-export function TripNotFound() {
+export function TripNotFound({ onList }) {
   return html`<main class="screen screen--sub">
     <${Empty}
       icon="link"
       title="여행을 찾을 수 없어요"
       text="초대 링크가 바뀌었을 수 있어요. 여행을 만든 친구에게 링크를 다시 받아 주세요."
+      action=${onList && html`<${Button} variant="secondary" onClick=${onList}>내 여행 목록<//>`}
     />
   </main>`;
 }

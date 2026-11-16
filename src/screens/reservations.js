@@ -5,7 +5,7 @@ import {
   Button, ChipGroup, Empty, Icon, Modal, Row, Sheet, SubHeader, TextField, Todo, TopTitle,
 } from '../ui/components.js';
 import { go, replace } from '../router.js';
-import { openOverlay, closeOverlay } from '../overlay.js';
+import { openOverlay, replaceOverlay, closeOverlay } from '../overlay.js';
 import { formatDay, formatTime } from '../date.js';
 
 const TYPES = [
@@ -101,7 +101,7 @@ function TypeSheet() {
             icon=${t.icon}
             title=${t.type}
             sub=${t.sub}
-            onClick=${() => openOverlay(html`<${EditModal} type=${t.type} />`)}
+            onClick=${() => replaceOverlay(html`<${EditModal} type=${t.type} />`)}
           />
         </li>`
       )}

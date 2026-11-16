@@ -35,9 +35,29 @@ const data = {
   await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
   await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
   let offline = false;
+  const posts = [];
   await page.route('https://script.google.com/**', (route) => {
     if (offline) return route.abort();
-    const u = new URL(route.request().url());
+    const req = route.request();
+    if (req.method() === 'POST') {
+      const body = JSON.parse(req.postData());
+      posts.push(body);
+      if (body.action === 'create_trip') {
+        const trip = { ...body.trip, id: 't_new', inviteCode: 'NEWCODE', createdBy: body.by, ...base };
+        const members = body.members.map((m, i) => ({ ...m, id: 'm_n' + i, tripId: 't_new', order: i + 1, ...base }));
+        return route.fulfill({ json: { ok: true, trip, members } });
+      }
+      if (body.action === 'save') {
+        const row = { ...body.row, id: body.row.id || 'm_added', tripId: 't_1', ...base };
+        if (body.table === 'members') data.members.push(row);
+        return route.fulfill({ json: { ok: true, row, created: true } });
+      }
+      return route.fulfill({ json: { ok: true } });
+    }
+    const u = new URL(req.url());
+    if (u.searchParams.get('action') === 'trips') {
+      return route.fulfill({ json: { ok: true, trips: [{ trip: data.trip, members: data.members }], missing: [] } });
+    }
     if (u.searchParams.get('code') !== 'CODE') {
       return route.fulfill({ json: { ok: false, error: 'trip_not_found', message: '여행을 찾을 수 없어요.' } });
     }
@@ -50,7 +70,30 @@ const data = {
   };
 
   await page.goto(B); await shot('00-start');
-  await page.goto(B + '?t=CODE'); await page.waitForSelector('.hero'); await shot('03-home');
+  // 13 새 여행 만들기
+  await page.click('text=새 여행 만들기'); await page.waitForSelector('.modal');
+  await page.click('text=만들고 초대 링크 받기'); await page.waitForTimeout(200);
+  console.log('validation:', await page.textContent('.form__error'));
+  await page.fill('input[placeholder="예) 제주 우정여행"]', '부산 먹방여행');
+  await page.fill('input[aria-label="출발일"]', '2026-12-24');
+  await page.fill('input[aria-label="도착일"]', '2026-12-26');
+  await page.fill('input[placeholder="예) 지니"]', '지니');
+  await page.click('[aria-label="멤버 추가"]'); await page.waitForSelector('.sheet');
+  await page.fill('.sheet input[placeholder="예) 도윤"]', '수아');
+  await page.fill('.sheet input[placeholder="예) 지니의 사촌"]', '대학 동기');
+  await shot('13-2-member-sheet');
+  await page.click('.sheet >> text=추가하기'); await page.waitForTimeout(300);
+  console.log('sheet closed, modal kept:', !(await page.$('.sheet')), !!(await page.$('.modal')));
+  await shot('13-new-trip');
+  await page.click('text=만들고 초대 링크 받기'); await page.waitForSelector('.done-hero'); await shot('13-1-created');
+  console.log('create_trip members:', JSON.stringify(posts.find((p) => p.action === 'create_trip').members.map((m) => m.name + (m.isOwner ? '*' : ''))));
+  await page.click('text=나중에 보내기'); await page.waitForTimeout(600); await shot('02-1-invite-sheet');
+  console.log('after later url:', page.url(), 'sheet:', !!(await page.$('.sheet')));
+  await page.click('[aria-label="닫기"]'); await page.waitForTimeout(300); await shot('02-trips');
+  // 다른 여행(초대받은 여행)으로: 01 프로필 선택
+  await page.goto(B + '?t=CODE'); await page.waitForSelector('.member-grid'); await shot('01-profile');
+  await page.click('.member-card >> nth=1'); await shot('01-1-selected');
+  await page.click('text=입장하기'); await page.waitForSelector('.hero'); await shot('03-home');
   console.log('url after join:', page.url());
   await page.click('.tabbar >> text=예약'); await page.waitForSelector('.chips'); await shot('05-reservations');
   await page.click('[aria-label="예약 추가"]'); await shot('07-0-sheet');
@@ -78,6 +121,9 @@ const data = {
   console.log('small targets:', small);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
   console.log('horizontal overflow:', overflow);
+  // 칩 스크롤: 처음 왼쪽 여백 20px, 스크롤 영역은 화면 끝까지
+  await page.goto(B + '?t=CODE#/places'); await page.waitForSelector('.chips');
+  console.log('chips box:', await page.$eval('.chips', (c) => { const r = c.getBoundingClientRect(); return [r.left, r.right, c.firstChild.getBoundingClientRect().left]; }));
   console.log('errors:', errors);
   await browser.close();
 })();

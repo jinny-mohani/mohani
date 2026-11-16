@@ -4,6 +4,7 @@ import { ICONS, FILLED } from './icons.js';
 import { TABS, back, replace } from '../router.js';
 import { closeOverlay } from '../overlay.js';
 import { syncText } from '../date.js';
+import { profileSrc } from '../members.js';
 
 /** lucide 아이콘. filled는 하단 탭 선택 상태(면) */
 export function Icon({ name, size = 24, filled = false, stroke = 1.5, label }) {
@@ -170,4 +171,39 @@ export function OfflineBanner({ lastSync }) {
 /** 2단계 자리 표시 — 3단계에서 피그마 화면으로 채워요 */
 export function Todo({ children }) {
   return html`<p class="todo">${children}</p>`;
+}
+
+/** 프로필 사진·캐릭터. 그림이 없거나 못 불러오면 이름 첫 글자로 */
+export function Avatar({ member, size = 40, className = '' }) {
+  const src = profileSrc(member && member.profile);
+  const name = (member && member.name) || '?';
+  return html`<span
+    class=${'avatar ' + className}
+    style=${`width:${size}px;height:${size}px;font-size:${Math.round(size * 0.4)}px`}
+    aria-hidden="true"
+  >
+    <span class="avatar__initial">${name.slice(0, 1)}</span>
+    ${src &&
+    html`<img
+      src=${src}
+      alt=""
+      loading="lazy"
+      onError=${(e) => (e.currentTarget.style.display = 'none')}
+    />`}
+  </span>`;
+}
+
+/** 겹친 작은 프로필 + 이름들 (02 여행 카드 '함께 가는 친구') */
+export function MemberStack({ members }) {
+  return html`<div class="member-stack">
+    <span class="member-stack__faces">
+      ${members.slice(0, 5).map((m) => html`<${Avatar} member=${m} size=${22} key=${m.id} />`)}
+    </span>
+    <span class="member-stack__names">${members.map((m) => m.name).join(' · ')}</span>
+  </div>`;
+}
+
+/** 디데이 라벨 (Label_Dday): 다가오는 여행은 테두리, 지난 여행은 회색 */
+export function LabelDday({ text, past }) {
+  return html`<span class=${'label-dday' + (past ? ' label-dday--past' : '')}>${text}</span>`;
 }

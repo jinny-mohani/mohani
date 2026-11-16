@@ -21,7 +21,10 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 .hero__dday { font-size: var(--fs-small); font-weight: var(--fw-medium); }
-.hero__title { font-size: var(--fs-display); font-weight: var(--fw-bold); }
+.hero__title {
+  display: inline-flex; align-items: center; gap: 4px; min-height: var(--hit);
+  color: inherit; font-size: var(--fs-display); font-weight: var(--fw-bold);
+}
 .hero__date { font-size: var(--fs-small); opacity: 0.9; }
 .hero__settings { position: absolute; top: 8px; right: 8px; color: var(--white); }
 .hero__settings:active { background: rgba(255, 255, 255, 0.15); }
@@ -50,9 +53,111 @@
   display: flex; align-items: center; gap: var(--gap-m);
   padding: var(--gap-m) 0; border-bottom: 1px solid var(--color-divider);
 }
-.avatar {
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  width: 56px; height: 56px; border-radius: var(--radius-full);
-  background: var(--color-surface); color: var(--color-text-sub);
-  font-size: var(--fs-heading); font-weight: var(--fw-bold);
+
+
+/* ───── 00 시작 ───── */
+.start__hero { display: flex; flex-direction: column; align-items: center; gap: var(--gap-s); text-align: center; }
+.start__hero h1 { font-size: 24px; font-weight: var(--fw-bold); margin-top: var(--gap-m); }
+.start__hero p { font-size: 15px; color: var(--color-text-weak); }
+.start__hint { margin-top: var(--gap-m); text-align: center; font-size: var(--fs-small); color: var(--color-text-weak); }
+
+/* ───── 01 프로필 선택 ───── */
+.member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-m); }
+.member-card {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  padding: 20px 12px; border-radius: 16px;
+  background: var(--color-surface-weak); border: 1.5px solid var(--color-divider);
+  text-align: center; min-width: 0;
+}
+.member-card[aria-checked='true'] { border-color: var(--color-primary); background: var(--color-bg); }
+.member-card .avatar { margin-bottom: var(--gap-m); }
+.member-card__name { font-size: 17px; font-weight: var(--fw-medium); }
+.member-card__rel {
+  font-size: 14px; color: var(--color-text-weak);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.member-card__check {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: var(--radius-full);
+  border: 1.5px solid var(--grey-400); background: var(--color-bg); color: var(--white);
+}
+.member-card[aria-checked='true'] .member-card__check { border-color: var(--color-primary); background: var(--color-primary); }
+
+/* ───── 02 여행 목록 ───── */
+.trip-list { display: flex; flex-direction: column; gap: 20px; }
+.trip-card {
+  display: flex; flex-direction: column; gap: var(--gap-l);
+  padding: 16px 16px 20px; border-radius: 16px; background: var(--color-surface-weak);
+}
+.trip-card__open { display: flex; flex-direction: column; gap: var(--gap-l); text-align: left; }
+.trip-card__img {
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  height: 140px; border-radius: var(--radius-m); background: var(--color-divider); color: var(--color-text-weak);
+}
+.trip-card__img img { width: 100%; height: 100%; object-fit: cover; }
+.trip-card__info { display: flex; gap: var(--gap-m); align-items: flex-start; padding: 0 4px; }
+.trip-card__text { flex: 1; min-width: 0; }
+.trip-card__title { display: block; font-size: var(--fs-title); font-weight: var(--fw-bold); }
+.trip-card__date { display: block; font-size: 15px; color: var(--color-text-weak); }
+.trip-card--past .trip-card__title { color: var(--color-text-weak); }
+.trip-card .member-stack { padding: 0 4px; }
+.btn-outline {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; min-height: 48px; border-radius: var(--radius-m);
+  border: 1px solid var(--color-border); background: var(--color-bg);
+  font-size: 14px; font-weight: var(--fw-medium);
+}
+.link-box {
+  display: flex; align-items: center; gap: var(--gap-s);
+  padding: 4px 4px 4px 16px; border-radius: var(--radius-m); background: var(--color-surface);
+  font-size: 15px;
+}
+.link-box span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stack-btns { display: flex; flex-direction: column; gap: var(--gap-m); }
+
+/* ───── 13 새 여행 ───── */
+.photo-pick {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  width: 88px; height: 88px; border-radius: var(--radius-m); overflow: hidden;
+  border: 1px dashed var(--color-border); background: var(--color-surface-weak);
+  font-size: var(--fs-small); color: var(--color-text-sub);
+}
+.photo-pick img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.photo-pick input { position: absolute; inset: 0; opacity: 0; }
+.me-row { display: flex; align-items: flex-end; gap: var(--gap-l); }
+.me-row .field { flex: 1; }
+.member-item {
+  display: flex; align-items: center; gap: var(--gap-m);
+  padding: 12px 8px 12px 16px; border-radius: var(--radius-m); background: var(--color-surface-weak);
+}
+.member-item__text { flex: 1; min-width: 0; }
+.member-item__name { display: block; font-weight: var(--fw-medium); }
+.member-item__rel { display: block; font-size: var(--fs-small); color: var(--color-text-weak); }
+.list-gap { display: flex; flex-direction: column; gap: var(--gap-s); }
+.section-head-inline { display: flex; align-items: center; justify-content: space-between; }
+.section-head-inline h2 { font-size: var(--fs-body); font-weight: var(--fw-bold); }
+.section-head-inline h2 small { font-weight: var(--fw-regular); color: var(--color-text-weak); margin-left: 4px; font-size: var(--fs-label); }
+.round-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: var(--hit); height: var(--hit); border-radius: var(--radius-full); background: var(--color-surface);
+}
+
+/* ───── 13-1 만들었어요 ───── */
+.done-hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--gap-s); margin-top: 64px; }
+.done-hero__icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 72px; height: 72px; border-radius: var(--radius-full); background: var(--color-surface);
+  margin-bottom: var(--gap-l);
+}
+.done-hero h1 { font-size: 24px; font-weight: var(--fw-bold); }
+.done-hero p { color: var(--color-text-weak); font-size: 15px; }
+.note { display: flex; gap: 6px; font-size: var(--fs-small); color: var(--color-text-weak); margin-top: var(--gap-m); }
+.note .icon { margin-top: 2px; }
+.member-add__avatar { position: relative; align-self: center; }
+.member-add__pencil {
+  position: absolute; right: -2px; bottom: -2px;
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: var(--radius-full);
+  background: var(--color-bg); border: 1px solid var(--color-border);
 }

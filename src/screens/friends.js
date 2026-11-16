@@ -1,6 +1,6 @@
 // 11 친구들 (2단계: 멤버 목록만)
 import { html } from '../vendor/preact-htm.js';
-import { Todo, TopTitle } from '../ui/components.js';
+import { Avatar, Todo, TopTitle } from '../ui/components.js';
 
 export function Friends({ data, me }) {
   const members = data.members.filter((m) => !m.deleted);
@@ -9,7 +9,7 @@ export function Friends({ data, me }) {
     <ul class="page">
       ${members.map(
         (m) => html`<li class="member-row">
-          <span class="avatar" aria-hidden="true">${(m.name || '?').slice(0, 1)}</span>
+          <${Avatar} member=${m} size=${56} />
           <span class="row__body">
             <span class="row__title" style="display:block">
               ${m.name}${m.id === me ? html` <span class="muted">(나)</span>` : ''}

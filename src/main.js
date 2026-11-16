@@ -1,7 +1,7 @@
 // 함께 가요! — 앱 시작점
 import { html, render } from './vendor/preact-htm.js';
-import { useStore, enterFromUrl, startSync, refresh } from './store.js';
-import { useRoute } from './router.js';
+import { useStore, enterFromUrl, startSync, refresh, getMe } from './store.js';
+import { useRoute, replace } from './router.js';
 import { OverlayHost } from './overlay.js';
 import { TabBar, OfflineBanner, SubHeader, Todo } from './ui/components.js';
 import { Home } from './screens/home.js';
@@ -10,6 +10,9 @@ import { Schedule } from './screens/schedule.js';
 import { Places, PlaceDetail } from './screens/places.js';
 import { Friends } from './screens/friends.js';
 import { Start, Loading, LoadError, TripNotFound } from './screens/entry.js';
+import { ProfileSelect } from './screens/profile.js';
+import { TripList } from './screens/trips.js';
+import { ToastHost } from './ui/toast.js';
 
 /** 지금 주소에 맞는 화면 */
 function Screen({ route, data, me }) {
@@ -36,12 +39,19 @@ function App() {
   const s = useStore();
   const route = useRoute();
 
-  if (!s.current) return html`<${Start} />`;
-  if (s.status === 'not_found') return html`<${TripNotFound} />`;
-  if (!s.data) {
-    if (s.status === 'error') return html`<${LoadError} message=${s.error} onRetry=${refresh} />`;
-    return html`<${Loading} />`;
+  const page = (node) => html`${node}<${OverlayHost} /><${ToastHost} />`;
+
+  if (route.tab === 'trips' && s.codes.length) return page(html`<${TripList} />`); // 02 여행 목록
+  if (!s.current) return page(html`<${Start} />`); // 00 시작
+  if (s.status === 'not_found') {
+    return page(html`<${TripNotFound} onList=${s.codes.length > 1 ? () => replace('/trips') : null} />`);
   }
+  if (!s.data) {
+    if (s.status === 'error') return page(html`<${LoadError} message=${s.error} onRetry=${refresh} />`);
+    return page(html`<${Loading} />`);
+  }
+  // 처음 들어온 여행이면 프로필부터 고르기 (01)
+  if (!getMe()) return page(html`<${ProfileSelect} data=${s.data} />`);
 
   const tabs = ['home', 'reservations', 'schedule', 'places', 'friends'];
   const tab = tabs.includes(route.tab) ? route.tab : 'home';
@@ -52,6 +62,7 @@ function App() {
     <${Screen} route=${{ ...route, tab }} data=${s.data} me=${s.me} />
     ${!isSub && html`<${TabBar} active=${tab} />`}
     <${OverlayHost} />
+    <${ToastHost} />
   `;
 }
 

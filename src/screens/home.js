@@ -23,7 +23,9 @@ export function Home({ data }) {
         : html`<span class="hero__fallback" aria-hidden="true">${trip.destination}</span>`}
       <div class="hero__text">
         <p class="hero__dday">${ddayText(trip)}</p>
-        <h1 class="hero__title">${trip.title}</h1>
+        <button class="hero__title" onClick=${() => go('/trips')} aria-label=${trip.title + ', 다른 여행 보기'}>
+          <span>${trip.title}</span><${Icon} name="chevron-down" size=${20} stroke=${2} />
+        </button>
         <p class="hero__date">${formatDay(trip.startDate)} 출발 · ${nightsLabel(trip)}</p>
       </div>
       <button class="icon-btn hero__settings" aria-label="여행 설정" onClick=${() => go('/home/settings')}>
