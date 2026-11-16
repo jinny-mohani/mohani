@@ -10,7 +10,7 @@ import { toast } from '../ui/toast.js';
 import { saveWithCheck, deleteWithUndo } from '../save.js';
 import {
   TYPES, TYPE_ICON, STATUSES, STATUS_ICON, OTHER_ICON,
-  parseAirport, parseFlight, firstPhoto, photoList, summary, sortReservations,
+  parseAirport, parseFlight, firstPhoto, flightBg, photoList, summary, sortReservations,
 } from '../reservation-util.js';
 import { ReservationForm } from './reservation-form.js';
 
@@ -43,7 +43,7 @@ function FlightCard({ r }) {
   const from = parseAirport(r.fromAirport);
   const to = parseAirport(r.toAirport);
   const { flightNo } = parseFlight(r.title);
-  const photo = firstPhoto(r);
+  const photo = flightBg(r);
   const cells = [flightNo || r.title, r.aircraft, r.seat].filter(Boolean);
   return html`<div class="res-item">
     <button class="photo-card" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
@@ -240,7 +240,7 @@ export function ReservationDetail({ data, id }) {
               <span class="status status--done">${r.direction || '항공권'}${r.startAt ? ' · ' + formatDay(r.startAt) : ''}</span>
               <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
             </span>
-            ${photos[0] ? html`<img class="flight-detail__img" src=${photos[0]} alt="" />` : html`<span class="flight-detail__ph"><${Icon} name="image" size=${28} /></span>`}
+            <img class="flight-detail__img" src=${flightBg(r)} alt="" />
             <span class="flight-panel">
               <span class="flight-panel__route">
                 <span class="flight-panel__end"><small>${formatTime(r.startAt)}</small><b>${from.code || from.name}</b><small>${[from.code && from.name, r.fromTerminal].filter(Boolean).join(' · ')}</small></span>

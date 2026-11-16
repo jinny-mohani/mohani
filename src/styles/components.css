@@ -212,6 +212,10 @@
   background: var(--color-surface); color: var(--color-text-sub); font-weight: var(--fw-bold);
 }
 .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--color-surface); }
+.avatar--char { background: none; overflow: visible; }
+.avatar--char img { object-fit: contain; background: none; }
+.avatar--char .avatar__initial { visibility: hidden; } /* 그림을 못 불러오면 onError로 img가 숨고 아래에서 다시 보이게 */
+.avatar--char:has(img[style*='none']) .avatar__initial { visibility: visible; }
 
 .member-stack { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .member-stack__faces { display: flex; flex-shrink: 0; }

@@ -177,8 +177,9 @@ export function Todo({ children }) {
 export function Avatar({ member, size = 40, className = '' }) {
   const src = profileSrc(member && member.profile);
   const name = (member && member.name) || '?';
+  const isCharacter = src && !/^https?:/.test(src); // 캐릭터는 동그라미 없이 전신 그대로
   return html`<span
-    class=${'avatar ' + className}
+    class=${'avatar ' + (isCharacter ? 'avatar--char ' : '') + className}
     style=${`width:${size}px;height:${size}px;font-size:${Math.round(size * 0.4)}px`}
     aria-hidden="true"
   >

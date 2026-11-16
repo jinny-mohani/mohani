@@ -28,6 +28,11 @@ export function firstPhoto(r) {
   return String(r.photos || '').split(',').map((s) => s.trim()).filter(Boolean)[0] || '';
 }
 
+/** 항공권 카드 배경: 올린 사진, 없으면 기본 하늘 사진 (가는 편 / 오는 편) */
+export function flightBg(r) {
+  return firstPhoto(r) || (r.direction === '오는 편' ? 'images/flight/return.jpg' : 'images/flight/departure.jpg');
+}
+
 export function photoList(r) {
   return String(r.photos || '').split(',').map((s) => s.trim()).filter(Boolean);
 }
