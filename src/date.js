@@ -70,3 +70,56 @@ export function syncText(ts, now = Date.now()) {
   const p = (x) => String(x).padStart(2, '0');
   return `${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+
+export function datePart(s) {
+  const m = String(s || '').match(/^\d{4}-\d{2}-\d{2}/);
+  return m ? m[0] : '';
+}
+
+export function timePart(s) {
+  return formatTime(s);
+}
+
+/** 날짜와 시간을 합쳐 시트 형식으로: 2026-12-19T15:00 (시간이 없으면 날짜만) */
+export function joinDateTime(date, time) {
+  if (!date) return '';
+  return time ? `${date}T${time}` : date;
+}
+
+/** 두 날짜 사이 박 수 */
+export function nightsBetween(a, b) {
+  const s = parseDate(datePart(a));
+  const e = parseDate(datePart(b));
+  if (!s || !e) return 0;
+  return Math.max(0, Math.round((e - s) / 86400000));
+}
+
+/** 12.19 (토) 15:00 */
+export function formatDayTime(s) {
+  return [formatDay(s), formatTime(s)].filter(Boolean).join(' ');
+}
+
+/** 12.19 (토) 15:00 – 12.21 (월) 11:00 (같은 날이면 끝은 시간만) */
+export function rangeText(a, b) {
+  if (!a) return '';
+  if (!b) return formatDayTime(a);
+  if (datePart(a) === datePart(b)) {
+    const t = formatTime(b);
+    return t ? `${formatDayTime(a)} – ${t}` : formatDayTime(a);
+  }
+  return `${formatDayTime(a)} – ${formatDayTime(b)}`;
+}
+
+/** 1시간 50분 (출발·도착 시간 차이, 도착이 더 이르면 다음 날로 봄) */
+export function durationText(a, b) {
+  const ta = formatTime(a);
+  const tb = formatTime(b);
+  if (!ta || !tb) return '';
+  const [h1, m1] = ta.split(':').map(Number);
+  const [h2, m2] = tb.split(':').map(Number);
+  let min = h2 * 60 + m2 - (h1 * 60 + m1);
+  if (min <= 0) min += 24 * 60;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return [h && h + '시간', m && m + '분'].filter(Boolean).join(' ');
+}

@@ -299,3 +299,45 @@
   animation: fade-in var(--dur) var(--ease);
 }
 .dialog__close { position: absolute; top: 12px; right: 12px; }
+
+/* 12 동시 수정 알림 */
+.conflict { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--gap-s); padding: 28px 20px 20px; }
+.conflict h2 { font-size: var(--fs-title); font-weight: var(--fw-bold); margin-top: 4px; }
+.conflict p { font-size: 15px; color: var(--color-text-weak); margin-bottom: var(--gap-m); }
+.conflict .stack-btns { width: 100%; }
+
+.chips--wrap { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; }
+.textarea { height: auto; min-height: 136px; padding: 14px 16px; resize: none; line-height: var(--lh); }
+
+/* 추가 정보 (접기·펼치기) */
+.collapse { border-radius: var(--radius-m); background: var(--color-surface-weak); }
+.collapse__head { display: flex; align-items: center; gap: var(--gap-m); width: 100%; min-height: 64px; padding: 12px 16px; text-align: left; }
+.collapse__title { flex: 1; display: flex; flex-direction: column; }
+.collapse__title strong { font-size: var(--fs-body); font-weight: var(--fw-bold); }
+.collapse__title small { font-size: var(--fs-caption); color: var(--color-text-weak); }
+.collapse__toggle { display: inline-flex; align-items: center; gap: 2px; font-size: var(--fs-small); color: var(--color-text-sub); }
+.collapse--open { background: none; }
+.collapse--open .collapse__head { padding: 12px 0; border-top: 1px solid var(--color-divider); border-radius: 0; }
+.collapse__body { display: flex; flex-direction: column; gap: var(--gap-xl); }
+
+/* 상태 라벨 */
+.status {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 3px 10px 3px 8px; border-radius: var(--radius-full);
+  border: 1px solid var(--grey-400); background: var(--color-bg);
+  font-size: var(--fs-caption); font-weight: var(--fw-medium); color: var(--color-text); line-height: 1.5;
+}
+.status--done { border-color: var(--color-surface); background: var(--color-surface); }
+button.status { min-height: 28px; position: relative; }
+button.status::after { content: ''; position: absolute; inset: -8px; } /* 터치 영역 넓히기 */
+
+/* 사진 여러 장 */
+.photo-row { display: flex; gap: var(--gap-s); flex-wrap: wrap; }
+.photo-thumb { position: relative; width: 88px; height: 88px; border-radius: var(--radius-m); overflow: hidden; background: var(--color-surface); }
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.photo-thumb__x {
+  position: absolute; top: 4px; right: 4px; display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: var(--radius-full); background: rgba(0,0,0,.55); color: var(--white);
+}
+.modal__foot--split { display: flex; gap: var(--gap-s); }
+.modal__foot--split .btn--secondary { flex: 0 0 96px; }

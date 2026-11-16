@@ -227,3 +227,91 @@ export function Dialog({ label, children }) {
     </section>
   </div>`;
 }
+
+/** 제목 + 칩 고르기 (구분·상태·담당 등) */
+export function ChipField({ title, options, value, onChange, help }) {
+  return html`<div class="field">
+    <span class="field__label">${title}</span>
+    <div class="chips chips--wrap" role="radiogroup" aria-label=${title}>
+      ${options.map((o) => {
+        const opt = typeof o === 'string' ? { value: o, label: o } : o;
+        return html`<${Chip}
+          key=${opt.value}
+          role="radio"
+          aria-checked=${opt.value === value ? 'true' : 'false'}
+          selected=${opt.value === value}
+          onClick=${() => onChange(opt.value === value && opt.toggle ? '' : opt.value)}
+        >${opt.label}<//>`;
+      })}
+    </div>
+    ${help && html`<span class="field__help">${help}</span>`}
+  </div>`;
+}
+
+/** 메모 칸 (Textarea) — 줄바꿈 포함 최대 5줄 (기획안) */
+export function TextArea({ title, help, value, onInput, placeholder, maxLines = 5 }) {
+  const limit = (e) => {
+    const v = e.currentTarget.value.split('\n').slice(0, maxLines).join('\n');
+    if (v !== e.currentTarget.value) e.currentTarget.value = v;
+    onInput(v);
+  };
+  return html`<label class="field">
+    <span class="field__label">${title}</span>
+    <textarea class="input textarea" rows=${maxLines} placeholder=${placeholder} value=${value} onInput=${limit}></textarea>
+    <span class="field__help">${help || `최대 ${maxLines}줄 · 줄바꿈 가능`}</span>
+  </label>`;
+}
+
+/** 접었다 펴는 '추가 정보' 묶음 */
+export function Collapsible({ title, sub, open, onToggle, children }) {
+  return html`<section class=${'collapse' + (open ? ' collapse--open' : '')}>
+    <button class="collapse__head" aria-expanded=${open ? 'true' : 'false'} onClick=${onToggle} type="button">
+      <span class="collapse__title">
+        <strong>${title}</strong>
+        <small>${open ? '선택 · 태그로 표시돼요' : sub}</small>
+      </span>
+      <span class="collapse__toggle">${open ? '접기' : '펼치기'}<${Icon} name=${open ? 'chevron-up' : 'chevron-down'} size=${16} /></span>
+    </button>
+    ${open && html`<div class="collapse__body">${children}</div>`}
+  </section>`;
+}
+
+/** 상태 라벨 (StatusLabel): 예약 전 · 예약 완료 · 보류 — 색 없이 아이콘·테두리로 구분 */
+export function StatusLabel({ status, onClick }) {
+  const s = status || '예약 전';
+  const icon = { '예약 전': 'clock', '예약 완료': 'check', 보류: 'pause' }[s] || 'clock';
+  const cls = 'status' + (s === '예약 완료' ? ' status--done' : '');
+  const inner = html`<${Icon} name=${icon} size=${12} stroke=${2} /><span>${s}</span>`;
+  return onClick
+    ? html`<button class=${cls} onClick=${(e) => { e.stopPropagation(); onClick(); }} aria-label=${'상태 ' + s + ', 바꾸기'}>${inner}</button>`
+    : html`<span class=${cls}>${inner}</span>`;
+}
+
+/** 사진 고르기 (여러 장) — 고른 사진은 줄여서 보관했다가 저장할 때 올려요 */
+export function PhotoField({ title = '사진', photos, onChange, max = 3 }) {
+  const add = async (e) => {
+    const files = Array.from(e.currentTarget.files || []).slice(0, max - photos.length);
+    e.currentTarget.value = '';
+    const { resizeImage } = await import('../image.js');
+    const added = [];
+    for (const f of files) {
+      try { added.push(await resizeImage(f)); } catch (err) { /* 못 읽은 사진은 건너뜀 */ }
+    }
+    onChange([...photos, ...added]);
+  };
+  return html`<div class="field">
+    <span class="field__label">${title}</span>
+    <div class="photo-row">
+      ${photos.map((p, i) => html`<span class="photo-thumb" key=${i}>
+        <img src=${typeof p === 'string' ? p : p.dataUrl} alt="" />
+        <button type="button" class="photo-thumb__x" aria-label="사진 빼기" onClick=${() => onChange(photos.filter((_, j) => j !== i))}>
+          <${Icon} name="x" size=${14} stroke=${2} />
+        </button>
+      </span>`)}
+      ${photos.length < max && html`<label class="photo-pick">
+        <${Icon} name="image-plus" /><span>사진 추가</span>
+        <input type="file" accept="image/*" multiple onChange=${add} aria-label="사진 추가" />
+      </label>`}
+    </div>
+  </div>`;
+}

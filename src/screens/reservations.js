@@ -1,123 +1,290 @@
-// 05 예약 목록 · 05-4~6 상세 · 07-0 종류 선택 · 07-1~3 작성
-// 2단계: 화면 패턴(칩 걸러 보기, 서브 페이지, 바텀시트, 전체 화면 팝업)을 연결해 둔 상태
+// 05 예약 목록(전체) · 05-1 항공권 · 05-2 숙소 · 05-3 기타 · 05-4~6 상세 · 07-0 종류 선택
 import { html } from '../vendor/preact-htm.js';
-import {
-  Button, ChipGroup, Empty, Icon, Modal, Row, Sheet, SubHeader, TextField, Todo, TopTitle,
-} from '../ui/components.js';
-import { go, replace } from '../router.js';
+import { Button, ChipGroup, Empty, Icon, Row, Sheet, StatusLabel, SubHeader } from '../ui/components.js';
+import { go, replace, back } from '../router.js';
 import { openOverlay, replaceOverlay, closeOverlay } from '../overlay.js';
-import { formatDay, formatTime } from '../date.js';
+import { formatDay, rangeText, nightsBetween, durationText, formatTime, syncText } from '../date.js';
+import { memberName } from '../members.js';
+import { copyText } from '../share.js';
+import { toast } from '../ui/toast.js';
+import { saveWithCheck, deleteWithUndo } from '../save.js';
+import {
+  TYPES, TYPE_ICON, STATUSES, STATUS_ICON, OTHER_ICON,
+  parseAirport, parseFlight, firstPhoto, photoList, summary, sortReservations,
+} from '../reservation-util.js';
+import { ReservationForm } from './reservation-form.js';
 
-const TYPES = [
-  { type: '항공권', icon: 'plane', sub: '가는 편 · 오는 편' },
-  { type: '숙소', icon: 'bed-double', sub: '체크인 · 체크아웃' },
-  { type: '기타', icon: 'ticket', sub: '렌터카 · 투어 · 체험 · 입장권' },
-];
-const iconOf = (type) => (TYPES.find((t) => t.type === type) || TYPES[2]).icon;
+const openForm = (type, row) => openOverlay(html`<${ReservationForm} type=${type} row=${row} />`);
 
-function when(r) {
-  const start = [formatDay(r.startAt), formatTime(r.startAt)].filter(Boolean).join(' ');
-  return start || '날짜 미정';
+/** StatusLabel을 누르면 상태 선택 메뉴 (피그마 컴포넌트 설명) */
+function pickStatus(r) {
+  openOverlay(html`<${Sheet} title="예약 상태">
+    <ul>
+      ${STATUSES.map((s) => html`<li key=${s}>
+        <button class="menu-row" aria-pressed=${r.status === s ? 'true' : 'false'}
+          onClick=${() => closeOverlay(() => {
+            if (r.status === s) return;
+            saveWithCheck('reservations', { id: r.id, status: s }, r.updatedAt)
+              .then((saved) => saved && toast(`'${s}'로 바꿨어요`))
+              .catch(() => toast('저장 안 됨 · 다시 시도해 주세요'));
+          })}>
+          <${Icon} name=${STATUS_ICON[s]} size=${20} /><span>${s}</span>
+          ${r.status === s && html`<${Icon} name="check" size=${20} stroke=${2} />`}
+        </button>
+      </li>`)}
+    </ul>
+  <//>`);
 }
 
+/* ───── 카드 ───── */
+
+/** 05-1 항공권 카드: 정사각형 사진 위에 흰 정보 패널 */
+function FlightCard({ r }) {
+  const from = parseAirport(r.fromAirport);
+  const to = parseAirport(r.toAirport);
+  const { flightNo } = parseFlight(r.title);
+  const photo = firstPhoto(r);
+  const cells = [flightNo || r.title, r.aircraft, r.seat].filter(Boolean);
+  return html`<div class="res-item">
+    <button class="photo-card" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
+      ${photo ? html`<img src=${photo} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name="plane" size=${40} /></span>`}
+      <span class="photo-card__top">
+        <span class="status status--done">${r.direction || '항공권'}${r.startAt ? ' · ' + formatDay(r.startAt) : ''}</span>
+        <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
+      </span>
+      <span class="flight-panel">
+        <span class="flight-panel__route">
+          <span class="flight-panel__end">
+            <small>${formatTime(r.startAt)}</small>
+            <b>${from.code || from.name || '출발'}</b>
+            <small>${[from.code && from.name, r.fromTerminal].filter(Boolean).join(' · ')}</small>
+          </span>
+          <span class="flight-panel__mid">
+            <span class="flight-panel__plane"><${Icon} name="plane" size=${14} stroke=${1.75} /></span>
+            <small>${durationText(r.startAt, r.endAt)}</small>
+          </span>
+          <span class="flight-panel__end flight-panel__end--to">
+            <small>${formatTime(r.endAt)}</small>
+            <b>${to.code || to.name || '도착'}</b>
+            <small>${[to.code && to.name, r.toTerminal].filter(Boolean).join(' · ')}</small>
+          </span>
+        </span>
+        ${cells.length > 0 && html`<span class="flight-panel__cells">${cells.map((c) => html`<span>${c}</span>`)}</span>`}
+      </span>
+    </button>
+    ${r.memo && html`<p class="res-item__memo">${r.memo}</p>`}
+  </div>`;
+}
+
+/** 05-2 숙소 카드: 정사각형 사진 위에 이름·날짜·라벨 */
+function StayCard({ r }) {
+  const photo = firstPhoto(r);
+  const nights = nightsBetween(r.startAt, r.endAt);
+  const tags = [r.roomType, r.roomSize, r.checkInTime || formatTime(r.startAt) ? '체크인 ' + (r.checkInTime || formatTime(r.startAt)) : ''].filter(Boolean);
+  return html`<div class="res-item">
+    <button class="photo-card photo-card--dark" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
+      ${photo ? html`<img src=${photo} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name="bed-double" size=${40} /></span>`}
+      <span class="photo-card__shade"></span>
+      <span class="photo-card__top"><${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} /></span>
+      <span class="stay-info">
+        <b>${r.title}</b>
+        <span>${[formatDay(r.startAt) && `${formatDay(r.startAt)} – ${formatDay(r.endAt)}`, nights && nights + '박'].filter(Boolean).join(' · ')}</span>
+        ${tags.length > 0 && html`<span class="stay-info__tags">${tags.map((t) => html`<span>${t}</span>`)}</span>`}
+      </span>
+    </button>
+    ${r.memo && html`<p class="res-item__memo res-item__memo--2">${r.memo}</p>`}
+  </div>`;
+}
+
+/** 05-3 기타 카드 */
+function OtherCard({ data, r }) {
+  const rows = [
+    ['날짜', rangeText(r.startAt, r.endAt)],
+    ['장소', r.address || (r.mapUrl ? '지도 링크' : '')],
+    ['예약번호', r.bookingNo],
+    ['담당', memberName(data, r.assignee)],
+  ].filter(([, v]) => v);
+  return html`<button class="other-card" onClick=${() => go('/reservations/' + r.id)}>
+    <span class="other-card__top">
+      <span class="kind-chip">${r.subType || '기타'}</span>
+      <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
+    </span>
+    <span class="other-card__title"><${Icon} name=${OTHER_ICON[r.subType] || 'ticket'} size=${20} />${r.title}</span>
+    <span class="other-card__rows">
+      ${rows.map(([k, v]) => html`<span class="kv"><em>${k}</em><span>${v}</span></span>`)}
+    </span>
+    ${r.memo && html`<span class="other-card__memo"><${Icon} name="file-text" size=${14} /><span>${r.memo}</span></span>`}
+  </button>`;
+}
+
+/** 05 전체 탭의 한 줄 카드 */
+function AllRow({ data, r }) {
+  const meta = [
+    r.type === '숙소' ? rangeText(r.startAt, r.endAt) + (nightsBetween(r.startAt, r.endAt) ? ' · ' + nightsBetween(r.startAt, r.endAt) + '박' : '') : rangeText(r.startAt, r.type === '항공권' ? '' : r.endAt),
+    r.bookingNo && '예약번호 ' + r.bookingNo,
+    memberName(data, r.assignee) && '담당 ' + memberName(data, r.assignee),
+  ].filter(Boolean);
+  return html`<div class="all-row">
+    <button class="all-row__main" onClick=${() => go('/reservations/' + r.id)}>
+      <span class="all-row__type"><${Icon} name=${TYPE_ICON[r.type] || 'ticket'} size=${14} />${r.type === '기타' ? r.subType || '기타' : r.type}</span>
+      <span class="all-row__title">${r.title}</span>
+      <span class="all-row__meta">${meta.join(' · ') || (r.status === '예약 전' ? '아직 예약 전' : '')}</span>
+    </button>
+    <span class="all-row__side">
+      <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
+      <${Icon} name="chevron-right" size=${20} />
+    </span>
+  </div>`;
+}
+
+/* ───── 05 목록 ───── */
 export function Reservations({ data, query }) {
-  const filter = query.type || '전체';
+  const filter = TYPES.includes(query.type) ? query.type : '전체';
   const all = data.reservations.filter((r) => !r.deleted);
-  const list = filter === '전체' ? all : all.filter((r) => r.type === filter);
+  const list = sortReservations(filter === '전체' ? all : all.filter((r) => r.type === filter));
 
   const add = () => {
     if (filter === '전체') openOverlay(html`<${TypeSheet} />`);
-    else openOverlay(html`<${EditModal} type=${filter} />`);
+    else openForm(filter);
   };
 
   return html`<main class="screen">
-    <${TopTitle} title="예약정보">
-      <button class="icon-btn" aria-label="예약 추가" onClick=${add}><${Icon} name="plus" /></button>
-    <//>
+    <header class="big-title"><h1>예약</h1></header>
     <div class="page">
       <${ChipGroup}
         label="예약 종류"
         value=${filter}
-        options=${['전체', '항공권', '숙소', '기타'].map((v) => ({ value: v, label: v }))}
+        options=${['전체', ...TYPES].map((v) => ({ value: v, label: v }))}
         onChange=${(v) => replace(v === '전체' ? '/reservations' : '/reservations?type=' + v)}
       />
       ${list.length
-        ? html`<ul style="margin-top:12px">
-            ${list.map(
-              (r) => html`<li>
-                <${Row}
-                  icon=${iconOf(r.type)}
-                  title=${r.title || r.type}
-                  sub=${when(r) + (r.status ? ' · ' + r.status : '')}
-                  onClick=${() => go('/reservations/' + r.id)}
-                />
-              </li>`
-            )}
+        ? html`<p class="list-summary">${summary(list, filter)}</p>
+          <ul class=${'res-list res-list--' + (filter === '전체' ? 'all' : filter)}>
+            ${list.map((r) => html`<li key=${r.id}>
+              ${filter === '항공권' ? html`<${FlightCard} r=${r} />`
+                : filter === '숙소' ? html`<${StayCard} r=${r} />`
+                : filter === '기타' ? html`<${OtherCard} data=${data} r=${r} />`
+                : html`<${AllRow} data=${data} r=${r} />`}
+            </li>`)}
           </ul>`
         : html`<${Empty}
-            icon="ticket"
-            title="아직 예약이 없어요"
+            icon=${filter === '전체' ? 'ticket' : TYPE_ICON[filter]}
+            title=${filter === '전체' ? '아직 예약이 없어요' : `아직 ${filter} 예약이 없어요`}
             text="항공권, 숙소 예약을 추가해 친구들과 같이 봐요."
             action=${html`<${Button} onClick=${add}>예약 추가<//>`}
           />`}
-      <${Todo}>예약 카드 디자인(05~05-3)은 3단계에서 피그마대로 만들어요.<//>
     </div>
-  </main>`;
-}
-
-/** 05-4~6 상세 (서브 페이지) */
-export function ReservationDetail({ data, id }) {
-  const r = data.reservations.find((x) => x.id === id);
-  if (!r) {
-    return html`<main class="screen screen--sub">
-      <${SubHeader} title="예약" fallback="/reservations" />
-      <${Empty} icon="ticket" title="지워졌거나 없는 예약이에요" />
-    </main>`;
-  }
-  return html`<main class="screen screen--sub">
-    <${SubHeader} title=${r.type + ' 상세'} fallback="/reservations">
-      <button class="icon-btn" aria-label="더 보기"><${Icon} name="ellipsis" /></button>
-    <//>
-    <div class="page">
-      <h2 style="font-size:var(--fs-display);font-weight:700;margin:16px 0">${r.title}</h2>
-      <p>${when(r)}</p>
-      ${r.address && html`<p class="muted">${r.address}</p>`}
-      ${r.updatedBy && html`<p class="muted" style="margin-top:24px">마지막 수정 · ${r.updatedBy}</p>`}
-      <div style="margin-top:24px">
-        <${Button} onClick=${() => openOverlay(html`<${EditModal} type=${r.type} row=${r} />`)}>수정<//>
-      </div>
-      <${Todo}>상세 화면(05-4~05-6)은 3단계에서 피그마대로 만들어요.<//>
-    </div>
+    <button class="fab" aria-label="예약 추가" onClick=${add}><${Icon} name="plus" stroke=${2} /></button>
   </main>`;
 }
 
 /** 07-0 종류 선택 (바텀시트) */
 function TypeSheet() {
+  const subs = { 항공권: '가는 편 · 오는 편', 숙소: '체크인 · 체크아웃', 기타: '렌터카 · 투어 · 체험 · 입장권' };
+  const icons = { 항공권: 'plane', 숙소: 'bed-double', 기타: 'ticket' };
   return html`<${Sheet} title="어떤 예약을 추가할까요?">
     <ul>
-      ${TYPES.map(
-        (t) => html`<li>
-          <${Row}
-            icon=${t.icon}
-            title=${t.type}
-            sub=${t.sub}
-            onClick=${() => replaceOverlay(html`<${EditModal} type=${t.type} />`)}
-          />
-        </li>`
-      )}
+      ${TYPES.map((t) => html`<li key=${t}>
+        <${Row} icon=${icons[t]} title=${t} sub=${subs[t]}
+          onClick=${() => replaceOverlay(html`<${ReservationForm} type=${t} />`)} />
+      </li>`)}
     </ul>
   <//>`;
 }
 
-/** 07-1~3 작성·수정 (전체 화면 팝업) — 저장은 4단계에서 연결 */
-function EditModal({ type, row }) {
-  return html`<${Modal}
-    title=${type + (row ? ' 수정' : ' 추가')}
-    footer=${html`<${Button} onClick=${() => closeOverlay()}>저장하기<//>`}
-  >
-    <div style="display:flex;flex-direction:column;gap:24px">
-      <${TextField} title="예약명" placeholder="예) 제주항공 7C101" value=${row ? row.title : ''} />
-      <${Todo}>입력 항목(07-1~07-3)과 저장은 3·4단계에서 만들어요. 지금 저장하기를 누르면 닫히기만 해요.<//>
+/* ───── 05-4~6 상세 ───── */
+export function ReservationDetail({ data, id }) {
+  const r = data.reservations.find((x) => x.id === id);
+  if (!r || r.deleted) {
+    return html`<main class="screen screen--sub">
+      <${SubHeader} title="예약" fallback="/reservations" />
+      <${Empty} icon="ticket" title="지워졌거나 없는 예약이에요" text="지운 예약은 홈 › 여행 설정 › 최근 삭제에서 되살릴 수 있어요." />
+    </main>`;
+  }
+  const title = { 항공권: '항공권 상세', 숙소: '숙소 상세', 기타: '기타 예약 상세' }[r.type] || '예약 상세';
+  const photos = photoList(r);
+  const nights = nightsBetween(r.startAt, r.endAt);
+  const flight = parseFlight(r.title);
+  const from = parseAirport(r.fromAirport);
+  const to = parseAirport(r.toAirport);
+  const who = memberName(data, r.assignee);
+
+  const more = () => openOverlay(html`<${Sheet} title=${r.title}>
+    <ul>
+      <li><button class="menu-row" onClick=${() => replaceOverlay(html`<${ReservationForm} type=${r.type} row=${r} />`)}>
+        <${Icon} name="pencil" size=${20} /><span>수정</span></button></li>
+      <li><button class="menu-row" onClick=${() => closeOverlay(async () => {
+        try {
+          await deleteWithUndo('reservations', r.id, r.title);
+          back('/reservations?type=' + r.type);
+        } catch (e) { toast('삭제하지 못했어요 · 다시 시도해 주세요'); }
+      })}><${Icon} name="trash-2" size=${20} /><span>삭제</span></button></li>
+    </ul>
+  <//>`);
+
+  const tags = r.type === '항공권'
+    ? [r.vendor && '예약처 · ' + r.vendor, r.fromTerminal && '터미널 · ' + r.fromTerminal]
+    : r.type === '숙소'
+      ? [r.vendor && '예약처 ' + r.vendor, r.cost && '비용 ' + r.cost, r.roomType && '객실 ' + r.roomType, r.roomSize && '방 ' + r.roomSize]
+      : [r.vendor && '예약처 ' + r.vendor, r.cost && '비용 ' + r.cost, r.people && '인원 ' + r.people];
+  const tagList = tags.filter(Boolean);
+
+  return html`<main class="screen screen--sub detail">
+    <${SubHeader} title=${title} fallback=${'/reservations?type=' + r.type}>
+      <button class="icon-btn" aria-label="더 보기" onClick=${more}><${Icon} name="ellipsis" /></button>
+    <//>
+    <div class="page">
+      ${r.type === '항공권'
+        ? html`<div class="flight-detail">
+            <span class="photo-card__top">
+              <span class="status status--done">${r.direction || '항공권'}${r.startAt ? ' · ' + formatDay(r.startAt) : ''}</span>
+              <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
+            </span>
+            ${photos[0] ? html`<img class="flight-detail__img" src=${photos[0]} alt="" />` : html`<span class="flight-detail__ph"><${Icon} name="image" size=${28} /></span>`}
+            <span class="flight-panel">
+              <span class="flight-panel__route">
+                <span class="flight-panel__end"><small>${formatTime(r.startAt)}</small><b>${from.code || from.name}</b><small>${[from.code && from.name, r.fromTerminal].filter(Boolean).join(' · ')}</small></span>
+                <span class="flight-panel__mid">
+                  <small>${flight.airline}</small>
+                  <span class="flight-panel__plane"><${Icon} name="plane" size=${14} stroke=${1.75} /></span>
+                  <small>${durationText(r.startAt, r.endAt)}</small>
+                </span>
+                <span class="flight-panel__end flight-panel__end--to"><small>${formatTime(r.endAt)}</small><b>${to.code || to.name}</b><small>${[to.code && to.name, r.toTerminal].filter(Boolean).join(' · ')}</small></span>
+              </span>
+              <span class="flight-panel__cells flight-panel__cells--labeled">
+                <span><small>항공편</small>${flight.flightNo || '-'}</span>
+                <span><small>기종</small>${r.aircraft || '-'}</span>
+                <span><small>좌석</small>${r.seat || '-'}</span>
+              </span>
+            </span>
+          </div>`
+        : html`${photos[0]
+            ? html`<img class="detail__img" src=${photos[0]} alt="" />`
+            : html`<span class="detail__img detail__img--ph"><${Icon} name="image" size=${28} /></span>`}
+          <div class="detail__labels">
+            <span class="kind-chip">${r.type === '기타' ? r.subType || '기타' : r.type}</span>
+            <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
+          </div>
+          <h2 class="detail__title">${r.title}</h2>`}
+
+      <ul class="detail__rows">
+        ${r.type !== '항공권' && r.startAt && html`<li><${Icon} name="calendar-days" size=${20} />
+          <span>${rangeText(r.startAt, r.endAt)}${r.type === '숙소' && nights ? ' · ' + nights + '박' : ''}</span></li>`}
+        ${(r.address || r.mapUrl) && html`<li><${Icon} name="map-pin" size=${20} /><span>${r.address || '지도에서 보기'}</span>
+          ${r.mapUrl && html`<a class="detail__act" href=${r.mapUrl} target="_blank" rel="noopener">지도 <${Icon} name="external-link" size=${14} /></a>`}</li>`}
+        <li><${Icon} name="hash" size=${20} /><span>${r.bookingNo ? '예약번호 ' + r.bookingNo : '예약번호 아직 없음'}</span>
+          ${r.bookingNo && html`<button class="detail__act" onClick=${() => copyText(r.bookingNo, '예약번호를 복사했어요')}>복사 <${Icon} name="copy" size=${14} /></button>`}</li>
+        ${who && html`<li><${Icon} name="user" size=${20} /><span>담당 ${who}</span></li>`}
+      </ul>
+
+      ${tagList.length > 0 && html`<div class="detail__more">
+        <h3>추가 정보</h3>
+        <div class="detail__tags">${tagList.map((t) => html`<span class="kind-chip">${t}</span>`)}</div>
+      </div>`}
+      ${r.memo && html`<p class="memo-box"><${Icon} name="file-text" size=${16} /><span>${r.memo}</span></p>`}
+      ${photos.length > 1 && html`<div class="detail__photos">${photos.slice(1).map((p) => html`<img src=${p} alt="" loading="lazy" />`)}</div>`}
+      ${r.updatedBy && html`<p class="detail__edited">마지막 수정 · ${r.updatedBy}${r.updatedAt ? ' · ' + syncText(Date.parse(r.updatedAt)) : ''}</p>`}
     </div>
-  <//>`;
+    <div class="detail__foot"><${Button} onClick=${() => openForm(r.type, r)}>수정<//></div>
+  </main>`;
 }

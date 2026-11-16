@@ -13,8 +13,10 @@ const data = {
     { id: 'm_2', tripId: 't_1', name: '친구1', relation: '대학 친구', intro: '', isOwner: false, profile: '2', order: 2, ...base },
   ],
   reservations: [
-    { id: 'r_1', tripId: 't_1', type: '항공권', title: '제주항공 7C1301', startAt: '2026-12-19T09:10', status: '예약 완료', order: 1, ...base },
-    { id: 'r_2', tripId: 't_1', type: '숙소', title: '난바 오리엔탈 호텔', startAt: '2026-12-19T15:00', address: '오사카 주오구 난바 1-2', status: '예약 전', order: 2, ...base },
+    { id: 'r_1', tripId: 't_1', type: '항공권', title: '제주항공 7C1301', direction: '가는 편', fromAirport: 'ICN 인천', toAirport: 'KIX 오사카 간사이', fromTerminal: 'T1', toTerminal: 'T1', startAt: '2026-12-19T08:30', endAt: '2026-12-19T10:20', aircraft: 'B737-800', seat: '이코노미', bookingNo: 'AB12CD', assignee: 'm_1', vendor: '제주항공 앱', memo: '수하물 15kg 포함, 출발 2시간 전 도착', status: '예약 완료', order: 1, ...base },
+    { id: 'r_2', tripId: 't_1', type: '숙소', title: '난바 오리엔탈 호텔', startAt: '2026-12-19T15:00', endAt: '2026-12-21T11:00', address: '오사카 주오구 난바 1-2', mapUrl: 'https://maps.app.goo.gl/x', roomType: '디럭스 더블', roomSize: '32㎡', checkInTime: '15:00', memo: '주차 가능, 바비큐는 하루 전 신청. 체크인 전에도 짐 보관이 가능하니 도착하면 먼저 맡기기', status: '예약 완료', assignee: 'm_2', order: 2, ...base },
+    { id: 'r_3', tripId: 't_1', type: '기타', subType: '렌터카', title: '렌터카', startAt: '2026-12-19T10:00', endAt: '2026-12-21T17:00', address: '간사이공항 픽업', assignee: 'm_2', memo: '아직 예약 전이에요', status: '예약 전', order: 3, ...base },
+    { id: 'r_4', tripId: 't_1', type: '기타', subType: '스노클링', title: '협재 스노클링', startAt: '2026-12-20T09:00', status: '보류', order: 4, ...base },
   ],
   checklist: [
     { id: 'c_1', tripId: 't_1', title: '렌터카 예약 확인', group: '여행 전 할 일', assignee: 'm_2', doneBy: '', order: 1, ...base },
@@ -60,6 +62,14 @@ const data = {
       }
       if (body.action === 'toggle_done' || body.action === 'restore' || body.action === 'delete') {
         return route.fulfill({ json: { ok: true, row: {} } });
+      }
+      if (body.action === 'save' && body.table === 'reservations' && body.row.id === 'r_2' && !body.force && !global.conflicted) {
+        global.conflicted = true;
+        return route.fulfill({ json: { ok: false, error: 'conflict', message: '친구1님이 먼저 수정했어요.', current: { ...data.reservations[1], updatedBy: '친구1' } } });
+      }
+      if (body.action === 'save' && body.table === 'reservations') {
+        const row = { ...(data.reservations.find((r) => r.id === body.row.id) || {}), ...body.row, id: body.row.id || 'r_new', tripId: 't_1', ...base, updatedAt: new Date().toISOString() };
+        return route.fulfill({ json: { ok: true, row } });
       }
       if (body.action === 'save') {
         const row = { ...body.row, id: body.row.id || 'm_added', tripId: 't_1', ...base };
@@ -121,17 +131,41 @@ const data = {
   console.log('after restore items:', await page.$$eval('.deleted-row', (r) => r.length));
   await page.click('[aria-label="뒤로"]'); await page.waitForSelector('.home-hero');
   console.log('url after join:', page.url());
-  await page.click('.tabbar >> text=예약'); await page.waitForSelector('.chips'); await shot('05-reservations');
+  await page.click('.tabbar >> text=예약'); await page.waitForSelector('.chips'); await shot('05-all');
+  for (const [t, n] of [['항공권', '05-1-flight'], ['숙소', '05-2-stay'], ['기타', '05-3-other']]) {
+    await page.click('.chips >> text=' + t); await page.waitForTimeout(300); await shot(n);
+  }
+  await page.click('.chips >> text=전체'); await page.waitForTimeout(200);
   await page.click('[aria-label="예약 추가"]'); await shot('07-0-sheet');
-  await page.click('.sheet >> text=항공권'); await shot('07-1-modal');
-  await page.goBack(); await page.waitForTimeout(300);
-  console.log('modal closed by back:', !(await page.$('.modal')), 'url:', page.url());
-  await page.click('text=난바 오리엔탈 호텔'); await shot('05-4-detail');
-  console.log('tabbar hidden on detail:', !(await page.$('.tabbar')));
-  await page.click('[aria-label="뒤로"]'); await page.waitForSelector('.tabbar');
-  console.log('back to list:', page.url());
-  await page.click('.chips >> text=숙소'); await page.waitForTimeout(200);
-  console.log('chip url:', page.url(), 'rows:', await page.$$eval('.row', (r) => r.length));
+  await page.click('.sheet >> text=항공권'); await page.waitForSelector('.modal');
+  await page.fill('input[placeholder="예) 제주항공 7C101"]', '대한항공 KE724');
+  await page.fill('input[aria-label="출발 공항"]', 'KIX 오사카 간사이');
+  await page.fill('input[aria-label="도착 공항"]', 'ICN 인천');
+  await page.click('text=펼치기'); await page.waitForTimeout(100); await shot('07-1-1-flight-form');
+  await page.click('.modal >> text=저장하기'); await page.waitForTimeout(400);
+  const saved = posts.filter((p) => p.action === 'save' && p.table === 'reservations').pop();
+  console.log('flight saved:', JSON.stringify({ title: saved.row.title, from: saved.row.fromAirport, dir: saved.row.direction, assignee: saved.row.assignee }));
+  console.log('modal closed:', !(await page.$('.modal')));
+  // 상세 → 상태 바꾸기 → 수정(충돌) → 삭제/되돌리기
+  await page.goto(B + '?t=CODE#/reservations/r_2'); await page.waitForSelector('.detail'); await shot('05-4-stay-detail');
+  await page.goto(B + '?t=CODE#/reservations/r_1'); await page.waitForSelector('.detail'); await shot('05-5-flight-detail');
+  await page.goto(B + '?t=CODE#/reservations/r_3'); await page.waitForSelector('.detail'); await shot('05-6-other-detail');
+  await page.click('.detail__labels .status'); await page.waitForSelector('.sheet'); await page.click('.sheet >> text=예약 완료'); await page.waitForTimeout(400);
+  console.log('status saved:', JSON.stringify(posts.filter((p) => p.action === 'save').pop().row));
+  await page.goto(B + '?t=CODE#/reservations/r_2'); await page.waitForSelector('.detail');
+  await page.click('.detail__foot >> text=수정'); await page.waitForSelector('.modal'); await shot('07-2-stay-edit');
+  await page.click('.modal >> text=저장하기'); await page.waitForSelector('.conflict'); await shot('12-conflict');
+  await page.click('text=내 글로 바꾸기'); await page.waitForTimeout(500);
+  console.log('forced save:', posts.filter((p) => p.action === 'save').pop().force === true, 'modal closed:', !(await page.$('.modal')));
+  await page.click('[aria-label="더 보기"]'); await page.click('.sheet >> text=삭제'); await page.waitForTimeout(500);
+  console.log('after delete url:', page.url(), 'toast:', await page.textContent('.toast').catch(() => null));
+  await page.click('.toast__action'); await page.waitForTimeout(300);
+  console.log('restore posted:', posts.some((p) => p.action === 'restore' && p.id === 'r_2'));
+  await page.goto(B + '?t=CODE#/reservations'); await page.waitForSelector('.chips');
+  await page.click('.chips >> text=기타'); await page.click('[aria-label="예약 추가"]'); await page.waitForSelector('.modal');
+  await page.click('.modal >> text=직접 입력'); await page.waitForTimeout(100); await shot('07-3-1-other-custom');
+  console.log('custom chips:', await page.$$eval('.modal .chips >> nth=0', () => 0).catch(() => ''), await page.$$eval('.modal [role=radiogroup] >> nth=0', (g) => g.map((x) => x.textContent)));
+  await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
   await page.click('.tabbar >> text=일정'); await shot('08-schedule');
   await page.click('.tabbar >> text=장소'); await shot('09-places');
   await page.click('.tabbar >> text=친구들'); await shot('11-friends');
