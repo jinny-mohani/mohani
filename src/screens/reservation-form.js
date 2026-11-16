@@ -139,11 +139,9 @@ export function ReservationForm({ type, row }) {
     setError('');
     try {
       // 새로 고른 사진만 올리고(이건 기다려요), 저장은 뒤에서
-      const urls = [];
-      for (const p of f.photos) urls.push(typeof p === 'string' ? p : await uploadPhoto(p.dataUrl, p.mimeType));
-      const out = { ...toRow(type, f), photos: urls.join(',') };
+      const out = toRow(type, f);
       if (isEdit) out.id = row.id;
-      saveLater('reservations', out, isEdit ? row.updatedAt : undefined);
+      saveLater('reservations', out, isEdit ? row.updatedAt : undefined, type === '항공권' && !f.photos.length ? undefined : f.photos);
       closeOverlay();
       toast(isEdit ? '저장했어요' : '예약을 추가했어요');
     } catch (err) {
@@ -267,9 +265,9 @@ export function ReservationForm({ type, row }) {
   const footer = isEdit
     ? html`<div class="modal__foot--split">
         <${Button} variant="secondary" onClick=${remove} disabled=${busy}>삭제<//>
-        <${Button} onClick=${save} disabled=${busy}>${busy ? '사진 올리는 중…' : '저장하기'}<//>
+        <${Button} onClick=${save} disabled=${busy}>저장하기<//>
       </div>`
-    : html`<${Button} onClick=${save} disabled=${busy}>${busy ? '사진 올리는 중…' : '저장하기'}<//>`;
+    : html`<${Button} onClick=${save} disabled=${busy}>저장하기<//>`;
 
   return html`<${Modal} title=${title} footer=${footer}>
     <div class="form">

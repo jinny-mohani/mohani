@@ -158,12 +158,9 @@ export function PlaceForm({ row, category }) {
     if (!f.name.trim()) return setError('장소 이름을 입력해 주세요.');
     setBusy(true);
     try {
-      const urls = [];
-      for (const ph of f.photos) urls.push(typeof ph === 'string' ? ph : await uploadPhoto(ph.dataUrl, ph.mimeType));
       const out = {
         category: f.category,
         name: f.name.trim(),
-        photos: urls.join(','),
         mapUrl: f.mapUrl.trim(),
         address: f.address.trim(),
         hours: f.open || f.close ? `${f.open} – ${f.close}` : '',
@@ -173,7 +170,7 @@ export function PlaceForm({ row, category }) {
         memo: f.memo.trim(),
       };
       if (isEdit) out.id = row.id;
-      saveLater('places', out, isEdit ? row.updatedAt : undefined);
+      saveLater('places', out, isEdit ? row.updatedAt : undefined, f.photos);
       closeOverlay();
       if (!isEdit) toast(`'${out.name}' 등록했어요`);
     } catch (e) {

@@ -53,7 +53,7 @@ const data = {
   await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
   let offline = false;
   const posts = [];
-  await page.route('https://script.google.com/**', (route) => {
+  await page.route('https://script.google.com/**', async (route) => {
     if (offline) return route.abort();
     const req = route.request();
     if (req.method() === 'POST') {
@@ -63,6 +63,10 @@ const data = {
         const trip = { ...body.trip, id: 't_new', inviteCode: 'NEWCODE', createdBy: body.by, ...base };
         const members = body.members.map((m, i) => ({ ...m, id: 'm_n' + i, tripId: 't_new', order: i + 1, ...base }));
         return route.fulfill({ json: { ok: true, trip, members } });
+      }
+      if (body.action === 'upload') {
+        await new Promise((r) => setTimeout(r, 1500)); // 느린 업로드 흉내
+        return route.fulfill({ json: { ok: true, url: 'images/flight/return.jpg?up=' + posts.length } });
       }
       if (body.action === 'toggle_done' && global.failToggle) return route.abort();
       if (body.action === 'toggle_done' || body.action === 'restore' || body.action === 'delete' || body.action === 'reorder') {
@@ -197,6 +201,16 @@ const data = {
   await page.click('.place-card__open >> nth=0'); await page.waitForSelector('.place-detail'); await shot('10-place-detail');
   await page.click('.place-detail__photos button >> nth=1'); await page.waitForSelector('.viewer'); await shot('10-viewer'); console.log('viewer:', await page.textContent('.viewer__count')); await page.click('.viewer__close'); await page.waitForTimeout(200); await page.click('[aria-label="더 보기"]'); await shot('10-menu'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
   await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
+  // 사진 있는 장소 등록: 저장 누르면 바로 닫히고, 사진은 뒤에서 올라가요
+  await page.goto(B + '?t=CODE#/places'); await page.waitForSelector('.chips');
+  await page.click('[aria-label="장소 등록"]'); await page.waitForSelector('.modal');
+  await page.fill('input[placeholder="예) 자매국수"]', '사진 테스트 카페');
+  await page.setInputFiles('.modal input[type=file]', 'icons/icon-512.png'); await page.waitForTimeout(300);
+  const t0 = Date.now(); await page.click('.modal >> text=저장하기'); await page.waitForSelector('.modal', { state: 'detached' });
+  console.log('place form closed in ms:', Date.now() - t0, '| preview shown:', await page.$eval('.place-card >> text=사진 테스트 카페', () => true).catch(() => false));
+  await page.waitForTimeout(2500);
+  const ps = posts.filter((p) => p.action === 'save' && p.table === 'places').pop();
+  console.log('place saved photos:', ps && ps.row.photos, '| toast:', await page.textContent('.toast').catch(() => ''));
   await page.goto(B + '?t=CODE#/friends'); await page.waitForSelector('.friends'); await shot('11-friends');
   await page.click('[aria-label="내 프로필 수정"]'); await page.waitForSelector('.modal'); await shot('11-1-profile');
   await page.click('[aria-label="프로필 사진 바꾸기"]'); await page.waitForSelector('.char-grid'); await shot('11-2-picker');

@@ -1,7 +1,7 @@
 // 저장 규칙 (기획안 '동기화 규칙')
 // - 내가 저장할 때: 화면에 먼저 반영, 저장은 뒤에서. 실패하면 '저장 안 됨 · 다시 시도'
 // - 같은 항목 동시 수정: 수정시간 비교 → 12 팝업 (상대 글로 두기 / 내 글로 바꾸기)
-import { saveRow, refresh, deleteRow, restoreRow, applyLocal, newId, syncing, failed, touch } from './store.js';
+import { saveRow, refresh, deleteRow, restoreRow, applyLocal, newId, syncing, failed, touch, uploadPhoto } from './store.js';
 import { askConflict } from './ui/conflict.js';
 import { toast } from './ui/toast.js';
 
@@ -9,14 +9,28 @@ import { toast } from './ui/toast.js';
  * 뒤에서 저장. 화면에는 바로 반영되고, 이 함수는 기다리지 않아도 돼요.
  * 돌려주는 값: 저장할 줄 (새 항목이면 id가 붙어 있어요)
  */
-export function saveLater(table, row, baseUpdatedAt) {
+export function saveLater(table, row, baseUpdatedAt, photos) {
   const full = { ...row, id: row.id || newId(table) };
+  // 사진: 새로 고른 사진은 휴대폰 안 미리보기 주소로 먼저 보여주고, 올리기는 뒤에서
+  const items = (photos || []).map((p) =>
+    typeof p === 'string' ? { url: p } : { file: p, preview: dataUrlToObjectUrl(p.dataUrl) }
+  );
+  if (photos) full.photos = items.map((x) => x.url || x.preview).join(',');
   applyLocal(table, full);
   syncing.count++;
+  const hasNew = items.some((x) => !x.url);
+  const uploadAll = async () => {
+    for (const x of items) {
+      if (!x.url) x.url = await uploadPhoto(x.file.dataUrl, x.file.mimeType); // 이미 올린 건 다시 안 올려요
+    }
+    if (photos) full.photos = items.map((x) => x.url).join(',');
+  };
   const attempt = (force) =>
-    saveRow(table, full, { baseUpdatedAt, force })
+    uploadAll()
+      .then(() => saveRow(table, full, { baseUpdatedAt, force }))
       .then(() => {
         delete failed[full.id];
+        if (hasNew) toast('사진까지 저장했어요');
       })
       .catch(async (e) => {
         if (e.code === 'conflict') {
@@ -37,6 +51,15 @@ export function saveLater(table, row, baseUpdatedAt) {
       });
   attempt(false).finally(() => { syncing.count = Math.max(0, syncing.count - 1); });
   return full;
+}
+
+function dataUrlToObjectUrl(dataUrl) {
+  const [head, b64] = dataUrl.split(',');
+  const mime = (head.match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([bytes], { type: mime }));
 }
 
 /** 기다리는 저장 (여행 설정처럼 결과를 꼭 확인해야 할 때). 상대 글로 두기를 고르면 null */
