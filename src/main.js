@@ -1,5 +1,5 @@
 // 함께 가요! — 앱 시작점
-import { html, render } from './vendor/preact-htm.js';
+import { html, render, useEffect } from './vendor/preact-htm.js';
 import { useStore, enterFromUrl, startSync, refresh, getMe } from './store.js';
 import { useRoute, replace } from './router.js';
 import { OverlayHost } from './overlay.js';
@@ -14,6 +14,8 @@ import { ProfileSelect } from './screens/profile.js';
 import { TripList } from './screens/trips.js';
 import { ToastHost } from './ui/toast.js';
 import { DeletedList } from './screens/deleted.js';
+import { Checklist } from './screens/checklist.js';
+import { maybeShowInstallGuide } from './screens/install-guide.js';
 
 /** 지금 주소에 맞는 화면 */
 function Screen({ route, data, me }) {
@@ -27,8 +29,8 @@ function Screen({ route, data, me }) {
   }
   if (tab === 'friends') return html`<${Friends} data=${data} me=${me} />`;
   if (tab === 'home' && id === 'deleted') return html`<${DeletedList} data=${data} />`;
+  if (tab === 'home' && id === 'checklist') return html`<${Checklist} data=${data} me=${me} query=${query} />`;
   if (tab === 'home' && id) {
-    // 03-3 체크 리스트 전체는 다음 묶음에서
     return html`<main class="screen screen--sub">
       <${SubHeader} title="준비 중" fallback="/home" />
       <div class="page"><${Todo}>이 화면은 3단계에서 만들어요.<//></div>
@@ -54,6 +56,11 @@ function App() {
   }
   // 처음 들어온 여행이면 프로필부터 고르기 (01)
   if (!getMe()) return page(html`<${ProfileSelect} data=${s.data} />`);
+  return html`<${Main} s=${s} route=${route} />`;
+}
+
+function Main({ s, route }) {
+  useEffect(() => maybeShowInstallGuide(), []); // S-2 첫 진입 1회
 
   const tabs = ['home', 'reservations', 'schedule', 'places', 'friends'];
   const tab = tabs.includes(route.tab) ? route.tab : 'home';

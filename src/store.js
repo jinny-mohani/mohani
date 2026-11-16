@@ -235,8 +235,12 @@ function patchRow(table, id, patch) {
   cacheCurrent({ ...d, [table]: d[table].map((r) => (r.id === id ? { ...r, ...patch } : r)) });
 }
 
+/** 저장에 실패한 항목 (S-5 '저장 안 됨 · 다시 시도') — { id: 다시 시도 함수 } */
+export const failed = {};
+
 /** 체크 리스트 완료 표시. '각자' 일은 나만, 아니면 항목 전체. 화면에 먼저 반영해요 */
 export async function toggleDone(item, done) {
+  delete failed[item.id];
   const meId = state.me;
   const before = item.doneBy;
   let list = String(item.doneBy || '').split(',').filter(Boolean);
@@ -252,6 +256,8 @@ export async function toggleDone(item, done) {
     patchRow('checklist', item.id, res.row);
   } catch (e) {
     patchRow('checklist', item.id, { doneBy: before });
+    failed[item.id] = () => toggleDone({ ...item, doneBy: before }, done);
+    set({}); // 화면에 '저장 안 됨' 표시
     throw e;
   }
 }

@@ -28,18 +28,22 @@ const data = {
     { id: 'c_7', tripId: 't_1', title: '유심 사기', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 7, ...base, deleted: true, deletedBy: '친구1', deletedAt: '2026-11-15T10:00:00.000Z' },
   ],
   places: [
-    { id: 'p_1', tripId: 't_1', category: '음식점', name: '이치란 라멘 도톤보리', hours: '10:00–22:00', address: '도톤보리 7-18', order: 1, ...base },
+    { id: 'p_1', tripId: 't_1', category: '음식점', name: '이치란 라멘 도톤보리', hours: '10:00 – 22:00', breakTime: '15:00 – 17:00', waiting: '있음', address: '오사카 주오구 도톤보리 7-18, 2층', mapUrl: 'https://maps.app.goo.gl/y', memo: '웨이팅 있음, 오픈 시간에 맞춰 가기', order: 1, ...base },
+    { id: 'p_3', tripId: 't_1', category: '음식점', name: '쿠시카츠 다루마', hours: '11:00 – 22:30', memo: '소스 두 번 찍기 금지', order: 3, ...base },
+    { id: 'p_4', tripId: 't_1', category: '디저트', name: '릭로 아저씨 치즈케이크', hours: '09:00 – 20:00', order: 4, ...base },
     { id: 'p_2', tripId: 't_1', category: '즐길거리', name: '오사카성', order: 2, ...base, deleted: true, deletedBy: '지니', deletedAt: '2026-11-14T10:00:00.000Z' },
   ],
   schedule: [
     { id: 's_1', tripId: 't_1', day: 1, time: '12:00', placeId: 'p_1', placeName: '', transport: '도보', order: 1, ...base },
-    { id: 's_2', tripId: 't_1', day: 1, time: '', placeId: '', placeName: '호텔 체크인', transport: '', order: 2, ...base },
+    { id: 's_2', tripId: 't_1', day: 1, time: '16:00', placeId: '', placeName: '호텔 체크인', transport: '도보', memo: '짐 먼저 맡기기', order: 2, ...base },
+    { id: 's_3', tripId: 't_1', day: 1, time: '19:00', placeId: 'p_3', placeName: '', transport: '지하철', order: 3, ...base },
   ],
 };
 
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 360, height: 760 }, serviceWorkers: 'block' });
+  await ctx.addInitScript(() => { try { if (!sessionStorage.getItem('showGuide')) localStorage.setItem('hg.installGuide', '1'); } catch (e) {} }); // S-2 안내는 따로 확인
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
@@ -60,7 +64,8 @@ const data = {
         const members = body.members.map((m, i) => ({ ...m, id: 'm_n' + i, tripId: 't_new', order: i + 1, ...base }));
         return route.fulfill({ json: { ok: true, trip, members } });
       }
-      if (body.action === 'toggle_done' || body.action === 'restore' || body.action === 'delete') {
+      if (body.action === 'toggle_done' && global.failToggle) return route.abort();
+      if (body.action === 'toggle_done' || body.action === 'restore' || body.action === 'delete' || body.action === 'reorder') {
         return route.fulfill({ json: { ok: true, row: {} } });
       }
       if (body.action === 'save' && body.table === 'reservations' && body.row.id === 'r_2' && !body.force && !global.conflicted) {
@@ -166,9 +171,41 @@ const data = {
   await page.click('.modal >> text=직접 입력'); await page.waitForTimeout(100); await shot('07-3-1-other-custom');
   console.log('custom chips:', await page.$$eval('.modal .chips >> nth=0', () => 0).catch(() => ''), await page.$$eval('.modal [role=radiogroup] >> nth=0', (g) => g.map((x) => x.textContent)));
   await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
-  await page.click('.tabbar >> text=일정'); await shot('08-schedule');
-  await page.click('.tabbar >> text=장소'); await shot('09-places');
-  await page.click('.tabbar >> text=친구들'); await shot('11-friends');
+  await page.click('.tabbar >> text=일정'); await page.waitForSelector('.timeline'); await shot('08-schedule');
+  console.log('timeline:', JSON.stringify(await page.$$eval('.tl', (r) => r.map((x) => x.textContent.replace(/\s+/g, ' ').trim().slice(0, 24)))));
+  await page.click('text=순서 편집'); await shot('08-4-reorder');
+  const h = await page.$$('.reorder__handle'); const b0 = await h[0].boundingBox(); const b2 = await h[2].boundingBox();
+  await page.mouse.move(b0.x + 20, b0.y + 20); await page.mouse.down(); await page.mouse.move(b2.x + 20, b2.y + 40, { steps: 8 }); await page.mouse.up(); await page.waitForTimeout(300);
+  console.log('reorder posted:', JSON.stringify((posts.filter((p) => p.action === 'reorder').pop() || {}).ids));
+  await page.click('text=완료');
+  await page.click('[aria-label="일정 추가"]'); await page.waitForSelector('.modal'); await shot('08-1-schedule-form');
+  await page.click('text=장소 목록에서 고르기'); await page.waitForSelector('.sheet'); await page.click('.sheet >> text=쿠시카츠 다루마'); await shot('08-2-place-picker');
+  await page.click('text=선택 완료'); await page.waitForTimeout(200);
+  console.log('picked place shown:', await page.textContent('.place-pick__text b'));
+  await page.click('.modal >> text=저장하기'); await page.waitForTimeout(400);
+  console.log('schedule saved:', JSON.stringify(posts.filter((p) => p.action === 'save' && p.table === 'schedule').pop().row));
+  await page.click('.tabbar >> text=장소'); await page.waitForTimeout(300); await shot('09-places');
+  await page.click('.place-group__head >> nth=0'); await page.waitForTimeout(300); await shot('09-2-category');
+  await page.click('.place-card__open >> nth=0'); await page.waitForSelector('.place-detail'); await shot('10-place-detail');
+  await page.click('.detail__foot >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
+  await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
+  await page.goto(B + '?t=CODE#/friends'); await page.waitForSelector('.friends'); await shot('11-friends');
+  await page.click('[aria-label="내 프로필 수정"]'); await page.waitForSelector('.modal'); await shot('11-1-profile');
+  await page.click('[aria-label="프로필 사진 바꾸기"]'); await page.waitForSelector('.char-grid'); await shot('11-2-picker');
+  console.log('taken chars:', await page.$$eval('.char--taken', (r) => r.length));
+  await page.goto(B + '?t=CODE#/home/checklist'); await page.waitForSelector('.cl-group');
+  global.failToggle = true; await page.click('.cl-row__check >> nth=0'); await page.waitForTimeout(500); await shot('S-5-save-fail');
+  console.log('fail marker:', !!(await page.$('.save-fail')));
+  global.failToggle = false;
+  await page.click('[aria-label="체크 리스트 추가"]'); await page.waitForSelector('.sheet'); await shot('03-6-checklist-add');
+  await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
+  await page.click('.cl-row__body >> nth=1'); await page.waitForSelector('.sheet'); await shot('03-6-1-checklist-edit');
+  await page.click('.sheet >> text=삭제'); await page.waitForTimeout(400); await shot('03-3-1-undo');
+  await page.evaluate(() => { sessionStorage.setItem('showGuide', '1'); localStorage.removeItem('hg.installGuide'); });
+  await page.goto(B + '?t=CODE#/home'); await page.reload(); await page.waitForTimeout(1500); await shot('S-2-install');
+  console.log('install guide:', !!(await page.$('.guide-steps')));
+  await page.click('text=다음에 할게요');
+
   await page.goto(B + '#/home'); await page.waitForSelector('.home-hero');
   console.log('reopen keeps code:', page.url());
   offline = true; await page.reload(); await page.waitForSelector('.banner'); await shot('S-3-offline');

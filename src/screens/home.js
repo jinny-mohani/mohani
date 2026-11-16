@@ -9,6 +9,7 @@ import { activeMembers, memberName, profileSrc } from '../members.js';
 import { GROUPS, byGroup, homePick, isDone } from '../checklist.js';
 import { toast } from '../ui/toast.js';
 import { TripSettings } from './trip-settings.js';
+import { ChecklistSheet } from './checklist.js';
 
 const RES_TYPES = [
   { type: '항공권', icon: 'plane' },
@@ -45,7 +46,8 @@ export function Home({ data, me }) {
   const left = all.filter((c) => !isDone(c, me)).length;
 
   const toggle = (item) =>
-    toggleDone(item, !isDone(item, me)).catch(() => toast('저장 안 됨 · 다시 시도해 주세요'));
+    toggleDone(item, !isDone(item, me)).catch(() =>
+      toast('연결이 불안정해 저장하지 못했어요', { action: '다시 시도', duration: 6000, onAction: () => toggle(item) }));
   const assignee = (c) => (c.assignee === '각자' ? '각자' : memberName(data, c.assignee));
 
   return html`<main class="screen home">
@@ -112,7 +114,7 @@ export function Home({ data, me }) {
                 <h3>${group}</h3>
                 <span>${done} / ${items.length}</span>
               </button>
-              ${!items.length && html`<button class="check-card__empty" onClick=${open}>+ 할 일을 추가해 보세요</button>`}
+              ${!items.length && html`<button class="check-card__empty" onClick=${() => openOverlay(html`<${ChecklistSheet} group=${group} />`)}>+ 할 일을 추가해 보세요</button>`}
               ${gi === 0
                 ? homePick(items, me, 3).map(
                     (c) => html`<${CheckRow} key=${c.id} checked=${isDone(c, me)} label=${c.title} meta=${assignee(c)} onToggle=${() => toggle(c)} />`
