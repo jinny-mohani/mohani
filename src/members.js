@@ -26,3 +26,13 @@ export function memberName(data, id) {
   const m = (data.members || []).find((x) => x.id === id);
   return m ? m.name : '';
 }
+
+/** 받침에 맞는 조사: josa('지니', '이', '가') → '지니가', josa('도윤', '이', '가') → '도윤이' */
+export function josa(word, withFinal, withoutFinal) {
+  const w = String(word || '');
+  const code = w.charCodeAt(w.length - 1);
+  let hasFinal;
+  if (code >= 0xac00 && code <= 0xd7a3) hasFinal = (code - 0xac00) % 28 > 0;
+  else hasFinal = /[1378lmn0]$/i.test(w); // 숫자·영문은 읽는 소리 기준 (일·삼·칠·팔·영, l·m·n)
+  return w + (hasFinal ? withFinal : withoutFinal);
+}

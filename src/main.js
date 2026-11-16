@@ -13,6 +13,7 @@ import { Start, Loading, LoadError, TripNotFound } from './screens/entry.js';
 import { ProfileSelect } from './screens/profile.js';
 import { TripList } from './screens/trips.js';
 import { ToastHost } from './ui/toast.js';
+import { DeletedList } from './screens/deleted.js';
 
 /** 지금 주소에 맞는 화면 */
 function Screen({ route, data, me }) {
@@ -25,14 +26,15 @@ function Screen({ route, data, me }) {
     return id ? html`<${PlaceDetail} data=${data} id=${id} />` : html`<${Places} data=${data} query=${query} />`;
   }
   if (tab === 'friends') return html`<${Friends} data=${data} me=${me} />`;
+  if (tab === 'home' && id === 'deleted') return html`<${DeletedList} data=${data} />`;
   if (tab === 'home' && id) {
-    // 03-3 체크 리스트, 03-4 여행 설정, 03-7 최근 삭제 … 3단계에서 채워요
+    // 03-3 체크 리스트 전체는 다음 묶음에서
     return html`<main class="screen screen--sub">
       <${SubHeader} title="준비 중" fallback="/home" />
       <div class="page"><${Todo}>이 화면은 3단계에서 만들어요.<//></div>
     </main>`;
   }
-  return html`<${Home} data=${data} />`;
+  return html`<${Home} data=${data} me=${me} />`;
 }
 
 function App() {

@@ -228,3 +228,53 @@ export async function uploadPhoto(dataUrl, mimeType) {
   const res = await api.upload({ code: state.current, data: dataUrl, mimeType, name: 'photo-' + Date.now() + '.jpg' });
   return res.url;
 }
+
+function patchRow(table, id, patch) {
+  const d = state.data;
+  if (!d) return;
+  cacheCurrent({ ...d, [table]: d[table].map((r) => (r.id === id ? { ...r, ...patch } : r)) });
+}
+
+/** 체크 리스트 완료 표시. '각자' 일은 나만, 아니면 항목 전체. 화면에 먼저 반영해요 */
+export async function toggleDone(item, done) {
+  const meId = state.me;
+  const before = item.doneBy;
+  let list = String(item.doneBy || '').split(',').filter(Boolean);
+  if (item.assignee === '각자') {
+    list = list.filter((x) => x !== meId);
+    if (done) list.push(meId);
+  } else {
+    list = done ? [meId] : [];
+  }
+  patchRow('checklist', item.id, { doneBy: list.join(',') });
+  try {
+    const res = await api.toggleDone({ code: state.current, id: item.id, memberId: meId, done, by: myName() });
+    patchRow('checklist', item.id, res.row);
+  } catch (e) {
+    patchRow('checklist', item.id, { doneBy: before });
+    throw e;
+  }
+}
+
+/** 삭제(시트에 '삭제됨' 표시). 되돌리기는 restoreRow */
+export async function deleteRow(table, id) {
+  patchRow(table, id, { deleted: true, deletedBy: myName(), deletedAt: new Date().toISOString() });
+  try {
+    const res = await api.remove({ code: state.current, table, id, by: myName() });
+    patchRow(table, id, res.row);
+  } catch (e) {
+    patchRow(table, id, { deleted: false });
+    throw e;
+  }
+}
+
+export async function restoreRow(table, id) {
+  patchRow(table, id, { deleted: false });
+  try {
+    const res = await api.restore({ code: state.current, table, id, by: myName() });
+    patchRow(table, id, res.row);
+  } catch (e) {
+    patchRow(table, id, { deleted: true });
+    throw e;
+  }
+}

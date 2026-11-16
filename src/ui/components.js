@@ -207,3 +207,23 @@ export function MemberStack({ members }) {
 export function LabelDday({ text, past }) {
   return html`<span class=${'label-dday' + (past ? ' label-dday--past' : '')}>${text}</span>`;
 }
+
+/** 체크박스 (Checkbox) 한 줄 — 줄 전체를 눌러도 체크돼요 (피그마 컴포넌트 설명) */
+export function CheckRow({ checked, label, meta, onToggle }) {
+  return html`<button class="check-row" role="checkbox" aria-checked=${checked ? 'true' : 'false'} onClick=${onToggle}>
+    <span class="checkbox" aria-hidden="true">${checked && html`<${Icon} name="check" size=${16} stroke=${2.5} />`}</span>
+    <span class="check-row__label">${label}</span>
+    ${meta && html`<span class="check-row__meta">${meta}</span>`}
+  </button>`;
+}
+
+/** 가운데 팝업 (03-8 친구 프로필) — 바깥을 누르거나 ✕로 닫기 */
+export function Dialog({ label, children }) {
+  return html`<div>
+    <div class="dim" onClick=${() => closeOverlay()}></div>
+    <section class="dialog" role="dialog" aria-modal="true" aria-label=${label}>
+      <button class="icon-btn dialog__close" aria-label="닫기" onClick=${() => closeOverlay()}><${Icon} name="x" /></button>
+      ${children}
+    </section>
+  </div>`;
+}

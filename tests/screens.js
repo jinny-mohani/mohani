@@ -16,8 +16,19 @@ const data = {
     { id: 'r_1', tripId: 't_1', type: '항공권', title: '제주항공 7C1301', startAt: '2026-12-19T09:10', status: '예약 완료', order: 1, ...base },
     { id: 'r_2', tripId: 't_1', type: '숙소', title: '난바 오리엔탈 호텔', startAt: '2026-12-19T15:00', address: '오사카 주오구 난바 1-2', status: '예약 전', order: 2, ...base },
   ],
-  checklist: [{ id: 'c_1', tripId: 't_1', title: '여권 챙기기', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 1, ...base }],
-  places: [{ id: 'p_1', tripId: 't_1', category: '음식점', name: '이치란 라멘 도톤보리', hours: '10:00–22:00', address: '도톤보리 7-18', order: 1, ...base }],
+  checklist: [
+    { id: 'c_1', tripId: 't_1', title: '렌터카 예약 확인', group: '여행 전 할 일', assignee: 'm_2', doneBy: '', order: 1, ...base },
+    { id: 'c_2', tripId: 't_1', title: '여행자 보험 가입', group: '여행 전 할 일', assignee: '각자', doneBy: '', order: 2, ...base },
+    { id: 'c_3', tripId: 't_1', title: '비행기 예약', group: '여행 전 할 일', assignee: 'm_1', doneBy: 'm_1', order: 3, ...base },
+    { id: 'c_4', tripId: 't_1', title: '환전하기', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 4, ...base },
+    { id: 'c_5', tripId: 't_1', title: '카메라', group: '짐 꾸리기', assignee: 'm_1', doneBy: 'm_1', order: 5, ...base },
+    { id: 'c_6', tripId: 't_1', title: '보조 배터리', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 6, ...base },
+    { id: 'c_7', tripId: 't_1', title: '유심 사기', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 7, ...base, deleted: true, deletedBy: '친구1', deletedAt: '2026-11-15T10:00:00.000Z' },
+  ],
+  places: [
+    { id: 'p_1', tripId: 't_1', category: '음식점', name: '이치란 라멘 도톤보리', hours: '10:00–22:00', address: '도톤보리 7-18', order: 1, ...base },
+    { id: 'p_2', tripId: 't_1', category: '즐길거리', name: '오사카성', order: 2, ...base, deleted: true, deletedBy: '지니', deletedAt: '2026-11-14T10:00:00.000Z' },
+  ],
   schedule: [
     { id: 's_1', tripId: 't_1', day: 1, time: '12:00', placeId: 'p_1', placeName: '', transport: '도보', order: 1, ...base },
     { id: 's_2', tripId: 't_1', day: 1, time: '', placeId: '', placeName: '호텔 체크인', transport: '', order: 2, ...base },
@@ -46,6 +57,9 @@ const data = {
         const trip = { ...body.trip, id: 't_new', inviteCode: 'NEWCODE', createdBy: body.by, ...base };
         const members = body.members.map((m, i) => ({ ...m, id: 'm_n' + i, tripId: 't_new', order: i + 1, ...base }));
         return route.fulfill({ json: { ok: true, trip, members } });
+      }
+      if (body.action === 'toggle_done' || body.action === 'restore' || body.action === 'delete') {
+        return route.fulfill({ json: { ok: true, row: {} } });
       }
       if (body.action === 'save') {
         const row = { ...body.row, id: body.row.id || 'm_added', tripId: 't_1', ...base };
@@ -93,7 +107,19 @@ const data = {
   // 다른 여행(초대받은 여행)으로: 01 프로필 선택
   await page.goto(B + '?t=CODE'); await page.waitForSelector('.member-grid'); await shot('01-profile');
   await page.click('.member-card >> nth=1'); await shot('01-1-selected');
-  await page.click('text=입장하기'); await page.waitForSelector('.hero'); await shot('03-home');
+  await page.click('text=입장하기'); await page.waitForSelector('.home-hero'); await shot('03-home');
+  await page.click('.check-row >> nth=0'); await page.waitForTimeout(200);
+  console.log('toggle posted:', JSON.stringify(posts.filter((p) => p.action === 'toggle_done').map((p) => [p.id, p.done])));
+  console.log('left text:', await page.textContent('.home-section__head >> nth=1'));
+  await page.click('.home-members button >> nth=1'); await shot('03-8-friend');
+  await page.click('.dialog [aria-label="닫기"]'); await page.waitForTimeout(200);
+  await page.click('[aria-label="여행 설정"]'); await page.waitForSelector('.modal');
+  await page.fill('input[aria-label="도착일"]', '2026-12-20'); await page.waitForTimeout(100); await shot('03-4-settings');
+  await page.click('text=최근 삭제한 항목'); await page.waitForTimeout(500); await shot('03-7-deleted');
+  console.log('deleted url:', page.url(), 'items:', await page.$$eval('.deleted-row', (r) => r.length));
+  await page.click('.pill-btn >> nth=0'); await page.waitForTimeout(300);
+  console.log('after restore items:', await page.$$eval('.deleted-row', (r) => r.length));
+  await page.click('[aria-label="뒤로"]'); await page.waitForSelector('.home-hero');
   console.log('url after join:', page.url());
   await page.click('.tabbar >> text=예약'); await page.waitForSelector('.chips'); await shot('05-reservations');
   await page.click('[aria-label="예약 추가"]'); await shot('07-0-sheet');
@@ -109,7 +135,7 @@ const data = {
   await page.click('.tabbar >> text=일정'); await shot('08-schedule');
   await page.click('.tabbar >> text=장소'); await shot('09-places');
   await page.click('.tabbar >> text=친구들'); await shot('11-friends');
-  await page.goto(B + '#/home'); await page.waitForSelector('.hero');
+  await page.goto(B + '#/home'); await page.waitForSelector('.home-hero');
   console.log('reopen keeps code:', page.url());
   offline = true; await page.reload(); await page.waitForSelector('.banner'); await shot('S-3-offline');
   offline = false;
