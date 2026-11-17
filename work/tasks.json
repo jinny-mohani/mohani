@@ -1,0 +1,9 @@
+{
+  "rows": [
+    {"id": "t1", "name": "[AI 서술형 답안입력] 미리보기 화면", "alias": "과제 1 후속", "category": "UX 개선", "status": "진행중", "stage": 2, "stageName": "시안", "now": "미리보기 화면 만드는 중. 3주차에 시안 완료(개발 전)", "next": "담당자 회의·로컬 작업으로 미리보기 마무리 → 클라우드 업로드 다듬기", "sessionHint": "과제 - AI 서술형첨삭", "lastUpdate": "2026-11-17"},
+    {"id": "t2", "name": "[교재비 청구] 이용률 향상", "alias": "과제 2", "category": "UX 개선", "status": "진행중", "stage": null, "stageName": "단계 확인 필요", "now": "로컬에서 제작 중. 이유정님께 프로토타입 피드백 요청", "next": "방향 정하기: 미결제 알림 활성화 vs 일괄 재발송 버튼", "sessionHint": "과제2_교재비 청구", "lastUpdate": "2026-11-17"},
+    {"id": "t3", "name": "[디자인시스템] 컴포넌트 정리 · 저장소 이전 논의", "alias": "", "category": "디자인 자동화", "status": "진행중", "stage": null, "stageName": "단계 확인 필요", "now": "컴포넌트 작업 흐름·검수 프롬프트 정리해 공유. 저장소 이전 논의 중", "next": "저장소 이전 방향 정하기", "sessionHint": "컴퍼넌트 제작", "lastUpdate": "2026-11-17"},
+    {"id": "t4", "name": "[글잼] 단어장 디자인 가이드", "alias": "", "category": "상시 진행", "status": "기획중", "stage": 1, "stageName": "기획", "now": "디자인 변경을 위한 디자인 가이드 기획 중", "next": "", "sessionHint": "", "lastUpdate": "2026-11-17"},
+    {"id": "t5", "name": "[온보딩] 빈목록 화면", "alias": "", "category": "UX 개선", "status": "보류", "stage": null, "stageName": "보류", "now": "보류", "next": "", "sessionHint": "", "lastUpdate": "2026-11-17"}
+  ]
+}

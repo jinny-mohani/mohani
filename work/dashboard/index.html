@@ -1,0 +1,157 @@
+<meta name="dash-one-writer">
+<style>
+  .jb { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .jb-head { display: grid; gap: var(--cds-gap-sm); }
+  .jb-title { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); text-wrap: balance; }
+  .jb-lede { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); line-height: 1.6; max-width: 65ch; }
+  .jb-lede b { color: var(--color-fg); font-variant-numeric: tabular-nums; }
+  .jb-h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .jb-note { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .jb-sec { display: grid; gap: var(--cds-gap-md); }
+  .jb-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--cds-gap-md); min-height: 120px; }
+  .jb-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+  .jb-card.is-hold { opacity: .7; }
+  .jb-top { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
+  .jb-chip { font-size: var(--cds-font-size-caption); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--color-border-line); color: var(--color-fg-muted); }
+  .jb-chip.st-진행중 { color: var(--color-fg); border-color: var(--color-fg-muted); }
+  .jb-chip.warn { color: var(--color-warn); border-color: var(--color-warn); }
+  .jb-name { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); line-height: 1.4; }
+  .jb-alias { color: var(--color-fg-muted); font-weight: 400; }
+  .jb-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-top: var(--cds-gap-xs); }
+  .jb-seg { height: 6px; border-radius: 3px; background: var(--cds-chart-grid); }
+  .jb-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; font-size: 11px; color: var(--color-fg-muted); }
+  .jb-steps span.on { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+  .jb-stage { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .jb-dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px var(--cds-gap-sm); font-size: var(--cds-font-size-caption); line-height: 1.5; }
+  .jb-dl dt { color: var(--color-fg-muted); }
+  .jb-dl dd { margin: 0; min-width: 0; }
+  .jb-last { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .jb-scroll { overflow-x: auto; }
+  .jb-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); min-width: 560px; }
+  .jb-table th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .jb-table td { padding: 8px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; line-height: 1.5; }
+  .jb-table td.c-date { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--color-fg-muted); }
+  .jb-table tr.is-unmapped td.c-task { color: var(--color-warn); }
+  .jb-table a { color: inherit; }
+</style>
+
+<div class="jb">
+  <header class="jb-head" id="top">
+    <h1 class="jb-title">진희 업무 진행판</h1>
+    <p class="jb-lede">진행 중인 업무 <b data-draw="n-active" data-source="summary" data-field="active" data-row="0">—</b>건, 최근 2주 동안 모인 흔적 <b data-draw="n-recent" data-source="summary" data-field="recent" data-row="0">—</b>건. 어느 업무인지 정해지지 않은 흔적 <b data-draw="n-unmapped" data-source="summary" data-field="unmapped" data-row="0">—</b>건, 5일 넘게 소식이 없는 진행 업무 <b data-draw="n-stale" data-source="summary" data-field="stale" data-row="0">—</b>건.</p>
+  </header>
+
+  <section class="jb-sec" id="tasks">
+    <h2 class="jb-h2">업무별 진행</h2>
+    <p class="jb-note">단계: 기획 → 시안 → 검토 → 개발 전달 → 완료. 칸이 찬 만큼 진행된 거예요.</p>
+    <div class="jb-cards" data-draw="cards" data-source="tasks"></div>
+  </section>
+
+  <section class="jb-sec" id="trail">
+    <h2 class="jb-h2">최근 2주 흔적</h2>
+    <p class="jb-note">Claude Code 세션, 슬랙, 노션에서 모은 기록이에요. 업무가 "미정"인 줄은 어느 업무인지 Claude에게 알려 주세요.</p>
+    <div class="jb-scroll">
+      <table class="jb-table" data-source="log" data-row-key="id">
+        <thead><tr><th data-field="date">날짜</th><th data-field="task">업무</th><th data-field="text">내용</th><th data-field="from">출처</th><th data-field="link">링크</th></tr></thead>
+        <tbody data-draw="logrows"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+  window.jb = window.jb || {};
+  jb.parse = d3.timeParse('%Y-%m-%d');
+  jb.fmt = d3.timeFormat('%-m/%-d');
+  jb.daysAgo = (s) => { const d = jb.parse(s); if (!d) return null; const t = new Date(); t.setHours(0,0,0,0); return Math.round((t - d) / 86400000); };
+  jb.STEPS = ['기획', '시안', '검토', '개발 전달', '완료'];
+
+  dash.calc('summary', {
+    title: '진행판 요약 수치',
+    description: '진행중 업무 수, 최근 14일 흔적 수, 업무 미정 흔적 수, 마지막 기록이 5일 넘은 진행중 업무 수',
+    inputs: ['tasks', 'log'],
+    fn: (tasks, log) => {
+      const recent = log.filter((r) => { const n = jb.daysAgo(r.date); return n !== null && n <= 14; });
+      return [{
+        active: tasks.filter((t) => t.status === '진행중').length,
+        recent: recent.length,
+        unmapped: recent.filter((r) => !r.task).length,
+        stale: tasks.filter((t) => t.status === '진행중' && (jb.daysAgo(t.lastUpdate) ?? 99) > 5).length,
+      }];
+    },
+  });
+
+  ['active', 'recent', 'unmapped', 'stale'].forEach((k) => {
+    dash.draw('n-' + k, (el) => {
+      const s = dash.data('summary');
+      el.textContent = s.status === 'ok' && s.data && s.data[0] ? String(s.data[0][k]) : '—';
+    });
+  });
+
+  dash.draw('cards', (el) => {
+    const q = dash.data('tasks');
+    if (q.status !== 'ok') { el.textContent = q.status === 'error' ? '업무 목록을 불러오지 못했어요' : '—'; return; }
+    const order = { '진행중': 0, '기획중': 1, '보류': 2, '완료': 3 };
+    const rows = [...q.data].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
+    el.replaceChildren();
+    rows.forEach((t) => {
+      const where = 'id=' + encodeURIComponent(t.id);
+      const mk = (tag, cls, field, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (field) { n.setAttribute('data-source', 'tasks'); n.setAttribute('data-field', field); n.setAttribute('data-where', where); } n.textContent = text ?? ''; return n; };
+      const card = document.createElement('article');
+      card.className = 'jb-card' + (t.status === '보류' ? ' is-hold' : '');
+      card.id = 'task-' + t.id;
+
+      const top = document.createElement('div'); top.className = 'jb-top';
+      top.append(mk('span', 'jb-chip st-' + t.status, 'status', t.status), mk('span', 'jb-chip', 'category', t.category));
+      const ago = jb.daysAgo(t.lastUpdate);
+      if (t.status === '진행중' && ago !== null && ago > 5) top.append(mk('span', 'jb-chip warn', null, ago + '일째 소식 없음'));
+      if (t.stage == null && t.status === '진행중') top.append(mk('span', 'jb-chip warn', null, '단계 확인 필요'));
+
+      const name = mk('h3', 'jb-name', 'name', t.name);
+      if (t.alias) { const a = document.createElement('span'); a.className = 'jb-alias'; a.textContent = ' · ' + t.alias; name.append(a); }
+
+      const track = document.createElement('div'); track.className = 'jb-track';
+      track.setAttribute('role', 'img');
+      track.setAttribute('aria-label', t.stage ? `5단계 중 ${t.stage}단계 ${t.stageName}` : t.stageName);
+      const steps = document.createElement('div'); steps.className = 'jb-steps';
+      jb.STEPS.forEach((s, i) => {
+        const seg = document.createElement('div'); seg.className = 'jb-seg';
+        if (t.stage && i < t.stage) seg.style.background = t.stage === 5 ? 'var(--color-ok)' : dash.colors[0];
+        track.append(seg);
+        const lab = document.createElement('span'); lab.textContent = s; if (t.stage === i + 1) lab.className = 'on';
+        steps.append(lab);
+      });
+
+      const dl = document.createElement('dl'); dl.className = 'jb-dl';
+      dl.append(mk('dt', null, null, '지금'), mk('dd', null, 'now', t.now));
+      if (t.next) dl.append(mk('dt', null, null, '다음'), mk('dd', null, 'next', t.next));
+
+      const last = mk('div', 'jb-last', null, '');
+      const lv = mk('span', null, 'lastUpdate', t.lastUpdate);
+      last.append('마지막 기록 ', lv, ago === 0 ? ' (오늘)' : ago != null ? ` (${ago}일 전)` : '');
+
+      card.append(top, name, track, steps, dl, last);
+      el.append(card);
+    });
+  });
+
+  dash.draw('logrows', (tb) => {
+    const lq = dash.data('log'); const tq = dash.data('tasks');
+    tb.replaceChildren();
+    if (lq.status !== 'ok') return;
+    const names = new Map((tq.status === 'ok' ? tq.data : []).map((t) => [t.id, t.name]));
+    lq.data
+      .filter((r) => { const n = jb.daysAgo(r.date); return n !== null && n <= 14; })
+      .sort((a, b) => d3.descending(a.date, b.date))
+      .forEach((r) => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-key', encodeURIComponent(r.id));
+        if (!r.task) tr.className = 'is-unmapped';
+        const td = (cls, text) => { const c = document.createElement('td'); c.className = cls; c.textContent = text; return c; };
+        const link = document.createElement('td'); link.className = 'c-link';
+        if (r.link && /^https:\/\//.test(r.link)) { const a = document.createElement('a'); a.href = r.link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = '열기'; link.append(a); }
+        tr.append(td('c-date', r.date), td('c-task', r.task ? (names.get(r.task) || r.task) : '미정'), td('c-text', r.text), td('c-from', r.from), link);
+        tb.append(tr);
+      });
+  });
+</script>
