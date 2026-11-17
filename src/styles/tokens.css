@@ -38,6 +38,7 @@
   --color-on-primary: var(--white);      /* 그 위 글자 */
   --color-dim: rgba(0, 0, 0, 0.4);       /* 팝업 뒤 어둡게 */
   --color-outside: var(--grey-200);      /* PC에서 앱 바깥 */
+  --color-bg-tint: #f3f4f6;              /* 목록 화면 바탕 (01·02·03·05·09·11, Nov 17 피드백). 그 위 카드는 흰색 */
 
   /* 글자 */
   --font: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;

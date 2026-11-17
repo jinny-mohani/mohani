@@ -1,6 +1,6 @@
 // 03-4 홈 › 여행 설정 (전체 화면 팝업) — 멤버 누구나 고칠 수 있어요
 import { html, useState } from '../vendor/preact-htm.js';
-import { Button, Icon, Modal, TextField } from '../ui/components.js';
+import { Button, Icon, Modal, TextField , FormError } from '../ui/components.js';
 import { closeOverlay } from '../overlay.js';
 import { getState, saveRow, uploadPhoto, refresh } from '../store.js';
 import { go } from '../router.js';
@@ -8,7 +8,7 @@ import { formatDay, nightsLabel, tripDays } from '../date.js';
 import { resizeImage } from '../image.js';
 import { inviteUrl, copyText } from '../share.js';
 import { toast } from '../ui/toast.js';
-import { DateField } from '../ui/pickers.js';
+import { DateRangeField } from '../ui/pickers.js';
 
 export function TripSettings() {
   const { data, current } = getState();
@@ -76,9 +76,7 @@ export function TripSettings() {
       <div class="field">
         <span class="field__label" id="set-date">날짜</span>
         <div class="field-pair" role="group" aria-labelledby="set-date">
-          <${DateField} label="출발일" value=${startDate} trip=${{ startDate, endDate }} onChange=${setStartDate} />
-          <span class="field-pair__dash">–</span>
-          <${DateField} label="도착일" value=${endDate} min=${startDate} trip=${{ startDate, endDate }} onChange=${setEndDate} />
+          <${DateRangeField} label="여행 날짜" start=${startDate} end=${endDate} onChange=${(a, b) => { setStartDate(a); setEndDate(b); }} />
         </div>
         <p class="info-box">
           <${Icon} name="info" size=${16} />
@@ -111,7 +109,7 @@ export function TripSettings() {
           </button>
         </div>
       </div>
-      ${error && html`<p class="form__error" role="alert">${error}</p>`}
+      <${FormError} error=${error} />
     </div>
   <//>`;
 }

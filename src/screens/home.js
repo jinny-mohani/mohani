@@ -10,6 +10,7 @@ import { GROUPS, byGroup, homePick, isDone } from '../checklist.js';
 import { toast } from '../ui/toast.js';
 import { TripSettings } from './trip-settings.js';
 import { sized } from '../reservation-util.js';
+import { PlaceCard, PlaceForm } from './places.js';
 import { ChecklistSheet } from './checklist.js';
 
 const RES_TYPES = [
@@ -28,7 +29,7 @@ function Character({ member, height = 84 }) {
 }
 
 /** 03-8 친구 프로필 (팝업) */
-function FriendProfile({ member }) {
+export function FriendProfile({ member }) {
   return html`<${Dialog} label=${member.name + ' 프로필'}>
     <div class="friend-pop">
       <${Character} member=${member} height=${150} />
@@ -45,13 +46,14 @@ export function Home({ data, me }) {
   const reservations = data.reservations.filter((r) => !r.deleted);
   const all = data.checklist.filter((c) => !c.deleted);
   const left = all.filter((c) => !isDone(c, me)).length;
+  const places = data.places.filter((p) => !p.deleted).sort((x, y) => (Number(x.order) || 0) - (Number(y.order) || 0));
 
   const toggle = (item) =>
     toggleDone(item, !isDone(item, me)).catch(() =>
       toast('연결이 불안정해 저장하지 못했어요', { action: '다시 시도', duration: 6000, onAction: () => toggle(item) }));
   const assignee = (c) => (c.assignee === '각자' ? '각자' : memberName(data, c.assignee));
 
-  return html`<main class="screen home">
+  return html`<main class="screen screen--tint home">
     <section class="home-hero" aria-label="여행 정보">
       <div class="home-hero__card">
         ${trip.coverImage
@@ -136,6 +138,16 @@ export function Home({ data, me }) {
             </div>`;
           })}
         </div>
+      </section>
+
+      <section class="home-section">
+        <button class="home-section__head" onClick=${() => go('/places')}>
+          <h2>장소</h2>
+          <${Icon} name="chevron-right" size=${20} label="전체 보기" />
+        </button>
+        ${places.length
+          ? html`<div class="place-row">${places.slice(0, 8).map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>`
+          : html`<button class="check-card check-card__empty" style="width:100%" onClick=${() => openOverlay(html`<${PlaceForm} />`)}>+ 가고 싶은 장소를 등록해 보세요</button>`}
       </section>
     </div>
   </main>`;

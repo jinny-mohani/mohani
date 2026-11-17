@@ -97,23 +97,25 @@ function StayCard({ r }) {
 
 /** 05-3 기타 카드 */
 function OtherCard({ data, r }) {
-  const rows = [
-    ['날짜', rangeText(r.startAt, r.endAt)],
-    ['장소', r.address || (r.mapUrl ? '지도 링크' : '')],
-    ['예약번호', r.bookingNo],
-    ['담당', memberName(data, r.assignee)],
-  ].filter(([, v]) => v);
-  return html`<button class="other-card" onClick=${() => go('/reservations/' + r.id)}>
-    <span class="other-card__top">
-      <span class="kind-chip">${r.subType || '기타'}</span>
-      <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
-    </span>
-    <span class="other-card__title"><${Icon} name=${OTHER_ICON[r.subType] || 'ticket'} size=${20} />${r.title}</span>
-    <span class="other-card__rows">
-      ${rows.map(([k, v]) => html`<span class="kv"><em>${k}</em><span>${v}</span></span>`)}
-    </span>
-    ${r.memo && html`<span class="other-card__memo"><${Icon} name="file-text" size=${14} /><span>${r.memo}</span></span>`}
-  </button>`;
+  const photo = firstPhoto(r);
+  const who = memberName(data, r.assignee);
+  const tags = [r.address, who && '담당 ' + who, r.bookingNo && '예약번호 ' + r.bookingNo].filter(Boolean);
+  return html`<div class="res-item">
+    <button class="photo-card photo-card--dark" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
+      ${photo ? html`<img src=${sized(photo, 800)} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name=${OTHER_ICON[r.subType] || 'ticket'} size=${40} /></span>`}
+      <span class="photo-card__shade"></span>
+      <span class="photo-card__top">
+        <span class="status status--done">${r.subType || '기타'}</span>
+        <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
+      </span>
+      <span class="stay-info">
+        <b>${r.title}</b>
+        <span>${rangeText(r.startAt, r.endAt) || '날짜 미정'}</span>
+        ${tags.length > 0 && html`<span class="stay-info__tags">${tags.map((t) => html`<span>${t}</span>`)}</span>`}
+      </span>
+    </button>
+    ${r.memo && html`<p class="res-item__memo res-item__memo--2">${r.memo}</p>`}
+  </div>`;
 }
 
 /** 05 전체 탭의 한 줄 카드 */
@@ -147,8 +149,8 @@ export function Reservations({ data, query }) {
     else openForm(filter);
   };
 
-  return html`<main class="screen">
-    <header class="big-title"><h1>예약</h1></header>
+  return html`<main class="screen screen--tint">
+    <header class="big-title"><h1>예약</h1><button class="title-add" aria-label="예약 추가" onClick=${add}><${Icon} name="plus" size=${24} stroke=${2} /></button></header>
     <div class="page">
       <${ChipGroup}
         label="예약 종류"
@@ -173,7 +175,6 @@ export function Reservations({ data, query }) {
             action=${html`<${Button} onClick=${add}>예약 추가<//>`}
           />`}
     </div>
-    <button class="fab" aria-label="예약 추가" onClick=${add}><${Icon} name="plus" stroke=${2} /></button>
   </main>`;
 }
 

@@ -1,7 +1,7 @@
 // 07-1 항공권 · 07-2 숙소 · 07-3 기타 — 새로 쓰기와 수정이 같은 화면을 써요 (전체 화면 팝업)
 // 07-1-1 추가 정보 펼침 · 07-3-1 종류 직접 입력
 import { html, useState } from '../vendor/preact-htm.js';
-import { Button, ChipField, Collapsible, Modal, PhotoField, TextArea, TextField } from '../ui/components.js';
+import { Button, ChipField, Collapsible, Modal, PhotoField, TextArea, TextField , FormError } from '../ui/components.js';
 import { closeOverlay, openOverlay } from '../overlay.js';
 import { getState, uploadPhoto } from '../store.js';
 import { saveLater, deleteWithUndo } from '../save.js';
@@ -11,7 +11,7 @@ import { activeMembers } from '../members.js';
 import { toast } from '../ui/toast.js';
 import { OTHER_KINDS, SEATS, STATUSES, TERMINALS, photoList, parseFlight } from '../reservation-util.js';
 import { AIRPORTS, AIRLINES, airlineCode } from '../airports.js';
-import { SelectField, OptionSheet, DateField } from '../ui/pickers.js';
+import { SelectField, OptionSheet, DateField, TimeField, DateRangeField } from '../ui/pickers.js';
 
 function initial(type, row) {
   const r = row || {};
@@ -113,7 +113,7 @@ function DateTime({ label, date, time, onDate, onTime, min }) {
   const trip = getState().data.trip;
   return html`<div class="field-pair">
     <${DateField} label=${label + ' 날짜'} value=${date} onChange=${onDate} trip=${trip} min=${min} placeholder=${label} />
-    <input class=${'input' + (time ? '' : ' input--empty')} type="time" aria-label=${label + ' 시간'} value=${time} onInput=${(e) => onTime(e.currentTarget.value)} style="flex:0 0 112px" />
+    <span style="flex:0 0 132px;display:flex"><${TimeField} label=${label + ' 시간'} value=${time} onChange=${onTime} placeholder="시간" /></span>
   </div>`;
 }
 
@@ -194,9 +194,9 @@ export function ReservationForm({ type, row }) {
         <span class="field__label">날짜 · 시간</span>
         <${DateField} label="날짜" value=${f.date} onChange=${set('date')} trip=${getState().data.trip} />
         <div class="field-pair">
-          <input class=${'input' + (f.startTime ? '' : ' input--empty')} type="time" aria-label="출발 시간" value=${f.startTime} onInput=${set('startTime')} />
+          <${TimeField} label="출발 시간" value=${f.startTime} onChange=${set('startTime')} placeholder="출발 시간" />
           <span class="field-pair__dash">–</span>
-          <input class=${'input' + (f.endTime ? '' : ' input--empty')} type="time" aria-label="도착 시간" value=${f.endTime} onInput=${set('endTime')} />
+          <${TimeField} label="도착 시간" value=${f.endTime} onChange=${set('endTime')} placeholder="도착 시간" />
         </div>
       </div>
       ${bookingNo}${status}${assignee}
@@ -211,11 +211,8 @@ export function ReservationForm({ type, row }) {
       <${TextField} title="숙소 이름" placeholder="예) 성산 오션뷰 펜션" value=${f.title} onInput=${set('title')} />
       <div class="field">
         <span class="field__label">체크인 · 체크아웃</span>
-        <div class="field-pair">
-          <${DateField} label="체크인" placeholder="체크인" value=${f.startDate} onChange=${set('startDate')} trip=${getState().data.trip} />
-          <span class="field-pair__dash">–</span>
-          <${DateField} label="체크아웃" placeholder="체크아웃" value=${f.endDate} onChange=${set('endDate')} trip=${getState().data.trip} min=${f.startDate} />
-        </div>
+        <${DateRangeField} label="체크인 · 체크아웃" placeholder="체크인 – 체크아웃" start=${f.startDate} end=${f.endDate} labels=${['체크인', '체크아웃']}
+          onChange=${(a, b) => setF((x) => ({ ...x, startDate: a, endDate: b }))} />
       </div>
       <${TextField} title="지도 링크" placeholder="https://maps.app.goo.gl/…" value=${f.mapUrl} onInput=${set('mapUrl')}
         help="구글 지도 앱에서 공유 → 링크 복사로 붙여 넣어요" />
@@ -231,6 +228,7 @@ export function ReservationForm({ type, row }) {
     body = html`
       <${ChipField}
         title="종류"
+        scroll=${true}
         options=${kindOptions}
         value=${customKind ? '직접 입력' : f.subType}
         onChange=${(v) => {
@@ -272,7 +270,7 @@ export function ReservationForm({ type, row }) {
   return html`<${Modal} title=${title} footer=${footer}>
     <div class="form">
       ${body}
-      ${error && html`<p class="form__error" role="alert">${error}</p>`}
+      <${FormError} error=${error} />
     </div>
   <//>`;
 }

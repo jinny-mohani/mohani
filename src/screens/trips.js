@@ -53,7 +53,7 @@ export function TripList() {
     replace('/home');
   };
 
-  return html`<main class="screen screen--sub">
+  return html`<main class="screen screen--sub screen--tint">
     ${s.current
       ? html`<${SubHeader} title="" fallback="/home" />`
       : null}

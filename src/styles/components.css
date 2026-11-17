@@ -410,3 +410,29 @@ button.status::after { content: ''; position: absolute; inset: -8px; } /* 터치
   --color-text-weak: var(--color-text-weak-on-surface);
   --color-text-faint: var(--color-text-weak-on-surface);
 }
+
+/*
+ * 회색 바탕 화면 (01 프로필 선택 · 02 여행 목록 · 03 홈 · 05 예약 · 09 장소 · 11 친구들)
+ * 카드(연회색)는 흰색으로 바꿔 바탕과 구분하고, 바탕 위 보조 글자는 대비를 위해 한 단계 진하게
+ */
+.screen--tint {
+  background: var(--color-bg-tint);
+  min-height: 100%;
+  --color-surface-weak: var(--color-bg);
+  --color-text-weak: var(--color-text-weak-on-surface);
+  --color-text-faint: var(--color-text-weak-on-surface);
+}
+.screen--tint .chips .chip[aria-pressed='false'] { background: var(--color-bg); }
+.screen--tint .member-card { border-color: var(--color-bg); }
+.screen--tint .member-card[aria-checked='true'] { border-color: var(--color-primary); }
+
+/* 시간 고르기 */
+.time-preview { text-align: center; font-size: 24px; font-weight: var(--fw-bold); margin: 4px 0 12px; }
+.time-cols { display: flex; gap: 8px; }
+.time-col {
+  flex: 1; height: 264px; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: 2px; padding: 4px; border-radius: var(--radius-m); background: var(--color-surface-weak);
+}
+.time-opt { flex-shrink: 0; min-height: var(--hit); border-radius: var(--radius-m); font-size: var(--fs-body); }
+.time-opt[aria-pressed='true'] { background: var(--color-primary); color: var(--color-on-primary); font-weight: var(--fw-bold); }
+.range-summary { margin: 0 0 8px; font-size: 15px; font-weight: var(--fw-medium); text-align: center; }

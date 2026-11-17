@@ -2,6 +2,7 @@
 import { html, useState } from '../vendor/preact-htm.js';
 import {
   Avatar, Button, ChipField, ChipGroup, Empty, Icon, Modal, PhotoField, Sheet, TextArea, TextField,
+  FormError,
 } from '../ui/components.js';
 import { go, replace, back } from '../router.js';
 import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
@@ -13,13 +14,14 @@ import { copyText } from '../share.js';
 import { syncText } from '../date.js';
 import { toast } from '../ui/toast.js';
 import { PhotoViewer } from '../ui/viewer.js';
+import { TimeField } from '../ui/pickers.js';
 
 export const CATEGORIES = ['음식점', '즐길거리', '쇼핑', '디저트'];
 
 const sortPlaces = (list) => [...list].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
 
 /** 사진 카드: 사진 위에 이름 · 메모 1줄 · 운영시간 · 지도 */
-function PlaceCard({ p }) {
+export function PlaceCard({ p }) {
   const photo = firstPhoto(p);
   return html`<div class="place-card">
     <button class="place-card__open" onClick=${() => go('/places/' + p.id)} aria-label=${p.name + ' 상세 보기'}>
@@ -44,8 +46,8 @@ export function Places({ data, query }) {
   const groups = CATEGORIES.map((c) => ({ c, list: all.filter((p) => p.category === c) })).filter((g) => g.list.length);
   const list = cat === '전체' ? all : all.filter((p) => p.category === cat);
 
-  return html`<main class="screen">
-    <header class="big-title"><h1>장소</h1></header>
+  return html`<main class="screen screen--tint">
+    <header class="big-title"><h1>장소</h1><button class="title-add" aria-label="장소 등록" onClick=${add}><${Icon} name="plus" size=${24} stroke=${2} /></button></header>
     <div class="page">
       <${ChipGroup}
         label="카테고리"
@@ -66,7 +68,6 @@ export function Places({ data, query }) {
           : html`<p class="list-summary">${list.length}곳</p>
             <div class="place-grid">${list.map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>`}
     </div>
-    <button class="fab" aria-label="장소 등록" onClick=${add}><${Icon} name="plus" stroke=${2} /></button>
   </main>`;
 }
 
@@ -107,10 +108,10 @@ export function PlaceDetail({ data, id }) {
     <div class="place-detail__sheet">
       ${author && html`<span class="place-detail__author" title=${author.name + '님이 등록'}><${Avatar} member=${author} size=${56} /></span>`}
       <h1 class="place-detail__title">${p.name}${p.category && html`<span class="kind-chip">${p.category}</span>`}</h1>
-      ${p.address && html`<p class="place-detail__addr"><${Icon} name="map-pin" size=${18} /><span>${p.address}</span></p>`}
-      ${(p.mapUrl || p.address) && html`<div class="place-detail__acts">
-        ${p.mapUrl && html`<a class="pill-btn" href=${p.mapUrl} target="_blank" rel="noopener"><${Icon} name="external-link" size=${16} />구글 지도에서 보기</a>`}
-        ${p.address && html`<button class="pill-btn" onClick=${() => copyText(p.address, '주소를 복사했어요')}><${Icon} name="copy" size=${16} />주소 복사</button>`}
+      ${(p.address || p.mapUrl) && html`<div class="place-detail__addr">
+        <${Icon} name="map-pin" size=${18} /><span>${p.address || '주소 미입력'}</span>
+        ${p.mapUrl && html`<a class="round-btn" href=${p.mapUrl} target="_blank" rel="noopener" aria-label="구글 지도에서 보기" title="구글 지도에서 보기"><${Icon} name="map" size=${20} /></a>`}
+        ${p.address && html`<button class="round-btn" aria-label="주소 복사" title="주소 복사" onClick=${() => copyText(p.address, '주소를 복사했어요')}><${Icon} name="copy" size=${20} /></button>`}
       </div>`}
       <div class="info-cells">
         <span><small>운영시간</small>${p.hours || '-'}</span>
@@ -190,9 +191,9 @@ export function PlaceForm({ row, category }) {
     : html`<${Button} onClick=${save} disabled=${busy}>${busy ? '저장 중…' : '저장하기'}<//>`;
 
   const timePair = (a, b, la, lb) => html`<div class="field-pair">
-    <input class=${'input' + (f[a] ? '' : ' input--empty')} type="time" aria-label=${la} value=${f[a]} onInput=${set(a)} />
+    <${TimeField} label=${la} value=${f[a]} onChange=${set(a)} placeholder=${la.includes('여는') ? '여는 시간' : '시작'} />
     <span class="field-pair__dash">–</span>
-    <input class=${'input' + (f[b] ? '' : ' input--empty')} type="time" aria-label=${lb} value=${f[b]} onInput=${set(b)} />
+    <${TimeField} label=${lb} value=${f[b]} onChange=${set(b)} placeholder=${lb.includes('닫는') ? '닫는 시간' : '끝'} />
   </div>`;
 
   return html`<${Modal} title=${isEdit ? '장소 수정' : '장소 등록'} footer=${footer}>
@@ -222,7 +223,7 @@ export function PlaceForm({ row, category }) {
       <${ChipField} title="웨이팅" value=${f.waiting} onChange=${set('waiting')}
         options=${['있음', '없음'].map((v) => ({ value: v, label: v, toggle: true }))} help="선택" />
       <${TextArea} title="메모" placeholder=${'예) 웨이팅 있음\n오픈 시간에 맞춰 가기'} value=${f.memo} onInput=${set('memo')} />
-      ${error && html`<p class="form__error" role="alert">${error}</p>`}
+      <${FormError} error=${error} />
     </div>
   <//>`;
 }

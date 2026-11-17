@@ -96,3 +96,102 @@ export function DateField({ label, value, onChange, trip, min, placeholder = '�
   return html`<${SelectField} label=${label} value=${value ? formatDay(value) : ''} placeholder=${placeholder}
     onClick=${() => openOverlay(html`<${DateSheet} title=${label} value=${value} trip=${trip} min=${min} onPick=${onChange} />`)} />`;
 }
+
+/* ───── 시간 고르기 (공통4 피드백: 시계판 대신 시·분 목록) ───── */
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
+
+function hourLabel(h) {
+  const n = Number(h);
+  return `${n < 12 ? '오전' : '오후'} ${n % 12 === 0 ? 12 : n % 12}시`;
+}
+
+/** 시 목록 + 분 목록을 각각 눌러 고르기. 고른 값이 위에 크게 보여요 */
+export function TimeSheet({ title = '시간 선택', value, onPick }) {
+  const [h0, m0] = (value || '').split(':');
+  const [h, setH] = useState(h0 || '');
+  // 5분 단위가 아닌 예전 값도 그대로 보이게
+  const [m, setM] = useState(m0 || (h0 ? '00' : ''));
+  const minutes = m && !MINUTES.includes(m) ? [...MINUTES, m].sort() : MINUTES;
+  const listRef = (sel) => (el) => {
+    // 고른 칸이 목록 가운데쯤 보이게 (처음 열 때)
+    if (el && !el.dataset.done) {
+      el.dataset.done = '1';
+      const on = el.querySelector('[aria-pressed="true"]');
+      if (on) el.scrollTop = on.offsetTop - el.clientHeight / 2 + on.clientHeight / 2;
+    }
+  };
+  const done = (v) => { onPick(v); closeOverlay(); };
+  return html`<${Sheet} title=${title} footer=${html`<div class="modal__foot--split">
+      <${Button} variant="secondary" onClick=${() => done('')}>지우기<//>
+      <${Button} disabled=${!h || !m} onClick=${() => done(`${h}:${m}`)}>선택 완료<//>
+    </div>`}>
+    <p class="time-preview" aria-live="polite">${h ? hourLabel(h) : '--시'} ${m ? Number(m) + '분' : '--분'}</p>
+    <div class="time-cols">
+      <div class="time-col" role="listbox" aria-label="시" ref=${listRef('h')}>
+        ${HOURS.map((x) => html`<button role="option" aria-selected=${x === h} aria-pressed=${x === h ? 'true' : 'false'} key=${x}
+          class="time-opt" onClick=${() => { setH(x); if (!m) setM('00'); }}>${hourLabel(x)}</button>`)}
+      </div>
+      <div class="time-col" role="listbox" aria-label="분" ref=${listRef('m')}>
+        ${minutes.map((x) => html`<button role="option" aria-selected=${x === m} aria-pressed=${x === m ? 'true' : 'false'} key=${x}
+          class="time-opt" onClick=${() => setM(x)}>${x}분</button>`)}
+      </div>
+    </div>
+  <//>`;
+}
+
+/** 시간 칸: 누르면 시간 시트. 비어 있으면 placeholder */
+export function TimeField({ label, value, onChange, placeholder = '시간' }) {
+  return html`<${SelectField} label=${label} value=${value ? hourLabel(value.slice(0, 2)) + (value.slice(3) !== '00' ? ' ' + Number(value.slice(3)) + '분' : '') : ''} placeholder=${placeholder}
+    onClick=${() => openOverlay(html`<${TimeSheet} title=${label} value=${value} onPick=${onChange} />`)} />`;
+}
+
+/* ───── 기간 고르기 (시작 → 끝을 한 달력에서 연속으로) ───── */
+export function DateRangeSheet({ title = '날짜 선택', start, end, onPick, labels = ['출발', '도착'] }) {
+  const base = parseDate(start) || new Date();
+  const [month, setMonth] = useState(new Date(base.getFullYear(), base.getMonth(), 1));
+  const [s, setS] = useState(start || '');
+  const [e, setE] = useState(end || '');
+  const first = month.getDay();
+  const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const cells = [...Array(first).fill(null), ...Array.from({ length: count }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1))];
+  const move = (d) => setMonth(new Date(month.getFullYear(), month.getMonth() + d, 1));
+  // 처음 누르면 시작, 두 번째로 누르면 끝. 다 고른 뒤 다시 누르면 새로 시작
+  const tap = (v) => {
+    if (!s || (s && e)) { setS(v); setE(''); }
+    else if (v < s) { setS(v); }
+    else { setE(v); }
+  };
+  const nights = s && e ? Math.round((parseDate(e) - parseDate(s)) / 86400000) : 0;
+  const summary = s && e ? `${formatDay(s)} – ${formatDay(e)} · ${nights ? nights + '박 ' + (nights + 1) + '일' : '당일'}`
+    : s ? `${formatDay(s)} ${labels[0]} · ${labels[1]}일을 골라 주세요` : `${labels[0]}일을 골라 주세요`;
+  return html`<${Sheet} title=${title} footer=${html`<${Button} disabled=${!s || !e} onClick=${() => { onPick(s, e); closeOverlay(); }}>선택 완료<//>`}>
+    <p class="range-summary" aria-live="polite">${summary}</p>
+    <div class="cal">
+      <div class="cal__head">
+        <button class="icon-btn" aria-label="이전 달" onClick=${() => move(-1)}><${Icon} name="chevron-left" /></button>
+        <b>${month.getFullYear()}년 ${month.getMonth() + 1}월</b>
+        <button class="icon-btn" aria-label="다음 달" onClick=${() => move(1)}><${Icon} name="chevron-right" /></button>
+      </div>
+      <div class="cal__grid" role="grid">
+        ${WEEK.map((w) => html`<span class="cal__w">${w}</span>`)}
+        ${cells.map((d, i) => {
+          if (!d) return html`<span key=${'e' + i}></span>`;
+          const v = ymd(d);
+          const edge = v === s || v === e;
+          const inRange = s && e && v > s && v < e;
+          return html`<button key=${v}
+            class=${'cal__d' + (inRange ? ' cal__d--trip' : '') + (edge ? ' cal__d--on' : '') + (v === ymd(new Date()) ? ' cal__d--today' : '')}
+            aria-pressed=${edge ? 'true' : 'false'} aria-label=${formatDay(v)} onClick=${() => tap(v)}>${d.getDate()}</button>`;
+        })}
+      </div>
+    </div>
+  <//>`;
+}
+
+/** 기간 칸: '12.19 (토) – 12.21 (월)' 하나로, 누르면 기간 달력 */
+export function DateRangeField({ label, start, end, onChange, placeholder = '날짜 선택', labels }) {
+  const text = start && end ? `${formatDay(start)} – ${formatDay(end)}` : start ? `${formatDay(start)} – ` : '';
+  return html`<${SelectField} label=${label} value=${text} placeholder=${placeholder}
+    onClick=${() => openOverlay(html`<${DateRangeSheet} title=${label} start=${start} end=${end} labels=${labels} onPick=${onChange} />`)} />`;
+}

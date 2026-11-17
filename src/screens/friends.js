@@ -1,6 +1,6 @@
 // 11 친구들 · 11-1 내 프로필 수정 · 11-2 프로필 사진 선택 · 11-3 멤버 추가
 import { html, useState } from '../vendor/preact-htm.js';
-import { Avatar, Button, Icon, Modal, Sheet, TextArea, TextField } from '../ui/components.js';
+import { Avatar, Button, Icon, Modal, Sheet, TextArea, TextField , FormError } from '../ui/components.js';
 import { openOverlay, closeOverlay } from '../overlay.js';
 import { getState, saveRow, uploadPhoto } from '../store.js';
 import { saveLater } from '../save.js';
@@ -9,12 +9,14 @@ import { inviteUrl, copyText } from '../share.js';
 import { resizeImage } from '../image.js';
 import { toast } from '../ui/toast.js';
 import { MemberAddSheet } from './member-add.js';
+import { FriendProfile } from './home.js';
 
 function FriendRow({ m, isMe }) {
-  const [open, setOpen] = useState(false);
   const rel = [m.isOwner && '개설자', m.relation && m.relation !== '개설자' && m.relation].filter(Boolean).join(' · ');
-  const long = (m.intro || '').length > 40 || (m.intro || '').split('\n').length > 2;
+  // 친구를 누르면 03-8 프로필 팝업 (소개 전체), 나는 내 프로필 수정
+  const open = () => openOverlay(isMe ? html`<${ProfileEdit} />` : html`<${FriendProfile} member=${m} />`);
   return html`<li class="friend">
+    <button class="friend__open" aria-label=${isMe ? '내 프로필 수정' : m.name + ' 프로필 보기'} onClick=${open}></button>
     <${Avatar} member=${m} size=${56} />
     <div class="friend__body">
       <div class="friend__name">
@@ -23,11 +25,7 @@ function FriendRow({ m, isMe }) {
           <${Icon} name="pencil" size=${20} /></button>`}
       </div>
       ${rel && html`<p class="friend__rel">${rel}</p>`}
-      ${m.intro && html`<div class="friend__intro">
-        <p class=${open ? '' : 'clamp-2'}>${m.intro}</p>
-        ${long && html`<button class="icon-btn friend__more" aria-expanded=${open ? 'true' : 'false'} aria-label=${open ? '소개 접기' : '소개 펼치기'} onClick=${() => setOpen(!open)}>
-          <${Icon} name=${open ? 'chevron-up' : 'chevron-down'} size=${20} /></button>`}
-      </div>`}
+      ${m.intro && html`<div class="friend__intro"><p class="clamp-2">${m.intro}</p></div>`}
     </div>
   </li>`;
 }
@@ -40,7 +38,7 @@ export function Friends({ data, me }) {
     profile=${randomCharacter(members.map((m) => m.profile))}
     onAdd=${(m) => { saveLater('members', m); toast(`${m.name}님을 추가했어요. 초대 링크를 보내 주세요`); }} />`);
 
-  return html`<main class="screen">
+  return html`<main class="screen screen--tint">
     <header class="big-title friends-title">
       <h1>친구들</h1>
       <span>
@@ -93,7 +91,7 @@ function ProfileEdit() {
       <${TextField} title="간단 소개" placeholder="예) 지니의 대학 동기" value=${f.relation} maxLength="30" onInput=${set('relation')} />
       <${TextArea} title="소개" maxLines=${3} placeholder=${'예) 사진 담당이에요.\n가고 싶은 곳 있으면 장소에 올려주세요!'} value=${f.intro} onInput=${set('intro')}
         help="최대 3줄 · 줄바꿈 가능 · 목록에서는 2줄까지 보여요" />
-      ${error && html`<p class="form__error" role="alert">${error}</p>`}
+      <${FormError} error=${error} />
     </div>
   <//>`;
 }

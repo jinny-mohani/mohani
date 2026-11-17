@@ -1,6 +1,6 @@
-// 13-2 새 여행 › 멤버 추가 · 11-3 친구들 › 멤버 추가 (바텀시트, 같은 화면을 같이 써요)
+// 13-2 새 여행 › 멤버 추가 · 11-3 친구들 › 멤버 추가 (전체 화면 팝업 — 입력 3칸 + 키보드라 시트는 비좁음, Nov 17)
 import { html, useState } from '../vendor/preact-htm.js';
-import { Avatar, Button, Icon, Sheet, TextField } from '../ui/components.js';
+import { Avatar, Button, Icon, Modal, TextField, FormError } from '../ui/components.js';
 import { closeOverlay } from '../overlay.js';
 
 /**
@@ -31,8 +31,8 @@ export function MemberAddSheet({ onAdd, profile, title = '멤버 추가', button
     }
   };
 
-  return html`<${Sheet} title=${title} footer=${html`<${Button} onClick=${submit} disabled=${busy}>${busy ? '저장 중…' : button}<//>`}>
-    <p class="lead" style="margin-top:-8px">추가하면 이 친구도 초대 링크로 들어와서 자기 프로필을 고를 수 있어요</p>
+  return html`<${Modal} title=${title} footer=${html`<${Button} onClick=${submit} disabled=${busy}>${busy ? '저장 중…' : button}<//>`}>
+    <p class="lead" style="margin-top:0">추가하면 이 친구도 초대 링크로 들어와서 자기 프로필을 고를 수 있어요</p>
     <form class="form" style="margin-top:20px" onSubmit=${submit}>
       <div class="member-add__avatar">
         <${Avatar} member=${{ name: name || ' ', profile }} size=${72} />
@@ -60,7 +60,7 @@ export function MemberAddSheet({ onAdd, profile, title = '멤버 추가', button
         onInput=${(e) => setIntro(e.currentTarget.value)}
         help="한 줄 · 친구들 목록에 보여요"
       />
-      ${error && html`<p class="form__error" role="alert">${error}</p>`}
+      <${FormError} error=${error} />
     </form>
   <//>`;
 }

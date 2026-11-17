@@ -29,7 +29,7 @@ export function useRoute() {
       const next = parseRoute();
       setRoute((prev) => {
         // 다른 탭이나 상세로 가면 맨 위부터 보여요
-        if (prev.path !== next.path) window.scrollTo(0, 0);
+        if (prev.path !== next.path) document.getElementById('app').scrollTo(0, 0);
         return next;
       });
     };

@@ -28,7 +28,7 @@ export function ProfileSelect({ data }) {
       }}
     />`);
 
-  return html`<main class="full">
+  return html`<main class="full screen--tint">
     <h1 class="page-title">${trip.title}에<br />초대받았어요</h1>
     <p class="page-sub">
       ${owner ? owner.name + '님이 초대했어요 · ' : ''}${shortDate(trip.startDate)} – ${shortDate(trip.endDate)}

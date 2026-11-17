@@ -2,6 +2,7 @@
 import { html, useRef, useState } from '../vendor/preact-htm.js';
 import {
   Button, ChipField, ChipGroup, Empty, Icon, Modal, Sheet, StatusLabel, TextArea, TextField,
+  FormError,
 } from '../ui/components.js';
 import { go, replace } from '../router.js';
 import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
@@ -10,6 +11,7 @@ import { api } from '../api.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import { tripDays, dayDate, datePart, formatDay, formatTime } from '../date.js';
 import { TYPE_ICON, OTHER_ICON, firstPhoto, sized } from '../reservation-util.js';
+import { TimeField } from '../ui/pickers.js';
 import { toast } from '../ui/toast.js';
 
 const TRANSPORTS = ['도보', '렌터카', '버스', '택시'];
@@ -57,7 +59,7 @@ export function Schedule({ data, query }) {
   const add = () => openOverlay(html`<${ScheduleForm} day=${day} />`);
 
   return html`<main class="screen">
-    <header class="big-title"><h1>일정</h1></header>
+    <header class="big-title"><h1>일정</h1>${!editing && html`<button class="title-add" aria-label="일정 추가" onClick=${add}><${Icon} name="plus" size=${24} stroke=${2} /></button>`}</header>
     <div class="page">
       <div class="day-bar">
         <${ChipGroup}
@@ -98,20 +100,19 @@ export function Schedule({ data, query }) {
                   <span class="tl__time">${timed ? s.time || '' : i + 1}</span>
                   <span class=${'tl__rail' + (last ? ' tl__rail--last' : '')}><i></i></span>
                   <div class="tl__body">
-                    <button class="tl__edit" aria-label=${(p ? p.name : s.placeName) + ' 일정 수정'}
-                      onClick=${() => openOverlay(html`<${ScheduleForm} day=${day} row=${s} />`)}></button>
-                    ${p
-                      ? html`<button class="tl__title tl__title--link" onClick=${() => go('/places/' + p.id)}>${p.name}</button>`
-                      : html`<span class="tl__title">${s.placeName || '일정'}</span>`}
+                    <button class="tl__edit" aria-label=${p ? p.name + ' 장소 보기' : (s.placeName || '일정') + ' 수정'}
+                      onClick=${() => (p ? go('/places/' + p.id) : openOverlay(html`<${ScheduleForm} day=${day} row=${s} />`))}></button>
+                    <span class="tl__title">${p ? p.name : s.placeName || '일정'}</span>
                     ${sub && html`<span class="tl__sub">${sub}</span>`}
                   </div>
+                  <button class="icon-btn tl__pencil" aria-label=${(p ? p.name : s.placeName || '일정') + ' 일정 수정'}
+                    onClick=${() => openOverlay(html`<${ScheduleForm} day=${day} row=${s} />`)}><${Icon} name="pencil" size=${18} /></button>
                 </li>`;
               })}
             </ol>`
           : html`<${Empty} icon="calendar-days" title=${`Day ${day} 일정이 없어요`} text="가고 싶은 곳을 순서대로 넣어 봐요. 시간은 비워도 돼요."
               action=${html`<${Button} onClick=${add}>일정 추가<//>`} />`}
     </div>
-    ${!editing && html`<button class="fab" aria-label="일정 추가" onClick=${add}><${Icon} name="plus" stroke=${2} /></button>`}
   </main>`;
 }
 
@@ -247,11 +248,11 @@ export function ScheduleForm({ day, row, placeId }) {
       <${ChipField} title="날짜" value=${f.day} onChange=${set('day')}
         options=${Array.from({ length: days }, (_, i) => ({ value: i + 1, label: 'Day ' + (i + 1) }))}
         help=${formatDay(dayDate(data.trip, f.day))} />
-      <label class="field">
+      <div class="field">
         <span class="field__label">시간 (선택)</span>
-        <input class=${'input' + (f.time ? '' : ' input--empty')} type="time" value=${f.time} onInput=${set('time')} />
+        <${TimeField} label="시간" value=${f.time} onChange=${set('time')} placeholder="시간 고르기" />
         <span class="field__help">비워 두면 순서 번호로 보여요</span>
-      </label>
+      </div>
       <div class="field">
         <span class="field__label">장소</span>
         ${place
@@ -274,7 +275,7 @@ export function ScheduleForm({ day, row, placeId }) {
         help="선택 · 이전 일정에서 여기까지" />
       ${customTr && html`<${TextField} title="이동수단 이름" placeholder="예) 페리" value=${f.transport} onInput=${set('transport')} />`}
       <${TextArea} title="메모" placeholder=${'예) 일출 보려면 6시 출발\n입장료 5,000원'} value=${f.memo} onInput=${set('memo')} />
-      ${error && html`<p class="form__error" role="alert">${error}</p>`}
+      <${FormError} error=${error} />
     </div>
   <//>`;
 }

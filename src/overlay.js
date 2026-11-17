@@ -121,7 +121,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-let focusedId = null;
+const focusedIds = new Set(); // 이미 한 번 포커스를 준 겹 (다시 드러날 때는 팝업 전체가 아니라 연 버튼으로)
 
 export function OverlayHost() {
   const [, force] = useState(0);
@@ -132,7 +132,7 @@ export function OverlayHost() {
   }, []);
   useEffect(() => {
     // 팝업이 떠 있는 동안 뒤 화면이 스크롤되지 않게
-    document.body.style.overflow = stack.length ? 'hidden' : '';
+    document.getElementById('app').style.overflow = stack.length ? 'hidden' : '';
 
     // 뒤 화면과 아래 겹은 inert: 누를 수도, 화면 읽기로 읽을 수도 없게 (알림 토스트는 그대로)
     const app = document.getElementById('app');
@@ -144,12 +144,12 @@ export function OverlayHost() {
     });
 
     const top = stack[stack.length - 1];
-    if (top && top.id !== focusedId) {
+    if (top && !focusedIds.has(top.id)) {
       // 새 겹: 팝업 자체로 포커스 (화면 읽기가 팝업 이름부터 읽어요)
       const layer = layers[layers.length - 1];
       const dialog = layer && (layer.querySelector('[role="dialog"], [role="alertdialog"]') || layer.firstElementChild);
       if (dialog) {
-        focusedId = top.id;
+        focusedIds.add(top.id);
         if (!dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1');
         dialog.focus({ preventScroll: true });
       } else {
@@ -157,7 +157,7 @@ export function OverlayHost() {
         requestAnimationFrame(emit);
       }
     } else if (!top) {
-      focusedId = null;
+      focusedIds.clear();
     }
     if (restoreTo && (!top || !topLayerEl() || !topLayerEl().contains(document.activeElement))) {
       // 닫힘: 연 버튼으로 포커스를 돌려줘요 (그 버튼이 아직 화면에 있을 때만)

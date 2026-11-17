@@ -1,6 +1,6 @@
 // 13 새 여행 만들기 (전체 화면 팝업) · 13-1 초대 링크 공유 · 02-1 초대 안내 시트
 import { html, useState } from '../vendor/preact-htm.js';
-import { Avatar, Button, Icon, Modal, Sheet, TextField } from '../ui/components.js';
+import { Avatar, Button, Icon, Modal, Sheet, TextField , FormError } from '../ui/components.js';
 import { openOverlay, closeOverlay, closeAllOverlays, replaceOverlay } from '../overlay.js';
 import { createTrip, saveRow, uploadPhoto, enterFromUrl } from '../store.js';
 import { replace } from '../router.js';
@@ -8,7 +8,7 @@ import { randomCharacter } from '../members.js';
 import { resizeImage } from '../image.js';
 import { inviteUrl, shortUrl, copyText, shareInvite } from '../share.js';
 import { MemberAddSheet } from './member-add.js';
-import { DateField } from '../ui/pickers.js';
+import { DateRangeField } from '../ui/pickers.js';
 import { toast } from '../ui/toast.js';
 
 export function NewTripModal() {
@@ -85,13 +85,8 @@ export function NewTripModal() {
         onInput=${(e) => setDestination(e.currentTarget.value)} />
       <div class="field">
         <span class="field__label" id="date-label">날짜</span>
-        <div class="field-pair" role="group" aria-labelledby="date-label">
-          <${DateField} label="출발일" placeholder="출발일" value=${startDate}
-            onChange=${(v) => { setStartDate(v); if (endDate && endDate < v) setEndDate(''); }} />
-          <span class="field-pair__dash">–</span>
-          <${DateField} label="도착일" placeholder="도착일" value=${endDate} min=${startDate}
-            trip=${startDate ? { startDate, endDate: startDate } : null} onChange=${setEndDate} />
-        </div>
+        <${DateRangeField} label="여행 날짜" placeholder="출발일 – 도착일" start=${startDate} end=${endDate}
+          onChange=${(a, b) => { setStartDate(a); setEndDate(b); }} />
         <span class="field__help">날짜를 고르면 Day 탭이 자동으로 만들어져요</span>
       </div>
       <div class="field">
@@ -143,7 +138,7 @@ export function NewTripModal() {
           )}
         </ul>
       </div>
-      ${error && html`<p class="form__error" role="alert">${error}</p>`}
+      <${FormError} error=${error} />
     </div>
   <//>`;
 }

@@ -102,6 +102,12 @@ const data = {
     await page.click(`[aria-label="${label}"]`); await page.waitForSelector('.cal');
     await page.click(`.cal__d >> text="${day}"`); await page.click('.sheet__foot >> text=선택 완료'); await page.waitForTimeout(150);
   };
+  // 기간 달력: 시작·끝을 차례로
+  const pickRange = async (label, d1, d2) => {
+    await page.click(`[aria-label="${label}"]`); await page.waitForSelector('.cal');
+    await page.click(`.cal__d >> text="${d1}"`); await page.click(`.cal__d >> text="${d2}"`);
+    await page.click('.sheet__foot >> text=선택 완료'); await page.waitForTimeout(150);
+  };
   const shot = async (n) => {
     await page.waitForTimeout(400);
     await page.screenshot({ path: `${OUT}/${n}.png` });
@@ -113,15 +119,14 @@ const data = {
   await page.click('text=만들고 초대 링크 받기'); await page.waitForTimeout(200);
   console.log('validation:', await page.textContent('.form__error'));
   await page.fill('input[placeholder="예) 제주 우정여행"]', '부산 먹방여행');
-  await pickDate('출발일', 24);
-  await pickDate('도착일', 26);
+  await pickRange('여행 날짜', 24, 26);
   await page.fill('input[placeholder="예) 지니"]', '지니');
-  await page.click('[aria-label="멤버 추가"]'); await page.waitForSelector('.sheet');
-  await page.fill('.sheet input[placeholder="예) 도윤"]', '수아');
-  await page.fill('.sheet input[placeholder="예) 지니의 사촌"]', '대학 동기');
+  await page.click('[aria-label="멤버 추가"]'); await page.waitForSelector('.layer:nth-of-type(2) .modal');
+  await page.fill('.layer:last-of-type input[placeholder="예) 도윤"]', '수아');
+  await page.fill('.layer:last-of-type input[placeholder="예) 지니의 사촌"]', '대학 동기');
   await shot('13-2-member-sheet');
-  await page.click('.sheet__foot >> text=추가하기'); await page.waitForTimeout(300);
-  console.log('sheet closed, modal kept:', !(await page.$('.sheet')), !!(await page.$('.modal')));
+  await page.click('.layer:last-of-type .modal__foot >> text=추가하기'); await page.waitForTimeout(300);
+  console.log('member popup closed, trip modal kept:', (await page.$$('.modal')).length === 1);
   await shot('13-new-trip');
   await page.click('text=만들고 초대 링크 받기'); await page.waitForSelector('.done-hero'); await shot('13-1-created');
   console.log('create_trip members:', JSON.stringify(posts.find((p) => p.action === 'create_trip').members.map((m) => m.name + (m.isOwner ? '*' : ''))));
@@ -138,7 +143,7 @@ const data = {
   await page.click('.home-members button >> nth=1'); await shot('03-8-friend');
   await page.click('.dialog [aria-label="닫기"]'); await page.waitForTimeout(200);
   await page.click('[aria-label="여행 설정"]'); await page.waitForSelector('.modal');
-  await pickDate('도착일', 20); await shot('03-4-settings');
+  await pickRange('여행 날짜', 19, 20); await shot('03-4-settings');
   await page.click('text=최근 삭제한 항목'); await page.waitForTimeout(500); await shot('03-7-deleted');
   console.log('deleted url:', page.url(), 'items:', await page.$$eval('.deleted-row', (r) => r.length));
   await page.click('.pill-btn >> nth=0'); await page.waitForTimeout(300);
@@ -153,7 +158,7 @@ const data = {
   await page.click('[aria-label="예약 추가"]'); await shot('07-0-sheet');
   await page.click('.sheet >> text=항공권'); await page.waitForSelector('.modal');
   await page.click('[aria-label="항공사"]'); await page.waitForSelector('.opt-list'); await shot('07-1-airline-picker');
-  await page.click('.opt >> text=대한항공');
+  await page.click('.opt >> text=대한항공'); await page.waitForTimeout(200);
   await page.fill('[aria-label="편명 숫자"]', '724');
   await page.click('[aria-label="출발 공항"]'); await page.fill('.sheet input[aria-label="검색"]', 'kix'); await shot('07-1-airport-picker'); await page.click('.opt >> nth=0');
   await page.click('[aria-label="도착 공항"]'); await page.click('.sheet >> text=인천');

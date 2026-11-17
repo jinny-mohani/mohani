@@ -1,5 +1,5 @@
 // 공통 컴포넌트 — 피그마 'Components' 프레임과 같은 이름으로 맞췄어요.
-import { html } from '../vendor/preact-htm.js';
+import { html, useEffect, useRef } from '../vendor/preact-htm.js';
 import { ICONS, FILLED } from './icons.js';
 import { TABS, back, replace } from '../router.js';
 import { closeOverlay } from '../overlay.js';
@@ -37,7 +37,7 @@ export function TabBar({ active }) {
         onClick=${(e) => {
           e.preventDefault();
           if (!on) replace('/' + t.id);
-          else window.scrollTo({ top: 0, behavior: 'smooth' });
+          else document.getElementById('app').scrollTo({ top: 0, behavior: 'smooth' });
         }}
       >
         <${Icon} name=${t.icon} filled=${on} />
@@ -225,10 +225,10 @@ export function Dialog({ label, children }) {
 }
 
 /** 제목 + 칩 고르기 (구분·상태·담당 등) */
-export function ChipField({ title, options, value, onChange, help }) {
+export function ChipField({ title, options, value, onChange, help, scroll }) {
   return html`<div class="field">
     <span class="field__label">${title}</span>
-    <div class="chips chips--wrap" role="radiogroup" aria-label=${title}>
+    <div class=${'chips' + (scroll ? '' : ' chips--wrap')} role="radiogroup" aria-label=${title}>
       ${options.map((o) => {
         const opt = typeof o === 'string' ? { value: o, label: o } : o;
         return html`<${Chip}
@@ -310,4 +310,15 @@ export function PhotoField({ title = '사진', photos, onChange, max = 3 }) {
       </label>`}
     </div>
   </div>`;
+}
+
+/** 입력 오류 문구 — 나타나면 화면 가운데로 스크롤하고 알림도 띄워요 (긴 폼 맨 아래라 안 보이던 문제) */
+export function FormError({ error }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!error || !ref.current) return;
+    ref.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    import('./toast.js').then(({ toast }) => toast(error));
+  }, [error]);
+  return error ? html`<p class="form__error" role="alert" ref=${ref}>${error}</p>` : null;
 }
