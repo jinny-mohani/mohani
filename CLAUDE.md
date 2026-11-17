@@ -32,3 +32,9 @@
   - 앱 코드에 들어가 공개돼도 됨 (초대코드 없이는 여행 데이터를 읽을 수 없음)
   - Code.gs 수정 후에는 '배포 관리 → 새 버전'으로 배포해야 URL이 유지됨
 - 앱 주소(GitHub Pages): https://jinny-mohani.github.io/mohani/ — 초대 링크는 `?t=초대코드`
+
+## 디자인 점검 도구 (Impeccable 4.9.2)
+- `.claude/skills/impeccable/` — GitHub(pbakaus/impeccable)에서 직접 복사해 설치 (impeccable.style 다운로드는 이 환경에서 막혀 있음). 사용 기록 전송(telemetry)은 꺼 둠, 자동 훅은 설치 안 함
+- 쓸 명령: audit · critique · polish · harden · typeset · document · clarify. **live 모드는 쓰지 않는다** (승인·격리를 끄고 AI를 실행할 수 있음)
+- 화면 점검: 앱 데이터가 시트에서 오므로, 가짜 데이터로 띄운 뒤 `impeccable detect --cdp` 로 화면별 검사
+- 최근 리포트: `docs/점검-리포트-impeccable.md`
