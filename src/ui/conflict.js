@@ -7,7 +7,15 @@ import { openOverlay, closeOverlay } from '../overlay.js';
 export function askConflict(name) {
   const who = name || '다른 친구';
   return new Promise((resolve) => {
-    const pick = (v) => closeOverlay(() => resolve(v));
+    let picked = false;
+    const pick = (v) => {
+      picked = true;
+      closeOverlay(() => resolve(v));
+    };
+    // 뒤로 가기·Esc로 닫혀도 답을 줘요 (기본 = 상대 글로 두기). 답이 없으면 저장이 멈춘 채로 남아요
+    const onClose = () => {
+      if (!picked) resolve('theirs');
+    };
     openOverlay(html`<div>
       <div class="dim"></div>
       <section class="dialog conflict" role="alertdialog" aria-modal="true" aria-labelledby="conflict-title">
@@ -19,6 +27,6 @@ export function askConflict(name) {
           <${Button} variant="secondary" onClick=${() => pick('mine')}>내 글로 바꾸기<//>
         </div>
       </section>
-    </div>`);
+    </div>`, { onClose });
   });
 }

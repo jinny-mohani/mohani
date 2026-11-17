@@ -63,9 +63,11 @@ export function Home({ data, me }) {
         </button>
         <div class="home-hero__text">
           <p class="home-hero__dday">${ddayText(trip)}</p>
-          <button class="home-hero__title" onClick=${() => go('/trips')} aria-label=${trip.title + ', 다른 여행 보기'}>
-            <span>${trip.title}</span><${Icon} name="chevron-down" size=${20} stroke=${2} />
-          </button>
+          <h1 class="home-hero__h1">
+            <button class="home-hero__title" onClick=${() => go('/trips')} aria-label=${trip.title + ', 다른 여행 보기'}>
+              <span>${trip.title}</span><${Icon} name="chevron-down" size=${20} stroke=${2} />
+            </button>
+          </h1>
           <p class="home-hero__date">${formatDay(trip.startDate)} 출발 · ${nightsLabel(trip)}</p>
         </div>
       </div>

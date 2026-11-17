@@ -275,7 +275,7 @@ export function ReservationDetail({ data, id }) {
       </ul>
 
       ${tagList.length > 0 && html`<div class="detail__more">
-        <h3>추가 정보</h3>
+        <h2>추가 정보</h2>
         <div class="detail__tags">${tagList.map((t) => html`<span class="kind-chip">${t}</span>`)}</div>
       </div>`}
       ${r.memo && html`<p class="memo-box"><${Icon} name="file-text" size=${16} /><span>${r.memo}</span></p>`}
