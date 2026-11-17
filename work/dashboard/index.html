@@ -1,82 +1,206 @@
 <meta name="dash-one-writer">
 <style>
-  .jb { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
-  .jb-head { display: grid; gap: var(--cds-gap-sm); }
-  .jb-title { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); text-wrap: balance; }
-  .jb-lede { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); line-height: 1.6; max-width: 65ch; }
-  .jb-lede b { color: var(--color-fg); font-variant-numeric: tabular-nums; }
-  .jb-h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
-  .jb-note { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
-  .jb-sec { display: grid; gap: var(--cds-gap-md); }
-  .jb-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--cds-gap-md); min-height: 120px; }
-  .jb-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
-  .jb-card.is-hold { opacity: .7; }
-  .jb-top { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
-  .jb-chip { font-size: var(--cds-font-size-caption); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--color-border-line); color: var(--color-fg-muted); }
-  .jb-chip.st-진행중 { color: var(--color-fg); border-color: var(--color-fg-muted); }
-  .jb-chip.warn { color: var(--color-warn); border-color: var(--color-warn); }
-  .jb-name { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); line-height: 1.4; }
-  .jb-alias { color: var(--color-fg-muted); font-weight: 400; }
-  .jb-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-top: var(--cds-gap-xs); }
-  .jb-seg { height: 6px; border-radius: 3px; background: var(--cds-chart-grid); }
-  .jb-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; font-size: 11px; color: var(--color-fg-muted); }
-  .jb-steps span.on { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
-  .jb-stage { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-  .jb-dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px var(--cds-gap-sm); font-size: var(--cds-font-size-caption); line-height: 1.5; }
-  .jb-dl dt { color: var(--color-fg-muted); }
-  .jb-dl dd { margin: 0; min-width: 0; }
-  .jb-last { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
-  .jb-scroll { overflow-x: auto; }
-  .jb-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); min-width: 560px; }
-  .jb-table th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
-  .jb-table td { padding: 8px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; line-height: 1.5; }
-  .jb-table td.c-date { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--color-fg-muted); }
-  .jb-table tr.is-unmapped td.c-task { color: var(--color-warn); }
-  .jb-table a { color: inherit; }
+  /* 밤 사무실: 벽(남색) 위 간판과 창문, 나무 바닥 위에 업무마다 책상 하나. 의도적으로 한 가지 어두운 톤. */
+  .po {
+    --po-wall: #262b45; --po-wall-dark: #1c2036; --po-floor: #4a3426; --po-floor-line: #3d2b1f;
+    --po-ink: #f4ecd8; --po-ink-dim: #c9bda3; --po-lamp: #ffd166; --po-mint: #7be0b0; --po-warn: #ff9f6b;
+    --po-panel: #2f2438; --po-edge: #120e18; --po-paper: #f4ecd8; --po-paper-ink: #2a2230;
+    --po-font: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Apple SD Gothic Neo", "Malgun Gothic", monospace;
+    font-family: var(--po-font); color: var(--po-ink); background: var(--po-floor);
+    border: 4px solid var(--po-edge); box-shadow: 0 0 0 4px var(--po-floor-line) inset;
+    display: grid; gap: 0; image-rendering: pixelated; color-scheme: dark;
+  }
+  .po-wall { background: var(--po-wall); border-bottom: 6px solid var(--po-wall-dark); padding: 18px 16px 16px; display: grid; gap: 14px; }
+  .po-wallrow { display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch; }
+  .po-sign { flex: 1 1 260px; min-width: 0; background: var(--po-edge); border: 4px solid #5a4a3a; box-shadow: 4px 4px 0 var(--po-wall-dark); padding: 10px 14px; display: grid; gap: 6px; }
+  .po-title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .04em; color: var(--po-lamp); text-shadow: 2px 2px 0 #8a5a00; text-wrap: balance; }
+  .po-lede { margin: 0; font-size: 13px; line-height: 1.7; color: var(--po-ink-dim); }
+  .po-lede b { color: var(--po-mint); font-variant-numeric: tabular-nums; }
+  .po-window { flex: 0 1 180px; min-height: 84px; border: 4px solid #5a4a3a; background:
+      linear-gradient(#0f1430 0 0) padding-box,
+      #0f1430;
+    position: relative; overflow: hidden; box-shadow: 4px 4px 0 var(--po-wall-dark); }
+  .po-window::before { content: ""; position: absolute; inset: auto 0 0 0; height: 46%; background:
+      linear-gradient(90deg, #1d2450 0 12%, transparent 12% 16%, #232b5c 16% 30%, transparent 30% 34%, #1a2048 34% 52%, transparent 52% 56%, #222a58 56% 74%, transparent 74% 78%, #1d2450 78% 100%); }
+  .po-window::after { content: ""; position: absolute; inset: 0; background:
+      radial-gradient(2px 2px at 20% 70%, var(--po-lamp) 99%, transparent),
+      radial-gradient(2px 2px at 44% 78%, var(--po-lamp) 99%, transparent),
+      radial-gradient(2px 2px at 62% 66%, var(--po-lamp) 99%, transparent),
+      radial-gradient(2px 2px at 86% 74%, var(--po-lamp) 99%, transparent),
+      radial-gradient(1px 1px at 30% 20%, #fff 99%, transparent),
+      radial-gradient(1px 1px at 72% 30%, #fff 99%, transparent),
+      linear-gradient(90deg, transparent calc(50% - 2px), #5a4a3a calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px)); }
+  .po-legend { margin: 0; font-size: 12px; color: var(--po-ink-dim); line-height: 1.6; }
+
+  .po-floor { padding: 22px 16px; display: grid; gap: 18px;
+    background: repeating-linear-gradient(0deg, var(--po-floor) 0 22px, var(--po-floor-line) 22px 24px); }
+  .po-h2 { margin: 0; font-size: 15px; font-weight: 800; color: var(--po-lamp); letter-spacing: .06em; }
+  .po-desks { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 22px 18px; min-height: 160px; }
+
+  .po-desk { min-width: 0; display: grid; gap: 8px; align-content: start; }
+  .po-desk > summary { list-style: none; cursor: pointer; display: grid; gap: 6px; outline: none; }
+  .po-desk > summary::-webkit-details-marker { display: none; }
+  .po-desk > summary:focus-visible .po-scene { outline: 3px solid var(--po-lamp); outline-offset: 2px; }
+  .po-bubble { position: relative; background: var(--po-paper); color: var(--po-paper-ink); border: 3px solid var(--po-edge); padding: 6px 8px; font-size: 12px; line-height: 1.45; min-height: 3.3em;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .po-bubble::after { content: ""; position: absolute; left: 26px; bottom: -9px; width: 10px; height: 6px; background: var(--po-paper); border: 3px solid var(--po-edge); border-top: 0; }
+  .po-desk.is-hold .po-bubble { color: #7a6f80; font-style: italic; }
+  .po-scene { display: block; width: 100%; height: auto; aspect-ratio: 64 / 40; image-rendering: pixelated; background: var(--po-floor); }
+  .po-plate { background: var(--po-panel); border: 3px solid var(--po-edge); box-shadow: 3px 3px 0 var(--po-edge); padding: 8px 10px; display: grid; gap: 6px; }
+  .po-name { margin: 0; font-size: 13px; font-weight: 800; line-height: 1.4; color: var(--po-ink); }
+  .po-alias { color: var(--po-ink-dim); font-weight: 400; }
+  .po-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .po-tag { font-size: 11px; padding: 1px 6px; border: 2px solid var(--po-ink-dim); color: var(--po-ink-dim); }
+  .po-tag.st-진행중 { border-color: var(--po-mint); color: var(--po-mint); }
+  .po-tag.st-기획중 { border-color: var(--po-lamp); color: var(--po-lamp); }
+  .po-tag.warn { border-color: var(--po-warn); color: var(--po-warn); }
+  .po-hp { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+  .po-hp i { height: 8px; background: #3a3046; box-shadow: inset 0 -2px 0 #2a2232; }
+  .po-hp i.on { background: var(--po-mint); box-shadow: inset 0 -2px 0 #3f9a74; }
+  .po-hp i.done { background: var(--po-lamp); box-shadow: inset 0 -2px 0 #b8892a; }
+  .po-hpl { display: flex; justify-content: space-between; font-size: 11px; color: var(--po-ink-dim); }
+  .po-more { font-size: 11px; color: var(--po-ink-dim); }
+  .po-desk[open] .po-more { color: var(--po-lamp); }
+  .po-detail { background: var(--po-paper); color: var(--po-paper-ink); border: 3px solid var(--po-edge); box-shadow: 3px 3px 0 var(--po-edge); padding: 10px; display: grid; gap: 8px; font-size: 12px; line-height: 1.55; }
+  .po-detail dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; }
+  .po-detail dt { font-weight: 800; }
+  .po-detail dd { margin: 0; min-width: 0; }
+  .po-detail ul { margin: 0; padding-left: 16px; display: grid; gap: 3px; }
+  .po-detail a { color: inherit; }
+
+  .po-book { background: var(--po-paper); color: var(--po-paper-ink); border: 4px solid var(--po-edge); box-shadow: 4px 4px 0 var(--po-edge); padding: 12px; display: grid; gap: 8px; }
+  .po-book .po-h2 { color: var(--po-paper-ink); }
+  .po-note { margin: 0; font-size: 12px; color: #5d5266; }
+  .po-scroll { overflow-x: auto; }
+  .po-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 560px; }
+  .po-table th { text-align: left; padding: 5px 6px; border-bottom: 3px solid var(--po-paper-ink); white-space: nowrap; }
+  .po-table td { padding: 6px; border-bottom: 2px dashed #c8bba0; vertical-align: top; line-height: 1.5; }
+  .po-table td.c-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .po-table tr.is-unmapped td.c-task { color: #c4501c; font-weight: 800; }
+  .po-table a { color: inherit; }
+  @media (max-width: 480px) { .po-title { font-size: 18px; } .po-window { display: none; } }
 </style>
 
-<div class="jb">
-  <header class="jb-head" id="top">
-    <h1 class="jb-title">진희 업무 진행판</h1>
-    <p class="jb-lede">진행 중인 업무 <b data-draw="n-active" data-source="summary" data-field="active" data-row="0">—</b>건, 최근 2주 동안 모인 흔적 <b data-draw="n-recent" data-source="summary" data-field="recent" data-row="0">—</b>건. 어느 업무인지 정해지지 않은 흔적 <b data-draw="n-unmapped" data-source="summary" data-field="unmapped" data-row="0">—</b>건, 5일 넘게 소식이 없는 진행 업무 <b data-draw="n-stale" data-source="summary" data-field="stale" data-row="0">—</b>건.</p>
-  </header>
-
-  <section class="jb-sec" id="tasks">
-    <h2 class="jb-h2">업무별 진행</h2>
-    <p class="jb-note">단계: 기획 → 시안 → 검토 → 개발 전달 → 완료. 칸이 찬 만큼 진행된 거예요.</p>
-    <div class="jb-cards" data-draw="cards" data-source="tasks"></div>
-  </section>
-
-  <section class="jb-sec" id="trail">
-    <h2 class="jb-h2">최근 2주 흔적</h2>
-    <p class="jb-note">Claude Code 세션, 슬랙, 노션에서 모은 기록이에요. 업무가 "미정"인 줄은 어느 업무인지 Claude에게 알려 주세요.</p>
-    <div class="jb-scroll">
-      <table class="jb-table" data-source="log" data-row-key="id">
-        <thead><tr><th data-field="date">날짜</th><th data-field="task">업무</th><th data-field="text">내용</th><th data-field="from">출처</th><th data-field="link">링크</th></tr></thead>
-        <tbody data-draw="logrows"></tbody>
-      </table>
+<div class="po">
+  <div class="po-wall" id="top">
+    <div class="po-wallrow">
+      <div class="po-sign">
+        <h1 class="po-title">진희 업무 진행판</h1>
+        <p class="po-lede">지금 일하는 책상 <b data-draw="n-active" data-source="summary" data-field="active" data-row="0">—</b>개 · 최근 2주 흔적 <b data-draw="n-recent" data-source="summary" data-field="recent" data-row="0">—</b>건 · 주인 없는 흔적 <b data-draw="n-unmapped" data-source="summary" data-field="unmapped" data-row="0">—</b>건 · 5일 넘게 조용한 책상 <b data-draw="n-stale" data-source="summary" data-field="stale" data-row="0">—</b>개</p>
+      </div>
+      <div class="po-window" aria-hidden="true"></div>
     </div>
-  </section>
+    <p class="po-legend">책상 하나가 업무 하나예요. 타자 치는 중 = 진행중, 전구 = 기획중, 잠자는 중 = 보류, 만세 = 완료. 책상을 누르면 자세한 내용과 흔적이 열려요.</p>
+  </div>
+
+  <div class="po-floor">
+    <section id="desks" aria-label="업무 책상">
+      <div class="po-desks" data-draw="desks" data-source="tasks log"></div>
+    </section>
+
+    <section class="po-book" id="trail">
+      <h2 class="po-h2">최근 2주 흔적 일지</h2>
+      <p class="po-note">Claude Code 세션, 슬랙, 노션에서 모은 기록이에요. 업무가 "미정"인 줄은 어느 업무인지 Claude에게 알려 주세요.</p>
+      <div class="po-scroll">
+        <table class="po-table" data-source="log" data-row-key="id">
+          <thead><tr><th data-field="date">날짜</th><th data-field="task">업무</th><th data-field="text">내용</th><th data-field="from">출처</th><th data-field="link">링크</th></tr></thead>
+          <tbody data-draw="logrows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 </div>
 
 <script>
-  window.jb = window.jb || {};
-  jb.parse = d3.timeParse('%Y-%m-%d');
-  jb.fmt = d3.timeFormat('%-m/%-d');
-  jb.daysAgo = (s) => { const d = jb.parse(s); if (!d) return null; const t = new Date(); t.setHours(0,0,0,0); return Math.round((t - d) / 86400000); };
-  jb.STEPS = ['기획', '시안', '검토', '개발 전달', '완료'];
+  window.po = window.po || {};
+  po.parse = d3.timeParse('%Y-%m-%d');
+  po.daysAgo = (s) => { const d = po.parse(s); if (!d) return null; const t = new Date(); t.setHours(0,0,0,0); return Math.round((t - d) / 86400000); };
+  po.recent = (r) => { const n = po.daysAgo(r.date); return n !== null && n <= 14; };
+  po.STEPS = ['기획', '시안', '검토', '전달', '완료'];
+  po.LOOKS = [
+    { hair: '#3b2416', shirt: '#4f7cff', skin: '#f2c9a0' },
+    { hair: '#1c1c28', shirt: '#e0607e', skin: '#e9b98f' },
+    { hair: '#8a4b22', shirt: '#59b37a', skin: '#f6d2b0' },
+    { hair: '#d9a441', shirt: '#9b6bd6', skin: '#f2c9a0' },
+    { hair: '#4a2c4f', shirt: '#e08a3c', skin: '#dfae86' },
+  ];
+  po.motion = !window.matchMedia || window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+
+  // 64x40 픽셀 장면. 상태마다 모니터와 직원 자세가 다름.
+  po.paint = (cv, t, look, frame) => {
+    const W = 64, H = 40;
+    if (cv.width !== W) { cv.width = W; cv.height = H; }
+    const g = cv.getContext('2d');
+    const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+    g.clearRect(0, 0, W, H);
+    R(0, 0, W, H, '#4a3426');
+    for (let y = 4; y < H; y += 8) R(0, y, W, 1, '#3d2b1f');
+    R(4, 36, 56, 2, 'rgba(0,0,0,.25)');
+    const st = t.status;
+    // 의자
+    R(9, 24, 9, 2, '#2a2232'); R(16, 14, 2, 12, '#2a2232'); R(12, 26, 2, 8, '#1a1520'); R(9, 34, 9, 1, '#1a1520');
+    // 책상
+    R(6, 24, 52, 3, '#b47a46'); R(6, 27, 52, 2, '#7a4a28'); R(8, 29, 3, 7, '#5e381e'); R(53, 29, 3, 7, '#5e381e'); R(40, 27, 13, 7, '#6e4423'); R(45, 30, 3, 1, '#c9a46a');
+    // 모니터
+    R(30, 10, 18, 12, '#1d2233'); R(37, 22, 4, 2, '#1d2233'); R(34, 23, 10, 1, '#141826');
+    let scr = '#0b0d14';
+    if (st === '진행중') scr = '#1e5a8a'; else if (st === '기획중') scr = '#3a3a20'; else if (st === '완료') scr = '#1f6b4a';
+    R(31, 11, 16, 10, scr);
+    if (st === '진행중') {
+      const lines = [[33, 13, 8], [35, 15, 9], [35, 17, 6], [33, 19, 10]];
+      lines.forEach(([x, y, w], i) => R(x, y, (i + frame) % 4 === 0 ? Math.max(2, w - 4) : w, 1, i % 2 ? '#7be0b0' : '#9fd8ff'));
+      if (frame % 2) R(44, 19, 1, 1, '#ffffff');
+    } else if (st === '기획중') {
+      R(33, 13, 5, 4, '#ffd166'); R(40, 13, 5, 4, '#f4ecd8'); R(36, 18, 6, 1, '#c9bda3');
+    } else if (st === '완료') {
+      R(36, 14, 2, 2, '#7be0b0'); R(38, 16, 2, 2, '#7be0b0'); R(40, 14, 2, 2, '#7be0b0'); R(42, 12, 2, 2, '#7be0b0');
+    }
+    // 키보드, 머그, 화분
+    R(24, 23, 9, 1, '#8b8fa3');
+    R(50, 20, 3, 4, '#f4ecd8'); R(53, 21, 1, 2, '#f4ecd8');
+    if (st === '진행중' && frame % 2 === 0) R(51, 18, 1, 1, '#c9bda3');
+    R(56, 17, 4, 4, '#3f9a74'); R(57, 15, 2, 2, '#59b37a'); R(56, 21, 4, 3, '#a0522d');
+    // 직원
+    const { hair, shirt, skin } = look;
+    if (st === '보류') {
+      R(12, 16, 7, 8, shirt); R(19, 20, 6, 4, shirt);
+      R(20, 17, 6, 5, skin); R(20, 16, 6, 2, hair); R(25, 17, 1, 4, hair);
+      const z = frame % 3;
+      R(26 + z, 12 - z, 3, 1, '#c9bda3'); R(28 + z, 11 - z, 1, 1, '#c9bda3'); R(26 + z, 10 - z, 3, 1, '#c9bda3');
+      return;
+    }
+    const bob = st === '진행중' ? frame % 2 : 0;
+    R(12, 15, 7, 9, shirt); R(12, 24, 7, 2, '#2b3150'); R(18, 26, 2, 8, '#2b3150'); R(18, 34, 3, 1, '#141826');
+    R(12, 8 + bob, 7, 7, skin); R(12, 7 + bob, 7, 3, hair); R(11, 8 + bob, 2, 5, hair);
+    R(17, 11 + bob, 1, 1, '#2a2232');
+    if (st === '진행중') {
+      R(18, 18, 5, 2, shirt); R(23, 19 + (frame % 2), 3, 2, skin);
+    } else if (st === '기획중') {
+      R(18, 17, 3, 2, shirt); R(18, 14, 2, 3, skin);
+      const on = frame % 2 === 0;
+      R(14, 1, 4, 4, on ? '#ffd166' : '#a8893f'); R(15, 5, 2, 1, '#8b8fa3');
+      if (on) { R(12, 2, 1, 1, '#ffd166'); R(19, 2, 1, 1, '#ffd166'); R(15, 0, 2, 0.5, '#ffd166'); }
+    } else if (st === '완료') {
+      const up = frame % 2 ? 0 : 1;
+      R(10, 4 + up, 2, 11, shirt); R(19, 4 + up, 2, 11, shirt); R(10, 2 + up, 2, 2, skin); R(19, 2 + up, 2, 2, skin);
+      R(4, 3, 1, 1, '#ffd166'); R(24, 5, 1, 1, '#7be0b0'); R(6, 9, 1, 1, '#e0607e');
+    } else {
+      R(18, 18, 4, 2, shirt);
+    }
+  };
 
   dash.calc('summary', {
     title: '진행판 요약 수치',
     description: '진행중 업무 수, 최근 14일 흔적 수, 업무 미정 흔적 수, 마지막 기록이 5일 넘은 진행중 업무 수',
     inputs: ['tasks', 'log'],
     fn: (tasks, log) => {
-      const recent = log.filter((r) => { const n = jb.daysAgo(r.date); return n !== null && n <= 14; });
+      const recent = log.filter((r) => { const d = d3.timeParse('%Y-%m-%d')(r.date); if (!d) return false; const t = new Date(); t.setHours(0,0,0,0); return (t - d) / 86400000 <= 14; });
+      const age = (s) => { const d = d3.timeParse('%Y-%m-%d')(s); if (!d) return 99; const t = new Date(); t.setHours(0,0,0,0); return Math.round((t - d) / 86400000); };
       return [{
         active: tasks.filter((t) => t.status === '진행중').length,
         recent: recent.length,
         unmapped: recent.filter((r) => !r.task).length,
-        stale: tasks.filter((t) => t.status === '진행중' && (jb.daysAgo(t.lastUpdate) ?? 99) > 5).length,
+        stale: tasks.filter((t) => t.status === '진행중' && age(t.lastUpdate) > 5).length,
       }];
     },
   });
@@ -88,51 +212,85 @@
     });
   });
 
-  dash.draw('cards', (el) => {
-    const q = dash.data('tasks');
-    if (q.status !== 'ok') { el.textContent = q.status === 'error' ? '업무 목록을 불러오지 못했어요' : '—'; return; }
-    const order = { '진행중': 0, '기획중': 1, '보류': 2, '완료': 3 };
-    const rows = [...q.data].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
-    el.replaceChildren();
-    rows.forEach((t) => {
-      const where = 'id=' + encodeURIComponent(t.id);
-      const mk = (tag, cls, field, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (field) { n.setAttribute('data-source', 'tasks'); n.setAttribute('data-field', field); n.setAttribute('data-where', where); } n.textContent = text ?? ''; return n; };
-      const card = document.createElement('article');
-      card.className = 'jb-card' + (t.status === '보류' ? ' is-hold' : '');
-      card.id = 'task-' + t.id;
+  dash.draw('desks', {
+    mount: (el) => {
+      const state = { frame: 0, timer: null, canvases: [] };
+      if (po.motion) state.timer = setInterval(() => {
+        state.frame = (state.frame + 1) % 6;
+        state.canvases.forEach(({ cv, t, look }) => { if (cv.isConnected) po.paint(cv, t, look, state.frame); });
+      }, 450);
+      return state;
+    },
+    update: (el, state) => {
+      const q = dash.data('tasks'); const lq = dash.data('log');
+      el.replaceChildren(); state.canvases = [];
+      if (q.status !== 'ok') { el.textContent = q.status === 'error' ? '업무 목록을 불러오지 못했어요' : '—'; return; }
+      const logs = lq.status === 'ok' ? lq.data : [];
+      const order = { '진행중': 0, '기획중': 1, '보류': 2, '완료': 3 };
+      const rows = [...q.data].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
+      rows.forEach((t, i) => {
+        const where = 'id=' + encodeURIComponent(t.id);
+        const mk = (tag, cls, field, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (field) { n.setAttribute('data-source', 'tasks'); n.setAttribute('data-field', field); n.setAttribute('data-where', where); } if (text != null) n.textContent = text; return n; };
+        const ago = po.daysAgo(t.lastUpdate);
+        const look = po.LOOKS[i % po.LOOKS.length];
 
-      const top = document.createElement('div'); top.className = 'jb-top';
-      top.append(mk('span', 'jb-chip st-' + t.status, 'status', t.status), mk('span', 'jb-chip', 'category', t.category));
-      const ago = jb.daysAgo(t.lastUpdate);
-      if (t.status === '진행중' && ago !== null && ago > 5) top.append(mk('span', 'jb-chip warn', null, ago + '일째 소식 없음'));
-      if (t.stage == null && t.status === '진행중') top.append(mk('span', 'jb-chip warn', null, '단계 확인 필요'));
+        const desk = document.createElement('details');
+        desk.className = 'po-desk' + (t.status === '보류' ? ' is-hold' : '');
+        desk.id = 'desk-' + t.id;
+        const sum = document.createElement('summary');
 
-      const name = mk('h3', 'jb-name', 'name', t.name);
-      if (t.alias) { const a = document.createElement('span'); a.className = 'jb-alias'; a.textContent = ' · ' + t.alias; name.append(a); }
+        const bubble = mk('div', 'po-bubble', 'now', t.status === '보류' ? '쿨쿨… (보류)' : t.now);
+        if (t.status === '보류') bubble.removeAttribute('data-field');
 
-      const track = document.createElement('div'); track.className = 'jb-track';
-      track.setAttribute('role', 'img');
-      track.setAttribute('aria-label', t.stage ? `5단계 중 ${t.stage}단계 ${t.stageName}` : t.stageName);
-      const steps = document.createElement('div'); steps.className = 'jb-steps';
-      jb.STEPS.forEach((s, i) => {
-        const seg = document.createElement('div'); seg.className = 'jb-seg';
-        if (t.stage && i < t.stage) seg.style.background = t.stage === 5 ? 'var(--color-ok)' : dash.colors[0];
-        track.append(seg);
-        const lab = document.createElement('span'); lab.textContent = s; if (t.stage === i + 1) lab.className = 'on';
-        steps.append(lab);
+        const cv = document.createElement('canvas');
+        cv.className = 'po-scene';
+        cv.setAttribute('role', 'img');
+        cv.setAttribute('aria-label', `${t.name} 책상: ${t.status}${t.stage ? `, 5단계 중 ${t.stage}단계 ${t.stageName}` : ''}`);
+        po.paint(cv, t, look, 0);
+        state.canvases.push({ cv, t, look });
+
+        const plate = document.createElement('div'); plate.className = 'po-plate';
+        const name = mk('h3', 'po-name', 'name', t.name);
+        if (t.alias) { const a = document.createElement('span'); a.className = 'po-alias'; a.textContent = ' · ' + t.alias; name.append(a); }
+        const tags = document.createElement('div'); tags.className = 'po-tags';
+        tags.append(mk('span', 'po-tag st-' + t.status, 'status', t.status), mk('span', 'po-tag', 'category', t.category));
+        if (t.status === '진행중' && ago !== null && ago > 5) tags.append(mk('span', 'po-tag warn', null, ago + '일째 조용함'));
+        if (t.stage == null && t.status === '진행중') tags.append(mk('span', 'po-tag warn', null, '단계 확인 필요'));
+        const hp = document.createElement('div'); hp.className = 'po-hp'; hp.setAttribute('aria-hidden', 'true');
+        po.STEPS.forEach((s, k) => { const b = document.createElement('i'); if (t.stage && k < t.stage) b.className = t.stage === 5 ? 'done' : 'on'; hp.append(b); });
+        const hpl = document.createElement('div'); hpl.className = 'po-hpl';
+        hpl.append(mk('span', null, 'stageName', t.stage ? `${t.stage}/5 ${t.stageName}` : t.stageName), mk('span', 'po-more', null, '자세히 ▾'));
+        plate.append(name, tags, hp, hpl);
+
+        sum.append(bubble, cv, plate);
+
+        const det = document.createElement('div'); det.className = 'po-detail';
+        const dl = document.createElement('dl');
+        dl.append(mk('dt', null, null, '지금'), mk('dd', null, 'now', t.now));
+        if (t.next) dl.append(mk('dt', null, null, '다음'), mk('dd', null, 'next', t.next));
+        const lastDd = mk('dd', null, null, null);
+        lastDd.append(mk('span', null, 'lastUpdate', t.lastUpdate), ago === 0 ? ' (오늘)' : ago != null ? ` (${ago}일 전)` : '');
+        dl.append(mk('dt', null, null, '기록'), lastDd);
+        det.append(dl);
+        const mine = logs.filter((r) => r.task === t.id && po.recent(r)).sort((a, b) => d3.descending(a.date, b.date));
+        if (mine.length) {
+          const ul = document.createElement('ul');
+          mine.forEach((r) => {
+            const li = document.createElement('li');
+            const tx = document.createElement('span');
+            tx.setAttribute('data-source', 'log'); tx.setAttribute('data-field', 'text'); tx.setAttribute('data-where', 'id=' + encodeURIComponent(r.id));
+            tx.textContent = r.text;
+            li.append(r.date.slice(5).replace('-', '/') + ' ', tx);
+            if (r.link && /^https:\/\//.test(r.link)) { const a = document.createElement('a'); a.href = r.link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = ' 열기'; li.append(a); }
+            ul.append(li);
+          });
+          det.append(ul);
+        }
+        desk.append(sum, det);
+        el.append(desk);
       });
-
-      const dl = document.createElement('dl'); dl.className = 'jb-dl';
-      dl.append(mk('dt', null, null, '지금'), mk('dd', null, 'now', t.now));
-      if (t.next) dl.append(mk('dt', null, null, '다음'), mk('dd', null, 'next', t.next));
-
-      const last = mk('div', 'jb-last', null, '');
-      const lv = mk('span', null, 'lastUpdate', t.lastUpdate);
-      last.append('마지막 기록 ', lv, ago === 0 ? ' (오늘)' : ago != null ? ` (${ago}일 전)` : '');
-
-      card.append(top, name, track, steps, dl, last);
-      el.append(card);
-    });
+    },
+    unmount: (el, state) => { if (state && state.timer) clearInterval(state.timer); },
   });
 
   dash.draw('logrows', (tb) => {
@@ -140,18 +298,15 @@
     tb.replaceChildren();
     if (lq.status !== 'ok') return;
     const names = new Map((tq.status === 'ok' ? tq.data : []).map((t) => [t.id, t.name]));
-    lq.data
-      .filter((r) => { const n = jb.daysAgo(r.date); return n !== null && n <= 14; })
-      .sort((a, b) => d3.descending(a.date, b.date))
-      .forEach((r) => {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-key', encodeURIComponent(r.id));
-        if (!r.task) tr.className = 'is-unmapped';
-        const td = (cls, text) => { const c = document.createElement('td'); c.className = cls; c.textContent = text; return c; };
-        const link = document.createElement('td'); link.className = 'c-link';
-        if (r.link && /^https:\/\//.test(r.link)) { const a = document.createElement('a'); a.href = r.link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = '열기'; link.append(a); }
-        tr.append(td('c-date', r.date), td('c-task', r.task ? (names.get(r.task) || r.task) : '미정'), td('c-text', r.text), td('c-from', r.from), link);
-        tb.append(tr);
-      });
+    lq.data.filter(po.recent).sort((a, b) => d3.descending(a.date, b.date)).forEach((r) => {
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-key', encodeURIComponent(r.id));
+      if (!r.task) tr.className = 'is-unmapped';
+      const td = (cls, text) => { const c = document.createElement('td'); c.className = cls; c.textContent = text; return c; };
+      const link = document.createElement('td'); link.className = 'c-link';
+      if (r.link && /^https:\/\//.test(r.link)) { const a = document.createElement('a'); a.href = r.link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = '열기'; link.append(a); }
+      tr.append(td('c-date', r.date), td('c-task', r.task ? (names.get(r.task) || r.task) : '미정'), td('c-text', r.text), td('c-from', r.from), link);
+      tb.append(tr);
+    });
   });
 </script>
