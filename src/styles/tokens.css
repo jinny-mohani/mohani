@@ -27,7 +27,8 @@
   --color-border: var(--grey-300);       /* 입력칸 테두리 */
   --color-divider: var(--grey-200);      /* 구분선 */
   --color-disabled: var(--grey-400);       /* 못 고르는 날짜·버튼 글자 */
-  --color-text-faint: var(--grey-500);     /* 아주 옅은 글자: 완료한 항목, 개수, 항공권 작은 라벨 (P1 대비 점검 대상) */
+  --color-text-faint: var(--grey-600);     /* 옅은 글자: 완료한 항목, 개수, 항공권 작은 라벨 (흰 바탕 4.6:1) */
+  --color-text-weak-on-surface: var(--grey-700); /* 연회색 카드 위 보조 글자 (grey-50 위 5.9:1 · grey-100 위 5.4:1) */
   --color-border-strong: var(--grey-400);  /* 체크박스·라벨처럼 또렷해야 하는 테두리 */
   --color-icon-faint: var(--grey-400);     /* 보조 아이콘: 목록 › , 잠금 표시 */
   --color-placeholder: var(--grey-500);    /* 사진 없을 때 자리 아이콘 */

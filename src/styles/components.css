@@ -398,3 +398,15 @@ button.status::after { content: ''; position: absolute; inset: -8px; } /* 터치
 .cal__d--trip { background: var(--color-surface); border-radius: 0; }
 .cal__d--today { font-weight: var(--fw-bold); text-decoration: underline; }
 .cal__d--on { background: var(--color-primary); color: var(--color-on-primary); border-radius: 22px; }
+
+/*
+ * 연회색 카드(grey-50·100) 위 보조 글자는 한 단계 진하게 (Impeccable P1)
+ * grey-600은 흰 바탕에선 4.6:1로 통과하지만 카드 위에선 4.2~4.4:1로 기준(4.5:1) 미달.
+ * 화면마다 고치지 않고, 카드 안에서만 역할 토큰 값을 바꿔요. 새 카드를 만들면 여기에 추가.
+ */
+:is(.card, .res-card, .check-card, .member-card, .trip-card, .member-item, .photo-pick, .info-box, .notice-box,
+    .setting-row, .other-card, .all-row, .memo-box, .tl__res, .collapse:not(.collapse--open), .place-pick, .search,
+    .pick-row--on, .place-detail__acts, .info-cells, .flight-panel__cells, .link-box, .char__img--upload, .empty__icon) {
+  --color-text-weak: var(--color-text-weak-on-surface);
+  --color-text-faint: var(--color-text-weak-on-surface);
+}
