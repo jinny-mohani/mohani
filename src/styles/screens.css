@@ -322,12 +322,20 @@
 .other-card .kind-chip { background: var(--color-divider); }
 
 /* 전체 탭 한 줄 카드 */
-.all-row { display: flex; align-items: center; gap: 8px; padding: 16px 12px 16px 16px; border-radius: 16px; background: var(--color-surface-weak); }
-.all-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left; }
+/* 05 전체 탭 (시안 B): 사진 72px + 글, 상태 라벨은 제목 아래 줄 */
+.all-row { position: relative; border-radius: 16px; background: var(--color-surface-weak); }
+.all-row__main { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 14px 16px 44px 14px; text-align: left; }
+.all-row__thumb {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;
+  width: 72px; height: 72px; border-radius: var(--radius-m); background: var(--color-divider); color: var(--color-placeholder);
+}
+.all-row__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.all-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .all-row__type { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--color-text-weak); }
-.all-row__title { font-size: 17px; font-weight: var(--fw-bold); }
+.all-row__title { font-size: 17px; font-weight: var(--fw-bold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .all-row__meta { font-size: 14px; color: var(--color-text-weak); }
-.all-row__side { display: flex; align-items: center; gap: 4px; color: var(--color-icon-faint); }
+/* 상태 라벨은 따로 눌려야 해서(상태 바꾸기) 카드 버튼 밖에, 글 아래 자리에 */
+.all-row__status { position: absolute; left: 100px; bottom: 14px; }
 
 /* 시트 메뉴 한 줄 */
 .menu-row { display: flex; align-items: center; gap: var(--gap-m); width: 100%; min-height: 56px; text-align: left; font-size: var(--fs-body); }

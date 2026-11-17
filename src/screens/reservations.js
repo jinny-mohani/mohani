@@ -118,23 +118,26 @@ function OtherCard({ data, r }) {
   </div>`;
 }
 
-/** 05 전체 탭의 한 줄 카드 */
+/** 05 전체 탭 카드 (시안 B): 왼쪽 72px 사진 + 종류·제목·날짜, 상태는 제목 아래 (제목이 잘리지 않게) */
 function AllRow({ data, r }) {
-  const meta = [
-    r.type === '숙소' ? rangeText(r.startAt, r.endAt) + (nightsBetween(r.startAt, r.endAt) ? ' · ' + nightsBetween(r.startAt, r.endAt) + '박' : '') : rangeText(r.startAt, r.type === '항공권' ? '' : r.endAt),
-    r.bookingNo && '예약번호 ' + r.bookingNo,
-    memberName(data, r.assignee) && '담당 ' + memberName(data, r.assignee),
-  ].filter(Boolean);
+  const nights = nightsBetween(r.startAt, r.endAt);
+  const when = r.type === '숙소'
+    ? rangeText(r.startAt, r.endAt) + (nights ? ' · ' + nights + '박' : '')
+    : rangeText(r.startAt, r.type === '항공권' ? '' : r.endAt);
+  const who = memberName(data, r.assignee);
+  // 항공권은 사진이 없어도 하늘 사진, 나머지는 사진이 없으면 회색 + 종류 아이콘
+  const photo = r.type === '항공권' ? flightBg(r) : firstPhoto(r);
+  const icon = r.type === '기타' ? OTHER_ICON[r.subType] || 'ticket' : TYPE_ICON[r.type] || 'ticket';
   return html`<div class="all-row">
-    <button class="all-row__main" onClick=${() => go('/reservations/' + r.id)}>
-      <span class="all-row__type"><${Icon} name=${TYPE_ICON[r.type] || 'ticket'} size=${14} />${r.type === '기타' ? r.subType || '기타' : r.type}</span>
-      <span class="all-row__title">${r.title}</span>
-      <span class="all-row__meta">${meta.join(' · ') || (r.status === '예약 전' ? '아직 예약 전' : '')}</span>
+    <button class="all-row__main" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
+      <span class="all-row__thumb">${photo ? html`<img src=${sized(photo, 200)} alt="" loading="lazy" />` : html`<${Icon} name=${icon} size=${28} />`}</span>
+      <span class="all-row__text">
+        <span class="all-row__type"><${Icon} name=${TYPE_ICON[r.type] || 'ticket'} size=${14} />${r.type === '기타' ? r.subType || '기타' : r.type}</span>
+        <span class="all-row__title">${r.title}</span>
+        <span class="all-row__meta">${[when, who && '담당 ' + who].filter(Boolean).join(' · ') || '날짜 미정'}</span>
+      </span>
     </button>
-    <span class="all-row__side">
-      <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
-      <${Icon} name="chevron-right" size=${20} />
-    </span>
+    <span class="all-row__status"><${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} /></span>
   </div>`;
 }
 
