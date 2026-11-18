@@ -1,0 +1,368 @@
+{
+ "pos": [
+  {
+   "id": "pos01",
+   "name": "기쁨",
+   "src": "/assets/stickers/pos01.webp",
+   "l": -0.12,
+   "t": 0.0,
+   "w": 100.91,
+   "h": 100.91
+  },
+  {
+   "id": "pos02",
+   "name": "행복",
+   "src": "/assets/stickers/pos02.webp",
+   "l": -1.14,
+   "t": 0.0,
+   "w": 100.91,
+   "h": 100.91
+  },
+  {
+   "id": "pos03",
+   "name": "신남",
+   "src": "/assets/stickers/pos03.webp",
+   "l": -1.14,
+   "t": 0.0,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "pos04",
+   "name": "설렘",
+   "src": "/assets/stickers/pos04.webp",
+   "l": 0.0,
+   "t": -0.63,
+   "w": 100.74,
+   "h": 100.74
+  },
+  {
+   "id": "pos05",
+   "name": "만족",
+   "src": "/assets/stickers/pos05.webp",
+   "l": 0.0,
+   "t": -0.33,
+   "w": 100.91,
+   "h": 100.91
+  },
+  {
+   "id": "pos06",
+   "name": "뿌듯함",
+   "src": "/assets/stickers/pos06.webp",
+   "l": 0.27,
+   "t": 0.0,
+   "w": 100.77,
+   "h": 100.77
+  },
+  {
+   "id": "pos07",
+   "name": "재미",
+   "src": "/assets/stickers/pos07.webp",
+   "l": 0.0,
+   "t": -0.09,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "pos08",
+   "name": "감사",
+   "src": "/assets/stickers/pos08.webp",
+   "l": 0.0,
+   "t": -1.65,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "pos09",
+   "name": "사랑",
+   "src": "/assets/stickers/pos09.webp",
+   "l": -1.52,
+   "t": -7.1,
+   "w": 103.69,
+   "h": 103.69
+  },
+  {
+   "id": "pos10",
+   "name": "희망",
+   "src": "/assets/stickers/pos10.webp",
+   "l": 0.0,
+   "t": -0.06,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "pos11",
+   "name": "자랑",
+   "src": "/assets/stickers/pos11.webp",
+   "l": 0.0,
+   "t": -0.11,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "pos12",
+   "name": "맛있다",
+   "src": "/assets/stickers/pos12.webp",
+   "l": 0.0,
+   "t": 0.11,
+   "w": 98.55,
+   "h": 98.55
+  },
+  {
+   "id": "pos13",
+   "name": "홀가분",
+   "src": "/assets/stickers/pos13.webp",
+   "l": -0.86,
+   "t": 0.0,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "pos14",
+   "name": "따뜻함",
+   "src": "/assets/stickers/pos14.webp",
+   "l": -0.27,
+   "t": 0.0,
+   "w": 100.91,
+   "h": 100.91
+  }
+ ],
+ "neg": [
+  {
+   "id": "neg01",
+   "name": "아쉬움",
+   "src": "/assets/stickers/neg01.webp",
+   "l": 0.0,
+   "t": 0.16,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "neg02",
+   "name": "실망",
+   "src": "/assets/stickers/neg02.webp",
+   "l": 1.45,
+   "t": 0.07,
+   "w": 98.51,
+   "h": 98.51
+  },
+  {
+   "id": "neg03",
+   "name": "미움",
+   "src": "/assets/stickers/neg03.webp",
+   "l": 0.0,
+   "t": -0.24,
+   "w": 100.88,
+   "h": 100.88
+  },
+  {
+   "id": "neg04",
+   "name": "슬픔",
+   "src": "/assets/stickers/neg04.webp",
+   "l": -0.01,
+   "t": -0.59,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "neg05",
+   "name": "짜증",
+   "src": "/assets/stickers/neg05.webp",
+   "l": 0.0,
+   "t": -0.2,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "neg06",
+   "name": "화남",
+   "src": "/assets/stickers/neg06.webp",
+   "l": 0.0,
+   "t": -1.14,
+   "w": 100.91,
+   "h": 100.91
+  },
+  {
+   "id": "neg07",
+   "name": "외로움",
+   "src": "/assets/stickers/neg07.webp",
+   "l": -1.06,
+   "t": -1.53,
+   "w": 104.01,
+   "h": 104.01
+  },
+  {
+   "id": "neg08",
+   "name": "긴장",
+   "src": "/assets/stickers/neg08.webp",
+   "l": 0.0,
+   "t": 0.67,
+   "w": 98.55,
+   "h": 98.55
+  },
+  {
+   "id": "neg09",
+   "name": "걱정",
+   "src": "/assets/stickers/neg09.webp",
+   "l": 0.0,
+   "t": 0.17,
+   "w": 100.91,
+   "h": 100.91
+  },
+  {
+   "id": "neg10",
+   "name": "불안",
+   "src": "/assets/stickers/neg10.webp",
+   "l": -1.11,
+   "t": 0.0,
+   "w": 100.88,
+   "h": 100.88
+  },
+  {
+   "id": "neg11",
+   "name": "무서움",
+   "src": "/assets/stickers/neg11.webp",
+   "l": 0.0,
+   "t": -0.21,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "neg12",
+   "name": "답답",
+   "src": "/assets/stickers/neg12.webp",
+   "l": 0.0,
+   "t": -0.54,
+   "w": 100.88,
+   "h": 100.88
+  },
+  {
+   "id": "neg13",
+   "name": "황당",
+   "src": "/assets/stickers/neg13.webp",
+   "l": 2.7,
+   "t": -2.47,
+   "w": 101.75,
+   "h": 101.75
+  },
+  {
+   "id": "neg14",
+   "name": "지침",
+   "src": "/assets/stickers/neg14.webp",
+   "l": 0.0,
+   "t": -0.86,
+   "w": 100.91,
+   "h": 100.91
+  },
+  {
+   "id": "neg15",
+   "name": "부끄러움",
+   "src": "/assets/stickers/neg15.webp",
+   "l": 0.0,
+   "t": 0.24,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "neg16",
+   "name": "초조",
+   "src": "/assets/stickers/neg16.webp",
+   "l": -1.84,
+   "t": 0.0,
+   "w": 102.37,
+   "h": 100.89
+  },
+  {
+   "id": "neg17",
+   "name": "불편",
+   "src": "/assets/stickers/neg17.webp",
+   "l": -1.48,
+   "t": -0.78,
+   "w": 102.36,
+   "h": 100.88
+  }
+ ],
+ "mix": [
+  {
+   "id": "mix01",
+   "name": "놀람",
+   "src": "/assets/stickers/mix01.webp",
+   "l": -1.14,
+   "t": 0.0,
+   "w": 100.89,
+   "h": 100.89
+  },
+  {
+   "id": "mix02",
+   "name": "졸립다",
+   "src": "/assets/stickers/mix02.webp",
+   "l": 0.13,
+   "t": -0.68,
+   "w": 100.88,
+   "h": 100.88
+  },
+  {
+   "id": "mix03",
+   "name": "신기함",
+   "src": "/assets/stickers/mix03.webp",
+   "l": -13.91,
+   "t": -7.68,
+   "w": 113.81,
+   "h": 113.81
+  },
+  {
+   "id": "mix04",
+   "name": "편안",
+   "src": "/assets/stickers/mix04.webp",
+   "l": -0.76,
+   "t": -0.13,
+   "w": 100.91,
+   "h": 100.91
+  },
+  {
+   "id": "mix05",
+   "name": "부러움",
+   "src": "/assets/stickers/mix05.webp",
+   "l": 0.0,
+   "t": -3.08,
+   "w": 104.62,
+   "h": 104.62
+  },
+  {
+   "id": "mix06",
+   "name": "미안함",
+   "src": "/assets/stickers/mix06.webp",
+   "l": -0.87,
+   "t": -0.11,
+   "w": 100.85,
+   "h": 100.85
+  },
+  {
+   "id": "mix07",
+   "name": "혼란",
+   "src": "/assets/stickers/mix07.webp",
+   "l": -0.7,
+   "t": 0.0,
+   "w": 100.91,
+   "h": 100.91
+  },
+  {
+   "id": "mix08",
+   "name": "궁금함",
+   "src": "/assets/stickers/mix08.webp",
+   "l": -0.98,
+   "t": -0.18,
+   "w": 100.88,
+   "h": 100.88
+  },
+  {
+   "id": "mix09",
+   "name": "멍하다",
+   "src": "/assets/stickers/mix09.webp",
+   "l": -0.99,
+   "t": -1.08,
+   "w": 100.89,
+   "h": 100.89
+  }
+ ]
+}

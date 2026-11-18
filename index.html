@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="감정일기">
+<title>2026 감정 일기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="nov">
+<div id="stage">
+ <div id="monthView">
+  <!-- 무늬(양옆으로 자연스럽게 이어지도록 잘리지 않게) -->
+  <svg class="blob" style="left:-61px;top:336px;width:172px;height:166px" viewBox="-61 0 172 166"><path d="M-50.4572 71.0898C-55.2694 81.9843 -60.3727 93.9265 -58.1977 107.017C-55.3643 126.286 -36.3252 145.051 -14.7049 153.581C33.188 172.152 74.4579 147.731 93.9685 118.07C113.485 93.129 104.001 62.1681 75.8924 34.541C58.7757 17.7929 31.8557 0.727828 8.2988 -6.09935e-05C-30.3105 0.666283 -37.884 46.3994 -50.3315 70.7411L-50.5026 71.0659L-50.4572 71.0898Z"/></svg>
+  <svg class="blob" style="left:929px;top:519px;width:172px;height:166px" viewBox="0 0 172 166"><path d="M8.25683 71.0898C3.4446 81.9843 -1.65876 93.9265 0.516308 107.017C3.34967 126.286 22.3888 145.051 44.0091 153.581C91.902 172.152 133.172 147.731 152.682 118.07C172.199 93.129 162.715 62.1681 134.606 34.541C117.49 17.7929 90.5697 0.727828 67.0128 -6.09935e-05C28.4035 0.666283 20.8299 46.3994 8.38251 70.7411L8.21141 71.0659L8.25683 71.0898Z"/></svg>
+
+  <div class="layer" data-th="nov">
+    <img class="abs" src="/assets/nov_paper.webp" style="left:25px;top:57px;width:974px;height:606px">
+    <img class="abs" src="/assets/nov_title.webp" style="left:57.8px;top:17.4px;width:161.4px;height:101.9px">
+    <img class="abs" src="/assets/nov_gnb.webp" style="left:565px;top:14px;width:435px;height:36px">
+    <img class="abs" src="/assets/nov_tape1.webp" style="left:14px;top:120px;width:98px;height:45px">
+    <img class="abs" src="/assets/nov_tape2.webp" style="left:15px;top:173px;width:97.4px;height:45px">
+    <img class="abs" src="/assets/nov_header.webp" style="left:152.5px;top:112px;width:720px;height:26px">
+  </div>
+  <div class="layer" data-th="dec">
+    <img class="abs" src="/assets/dec_paper.webp" style="left:25px;top:57px;width:974px;height:606px">
+    <img class="abs" src="/assets/dec_title.webp" style="left:57.8px;top:17.4px;width:161.4px;height:101.9px">
+    <img class="abs" src="/assets/dec_gnb.webp" style="left:565px;top:14px;width:435px;height:36px">
+    <img class="abs" src="/assets/dec_tape1.webp" style="left:14px;top:120px;width:98px;height:45px">
+    <img class="abs" src="/assets/dec_tape2.webp" style="left:15px;top:173px;width:97.4px;height:45px">
+    <img class="abs" src="/assets/dec_header.webp" style="left:152.5px;top:112px;width:720px;height:26px">
+  </div>
+
+  <div id="grid"></div>
+ </div>
+
+ <!-- 일간 -->
+ <div id="dayView" hidden>
+  <!-- 화면 밖으로 이어지는 무늬 (넓은 화면 양옆) -->
+  <svg class="ext" viewBox="-400 -400 1824 1480"><defs><clipPath id="outside"><rect x="-400" y="-400" width="400" height="1480"/><rect x="1024" y="-400" width="400" height="1480"/><rect x="-400" y="-400" width="1824" height="400"/><rect x="-400" y="680" width="1824" height="400"/></clipPath></defs>
+    <g clip-path="url(#outside)"><path d="M-29.4573 47.6227C-34.2695 58.5173 -39.3729 70.4595 -37.1978 83.5503C-34.3644 102.818 -15.3253 121.584 6.295 130.114C54.1879 148.685 95.4578 124.264 114.968 94.6032C134.485 69.662 125.001 38.7011 96.8922 11.0739C79.7756 -5.67418 52.8556 -22.7392 29.2987 -23.4671C-9.31064 -22.8008 -16.8842 22.9323 -29.3316 47.274L-29.5027 47.5988L-29.4573 47.6227Z"/><path class="d" transform="translate(929.3 295.5)" d="M8.25671 88.9556C3.44448 78.0611 -1.65888 66.1189 0.516186 53.0281C3.34955 33.7599 22.3887 14.9944 44.009 6.4646C91.9019 -12.107 133.172 12.314 152.682 41.9752C172.199 66.9164 162.715 97.8773 134.606 125.504C117.49 142.253 90.5696 159.318 67.0127 160.045C28.4034 159.379 20.8298 113.646 8.38239 89.3043L8.21129 88.9796L8.25671 88.9556Z"/><path class="d" transform="translate(0 478.5)" d="M-50.4572 88.9556C-55.2694 78.0611 -60.3727 66.1189 -58.1977 53.0281C-55.3643 33.7599 -36.3252 14.9944 -14.7049 6.4646C33.188 -12.107 74.4579 12.314 93.9685 41.9752C113.485 66.9164 104.001 97.8773 75.8924 125.504C58.7757 142.253 31.8557 159.318 8.2988 160.045C-30.3105 159.379 -37.884 113.646 -50.3315 89.3043L-50.5026 88.9796L-50.4572 88.9556Z"/></g></svg>
+  <img id="dayBg" class="abs" src="" style="left:0;top:0;width:1024px;height:680px">
+  <div class="pg" data-side="0"></div>
+  <div class="pg" data-side="1" style="left:497px"></div>
+
+  <button class="nav" id="prevDay" style="left:-4px" aria-label="이전 날">‹</button>
+  <button class="nav" id="nextDay" style="left:994px" aria-label="다음 날">›</button>
+ </div>
+
+
+ <!-- 표지 -->
+ <div id="coverView" hidden>
+  <img class="abs" src="/assets/cover.webp" style="left:0;top:0;width:1024px;height:660px">
+  <button id="coverGo" aria-label="다이어리 열기" style="position:absolute;left:0;top:60px;width:1024px;height:600px;border:0;background:transparent;cursor:pointer"></button>
+ </div>
+
+ <!-- 내 소개 -->
+ <div id="meView" hidden>
+  <img class="abs" src="/assets/profile.webp" style="left:0;top:0;width:1024px;height:660px">
+  <button id="mePhotoBtn" aria-label="프로필 사진 고르기"><img id="mePhoto" alt="" hidden></button>
+  <button id="mePhotoDel" aria-label="사진 지우기" hidden>✕</button>
+  <input type="file" id="meFile" accept="image/*" hidden>
+  <input id="meName" class="me-name" maxlength="12" placeholder="이름을 적어 주세요" enterkeyhint="next">
+  <input class="me-a" style="left:223px;top:446px;width:173px" maxlength="20" enterkeyhint="next">
+  <input class="me-a" style="left:211px;top:485px;width:185px" maxlength="20" enterkeyhint="next">
+  <input class="me-a" style="left:183px;top:524px;width:213px" maxlength="20" enterkeyhint="next">
+  <input class="me-a" style="left:246px;top:563px;width:150px" maxlength="20" enterkeyhint="done">
+  <button class="me-link" style="left:540px;top:102px;width:260px" data-go="intro" aria-label="감정 소개 보기"></button>
+  <button class="me-link" style="left:540px;top:240px;width:300px" data-go="rec" aria-label="나의 감정 기록 보기"></button>
+  <div id="meCal"></div>
+ </div>
+
+ <!-- 메모 -->
+ <div id="memoView" hidden>
+  <img id="memoBg" class="abs" src="" style="left:0;top:0;width:1024px;height:680px">
+  <button class="ptype" data-t="line" style="left:217px;top:21px;width:36px;height:26px" aria-label="줄 노트"></button>
+  <button class="ptype" data-t="dot" style="left:249px;top:28px;width:36px;height:26px" aria-label="모눈 노트"></button>
+  <textarea id="memoTa" class="memo-ta line" placeholder=""></textarea>
+  <canvas class="ink" id="memoInk" style="left:60px;top:105px;width:910px;height:545px" width="1820" height="1090"></canvas>
+  <div id="memoPg"></div>
+  <button class="nav" id="memoPrev" style="left:-4px" aria-label="이전 장">‹</button>
+  <button class="nav" id="memoNext" style="left:994px" aria-label="다음 장">›</button>
+ </div>
+
+ <!-- 감정 소개 -->
+ <div id="introView" hidden>
+  <img id="introBg" class="abs" src="" style="left:0;top:0;width:1024px;height:660px">
+  <button class="nav" id="introPrev" style="left:-4px" aria-label="이전 쪽">‹</button>
+  <button class="nav" id="introNext" style="left:994px" aria-label="다음 쪽">›</button>
+ </div>
+
+ <!-- 감정 기록 -->
+ <div id="recView" hidden>
+  <img id="recBg" class="abs" src="" style="left:0;top:0;width:1024px;height:680px">
+  <div id="recFields"></div>
+  <canvas class="ink" id="recInk" style="left:30px;top:60px;width:964px;height:600px" width="1928" height="1200"></canvas>
+  <button class="nav" id="recPrev" style="left:-4px" aria-label="이전 쪽">‹</button>
+  <button class="nav" id="recNext" style="left:994px" aria-label="다음 쪽">›</button>
+ </div>
+  <div id="tools">
+    <div class="seg"><button data-mode="key" class="on" aria-label="키보드">가</button><button data-mode="pen" aria-label="펜"><svg class="ic" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button></div>
+    <div class="cwrap"><button id="tColor" class="tb" aria-label="펜 색"><i></i></button>
+      <div id="cpop" role="menu"></div></div>
+    <button id="tErase" class="tb" aria-label="지우개"><svg class="ic" viewBox="0 0 24 24"><path d="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.828 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21"/><path d="m5.082 11.09 8.828 8.828"/></svg></button>
+    <button id="tUndo" class="tb" aria-label="되돌리기"><svg class="ic" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg></button>
+  </div>
+
+  <!-- 상단 메뉴 터치 영역 -->
+  <button class="gnb-hit" style="left:565px;width:64px" data-go="cover" aria-label="표지"></button>
+  <button class="gnb-hit" style="left:630px;width:64px" data-go="me" aria-label="내 소개"></button>
+  <button class="gnb-hit" style="left:695px;width:64px" data-go="intro" aria-label="감정 소개"></button>
+  <button class="gnb-hit" style="left:760px;width:64px" data-go="rec" aria-label="감정 기록"></button>
+  <button class="gnb-hit" style="left:839px;width:52px" data-go="2026-11" aria-label="11월"></button>
+  <button class="gnb-hit" style="left:893px;width:52px" data-go="2026-12" aria-label="12월"></button>
+  <button class="gnb-hit" style="left:948px;width:52px" data-go="memo" aria-label="메모"></button>
+
+
+  <div id="dim">
+    <div id="sheet" role="dialog" aria-modal="true">
+      <div class="sh-head">
+        <span class="sh-date" id="shDate"></span>
+        <span class="sh-q">오늘은 어떤 기분인가요?</span>
+        <button class="sh-x" id="shX" aria-label="닫기">✕</button>
+      </div>
+      <div class="tabs" id="tabs"></div>
+      <div class="stks" id="stks"></div>
+      <div class="sh-foot">
+        <span class="hint" id="hint">스티커를 누르면 바로 붙어요</span>
+        <span class="foot-r"><button class="rm" id="rm" hidden>스티커 떼기</button><button class="go-day" id="goDay">일기 쓰기 ✎</button></span>
+      </div>
+    </div>
+  </div>
+  <div id="toast"></div>
+</div>
+<script type="module" src="/src/app.js"></script>
+</body>
+</html>
