@@ -40,3 +40,6 @@ img { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   :root { --dur: 0ms; }
 }
+
+/* 제목은 단어 중간에서 줄이 바뀌지 않게, 줄 길이는 고르게 ("않았어 / 요" 방지) */
+h1, h2, h3 { word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; }
