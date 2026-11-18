@@ -34,7 +34,10 @@
   --color-placeholder: var(--grey-500);    /* 사진 없을 때 자리 아이콘 */
   --color-surface-inverse: var(--grey-900);/* 어두운 면: 알림, 대표 이미지 없을 때 */
   --color-on-inverse: var(--white);
-  --color-primary: var(--grey-900);      /* 주요 버튼·선택 상태 바탕 */
+  --color-primary: var(--grey-900);      /* 선택 상태 바탕: 칩·탭·체크박스·달력 (피그마 Chip) */
+  --color-point: #10a66b;                /* 포인트 색 (Nov 18): 주요 버튼·추가 버튼 */
+  --color-point-weak: rgba(16, 166, 107, 0.12); /* 보조 버튼 바탕 */
+  --color-on-point: var(--white);
   --color-on-primary: var(--white);      /* 그 위 글자 */
   --color-dim: rgba(0, 0, 0, 0.4);       /* 팝업 뒤 어둡게 */
   --color-outside: var(--grey-200);      /* PC에서 앱 바깥 */
@@ -42,14 +45,13 @@
 
   /* 글자 */
   --font: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;
-  --fs-caption: 12px;
-  --fs-small: 13px;
-  --fs-label: 15px;   /* 입력칸 제목, 칩 */
-  --fs-body: 16px;    /* 본문 */
-  --fs-button: 18px;  /* 버튼 */
-  --fs-title: 18px;   /* 화면 제목 */
-  --fs-heading: 20px; /* 시트 제목, 섹션 큰 제목 */
-  --fs-display: 24px;
+  /* 타이포 5단계 (Nov 18 결정) — 크기 · 줄 간격 짝으로 써요. 굵기는 Regular/Medium/Bold 세 가지 */
+  --fs-caption: 12px;  --lh-caption: 1.4;  /* 캡션: 탭바 이름, 라벨, 작은 표시 */
+  --fs-small: 14px;    --lh-small: 1.5;    /* 보조: 설명, 날짜·담당, 칩, 입력칸 제목 */
+  --fs-body: 16px;     --lh-body: 1.5;     /* 본문: 목록 항목 이름, 입력값 */
+  --fs-heading: 20px;  --lh-heading: 1.4;  /* 소제목: 섹션·팝업·카드 제목 */
+  --fs-display: 26px;  --lh-display: 1.3;  /* 화면 제목 */
+  --fs-button: 18px;   /* 버튼 글자 — 피그마 Button 컴포넌트 기준 (5단계의 예외) */
   --lh: 1.5;
   --fw-regular: 400;
   --fw-medium: 500;
@@ -61,8 +63,9 @@
   --gap-s: 8px;
   --gap-m: 12px;
   --gap-l: 16px;
+  --gap-lx: 20px;
   --gap-xl: 24px;
-  --gap-2xl: 32px;
+  --gap-2xl: 32px;   /* 간격은 4px 단위: 4 · 8 · 12 · 16 · 20 · 24 · 32 */
   --radius-s: 6px;     /* 체크박스 */
   --radius-m: 12px;    /* 버튼·입력칸·카드 */
   --radius-l: 18px;    /* 탭바·시트 위쪽 */

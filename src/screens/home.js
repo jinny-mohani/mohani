@@ -10,7 +10,7 @@ import { GROUPS, byGroup, homePick, isDone } from '../checklist.js';
 import { toast } from '../ui/toast.js';
 import { TripSettings } from './trip-settings.js';
 import { sized } from '../reservation-util.js';
-import { PlaceCard, PlaceForm } from './places.js';
+import { PlaceCard, PlaceForm, CATEGORIES } from './places.js';
 import { ChecklistSheet } from './checklist.js';
 
 const RES_TYPES = [
@@ -146,9 +146,22 @@ export function Home({ data, me }) {
           <${Icon} name="chevron-right" size=${20} label="전체 보기" />
         </button>
         ${places.length
-          ? html`<div class="place-row">${places.slice(0, 8).map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>`
+          ? placeGroups(places).map(({ c, list }) => html`<div class="home-place" key=${c}>
+              <button class="home-place__head" onClick=${() => go('/places?category=' + encodeURIComponent(c))}>
+                <h3>${c}</h3><${Icon} name="chevron-right" size=${18} label=${c + ' 전체 보기'} />
+              </button>
+              <div class="place-row">${list.slice(0, 5).map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>
+            </div>`)
           : html`<button class="check-card check-card__empty" style="width:100%" onClick=${() => openOverlay(html`<${PlaceForm} />`)}>+ 가고 싶은 장소를 등록해 보세요</button>`}
       </section>
     </div>
   </main>`;
+}
+
+/** 등록된 장소를 카테고리별로 (기본 카테고리 순서, 그 밖의 카테고리는 뒤에). 장소가 있는 카테고리만 */
+function placeGroups(places) {
+  const extra = [...new Set(places.map((p) => p.category || '기타'))].filter((c) => !CATEGORIES.includes(c));
+  return [...CATEGORIES, ...extra]
+    .map((c) => ({ c, list: places.filter((p) => (p.category || '기타') === c) }))
+    .filter((g) => g.list.length);
 }

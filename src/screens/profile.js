@@ -34,8 +34,8 @@ export function ProfileSelect({ data }) {
       ${owner ? owner.name + '님이 초대했어요 · ' : ''}${shortDate(trip.startDate)} – ${shortDate(trip.endDate)}
     </p>
 
-    <h2 style="font-size:18px;font-weight:500;margin-top:40px">나는 누구인가요?</h2>
-    <p class="muted" style="font-size:15px;margin:4px 0 20px">
+    <h2 style="font-size:var(--fs-heading);font-weight:700;margin-top:40px">나는 누구인가요?</h2>
+    <p class="muted" style="font-size:var(--fs-small);margin:4px 0 20px">
       ${picked ? '다시 누르면 선택이 취소돼요' : '내 프로필을 선택해 주세요'}
     </p>
 

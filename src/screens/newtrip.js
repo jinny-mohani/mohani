@@ -172,17 +172,11 @@ export function TripCreated({ trip }) {
         <h1>${trip.title}을<br />만들었어요</h1>
         <p>친구들에게 링크를 보내면<br />바로 들어와서 함께 쓸 수 있어요</p>
       </div>
-      <div class="link-box" style="margin-top:40px">
-        <span>${shortUrl(url)}</span>
-        <button class="icon-btn" aria-label="링크 복사" onClick=${copy}><${Icon} name="copy" size=${20} /></button>
-      </div>
+      <div class="link-box" style="margin-top:40px"><span>${shortUrl(url)}</span></div>
+      <${ShareIcons} onShare=${share} onCopy=${copy} />
       <p class="note"><${Icon} name="info" size=${14} />링크를 아는 사람은 누구나 들어올 수 있어요. 여행 멤버에게만 보내 주세요.</p>
       <div class="full__spacer"></div>
-      <div class="stack-btns">
-        <${Button} onClick=${share}>카카오톡으로 보내기<//>
-        <${Button} variant="secondary" onClick=${copy}>링크 복사<//>
-        <button class="link-center" style="text-decoration:none" onClick=${later}>${shared ? '홈으로 가기' : '나중에 보내기'}</button>
-      </div>
+      <button class="link-center" style="text-decoration:none" onClick=${later}>${shared ? '홈으로 가기' : '나중에 보내기'}</button>
     </div>
   </div>`;
 }
@@ -190,14 +184,22 @@ export function TripCreated({ trip }) {
 /** 02-1 초대 안내 (개설자 · 처음 1회) */
 export function InviteSheet({ trip }) {
   const url = inviteUrl(trip.inviteCode);
-  return html`<${Sheet} title="친구들을 아직 초대하지 않았어요" footer=${html`<div class="stack-btns">
-      <${Button} onClick=${() => shareInvite(trip, trip.inviteCode).then(() => closeOverlay())}>카카오톡으로 보내기<//>
-      <${Button} variant="secondary" onClick=${() => { copyText(url); closeOverlay(); }}>링크 복사<//>
-    </div>`}>
+  return html`<${Sheet} title="친구들을 아직 초대하지 않았어요">
     <p class="lead" style="margin-top:-8px">링크를 보내면 친구가 바로 들어와서 함께 쓸 수 있어요.<br />링크는 여행 카드에서도 언제든 복사할 수 있어요.</p>
-    <div class="link-box" style="margin-top:20px">
-      <span>${shortUrl(url)}</span>
-      <button class="icon-btn" aria-label="링크 복사" onClick=${() => copyText(url)}><${Icon} name="copy" size=${20} /></button>
-    </div>
+    <div class="link-box" style="margin-top:20px"><span>${shortUrl(url)}</span></div>
+    <${ShareIcons} onShare=${() => shareInvite(trip, trip.inviteCode).then(() => closeOverlay())}
+      onCopy=${() => { copyText(url); closeOverlay(); }} />
   <//>`;
+}
+
+/** 초대 링크 보내기: 글자 버튼 대신 동그란 아이콘 + 아래 이름 (13-1 · 02-1) */
+function ShareIcons({ onShare, onCopy }) {
+  return html`<div class="share-icons">
+    <button class="share-icon" onClick=${onShare}>
+      <span class="share-icon__circle share-icon__circle--point"><${Icon} name="share-2" size=${24} /></span>카카오톡·공유
+    </button>
+    <button class="share-icon" onClick=${onCopy}>
+      <span class="share-icon__circle"><${Icon} name="link" size=${24} /></span>링크 복사
+    </button>
+  </div>`;
 }

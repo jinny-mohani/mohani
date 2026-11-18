@@ -3,6 +3,7 @@ import { html, useRef, useState } from '../vendor/preact-htm.js';
 import {
   Button, ChipField, ChipGroup, Empty, Icon, Modal, Sheet, StatusLabel, TextArea, TextField,
   FormError,
+  Fab,
 } from '../ui/components.js';
 import { go, replace } from '../router.js';
 import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
@@ -59,7 +60,8 @@ export function Schedule({ data, query }) {
   const add = () => openOverlay(html`<${ScheduleForm} day=${day} />`);
 
   return html`<main class="screen">
-    <header class="big-title"><h1>일정</h1>${!editing && html`<button class="title-add" aria-label="일정 추가" onClick=${add}><${Icon} name="plus" size=${24} stroke=${2} /></button>`}</header>
+    <header class="big-title"><h1>일정</h1></header>
+    ${!editing && html`<${Fab} label="일정 추가" onClick=${add} />`}
     <div class="page">
       <div class="day-bar">
         <${ChipGroup}
@@ -261,7 +263,7 @@ export function ScheduleForm({ day, row, placeId }) {
               <span class="place-pick__text"><b>${place.name}</b><small>${placeLine(place)}</small></span>
               <button class="place-pick__change" onClick=${pickPlace}>변경</button>
             </div>`
-          : html`<button class="btn-outline" style="min-height:52px;font-size:15px" onClick=${pickPlace}>
+          : html`<button class="btn-outline" style="min-height:52px;font-size:var(--fs-body)" onClick=${pickPlace}>
               <${Icon} name="map-pin" size=${18} />장소 목록에서 고르기
             </button>`}
         <div class="or-line"><span>또는</span></div>

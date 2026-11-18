@@ -1,5 +1,5 @@
 // 공통 컴포넌트 — 피그마 'Components' 프레임과 같은 이름으로 맞췄어요.
-import { html, useEffect, useRef } from '../vendor/preact-htm.js';
+import { html, useEffect, useRef, useState } from '../vendor/preact-htm.js';
 import { ICONS, FILLED } from './icons.js';
 import { TABS, back, replace } from '../router.js';
 import { closeOverlay } from '../overlay.js';
@@ -321,4 +321,22 @@ export function FormError({ error }) {
     import('./toast.js').then(({ toast }) => toast(error));
   }, [error]);
   return error ? html`<p class="form__error" role="alert" ref=${ref}>${error}</p>` : null;
+}
+
+/**
+ * 추가 버튼 (FAB) — 오른쪽 아래. 맨 위에서는 "+ 추가" 알약, 아래로 스크롤하면 "+" 동그라미로 줄어요 (당근 방식).
+ * 줄어도 눌리는 영역은 46px 그대로, 화면 읽기용 이름(label)은 항상 같아요.
+ */
+export function Fab({ label, text = '추가', sub, onClick }) {
+  const [small, setSmall] = useState(false);
+  useEffect(() => {
+    const el = document.getElementById('app');
+    const on = () => setSmall(el.scrollTop > 24);
+    on();
+    el.addEventListener('scroll', on, { passive: true });
+    return () => el.removeEventListener('scroll', on);
+  }, []);
+  return html`<button class=${'fab' + (small ? ' fab--small' : '') + (sub ? ' fab--sub' : '')} aria-label=${label} onClick=${onClick}>
+    <${Icon} name="plus" size=${20} stroke=${2} /><span class="fab__text" aria-hidden="true">${text}</span>
+  </button>`;
 }

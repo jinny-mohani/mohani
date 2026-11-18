@@ -1,6 +1,6 @@
 // 05 예약 목록(전체) · 05-1 항공권 · 05-2 숙소 · 05-3 기타 · 05-4~6 상세 · 07-0 종류 선택
 import { html } from '../vendor/preact-htm.js';
-import { Button, ChipGroup, Empty, Icon, Row, Sheet, StatusLabel, SubHeader } from '../ui/components.js';
+import { Button, ChipGroup, Fab, Empty, Icon, Row, Sheet, StatusLabel, SubHeader } from '../ui/components.js';
 import { go, replace, back } from '../router.js';
 import { openOverlay, replaceOverlay, closeOverlay } from '../overlay.js';
 import { formatDay, rangeText, nightsBetween, durationText, formatTime, syncText } from '../date.js';
@@ -153,7 +153,8 @@ export function Reservations({ data, query }) {
   };
 
   return html`<main class="screen screen--tint">
-    <header class="big-title"><h1>예약</h1><button class="title-add" aria-label="예약 추가" onClick=${add}><${Icon} name="plus" size=${24} stroke=${2} /></button></header>
+    <header class="big-title"><h1>예약</h1></header>
+    <${Fab} label="예약 추가" onClick=${add} />
     <div class="page">
       <${ChipGroup}
         label="예약 종류"

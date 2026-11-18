@@ -3,6 +3,7 @@ import { html, useState } from '../vendor/preact-htm.js';
 import {
   Avatar, Button, ChipField, ChipGroup, Empty, Icon, Modal, PhotoField, Sheet, TextArea, TextField,
   FormError,
+  Fab,
 } from '../ui/components.js';
 import { go, replace, back } from '../router.js';
 import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
@@ -47,7 +48,8 @@ export function Places({ data, query }) {
   const list = cat === '전체' ? all : all.filter((p) => p.category === cat);
 
   return html`<main class="screen screen--tint">
-    <header class="big-title"><h1>장소</h1><button class="title-add" aria-label="장소 등록" onClick=${add}><${Icon} name="plus" size=${24} stroke=${2} /></button></header>
+    <header class="big-title"><h1>장소</h1></header>
+    <${Fab} label="장소 등록" onClick=${add} />
     <div class="page">
       <${ChipGroup}
         label="카테고리"

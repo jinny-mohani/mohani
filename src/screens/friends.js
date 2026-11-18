@@ -47,7 +47,7 @@ export function Friends({ data, me }) {
       </span>
     </header>
     <div class="page">
-      <p class="muted" style="font-size:15px;margin-top:-12px">${members.length}명이 함께 가요</p>
+      <p class="muted" style="font-size:var(--fs-small);margin-top:-12px">${members.length}명이 함께 가요</p>
       <ul class="friends">${sorted.map((m) => html`<${FriendRow} key=${m.id} m=${m} isMe=${m.id === me} />`)}</ul>
     </div>
   </main>`;

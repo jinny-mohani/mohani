@@ -1,6 +1,6 @@
 // 03-3 홈 › 체크 리스트 · 03-3-1 삭제 되돌리기 · 03-6 추가 · 03-6-1 수정 (바텀시트)
 import { html, useEffect, useState } from '../vendor/preact-htm.js';
-import { Button, ChipField, Icon, Sheet, SubHeader, TextField, CheckRow , FormError } from '../ui/components.js';
+import { Button, ChipField, Fab, Icon, Sheet, SubHeader, TextField, CheckRow , FormError } from '../ui/components.js';
 import { openOverlay, closeOverlay } from '../overlay.js';
 import { getState, toggleDone, failed } from '../store.js';
 import { saveLater, deleteWithUndo } from '../save.js';
@@ -73,11 +73,10 @@ export function Checklist({ data, me, query }) {
   const edit = (c) => openOverlay(html`<${ChecklistSheet} row=${c} />`);
 
   return html`<main class="screen screen--sub">
-    <${SubHeader} title="체크 리스트" fallback="/home">
-      <button class="icon-btn" aria-label="체크 리스트 추가" onClick=${() => openOverlay(html`<${ChecklistSheet} />`)}><${Icon} name="plus" stroke=${2} /></button>
-    <//>
+    <${SubHeader} title="체크 리스트" fallback="/home" />
+    <${Fab} sub=${true} label="체크 리스트 추가" onClick=${() => openOverlay(html`<${ChecklistSheet} />`)} />
     <div class="page">
-      <p class="muted" style="font-size:14px">${all.length}개 중 ${done}개 완료 · 이름을 누르면 수정해요</p>
+      <p class="muted" style="font-size:var(--fs-small)">${all.length}개 중 ${done}개 완료 · 이름을 누르면 수정해요</p>
       ${GROUPS.map((g, gi) => {
         const items = byGroup(all, g);
         return html`<section class="cl-group" id=${'group-' + gi} key=${g}>
