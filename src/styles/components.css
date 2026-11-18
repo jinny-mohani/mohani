@@ -94,7 +94,7 @@
   background: var(--color-bg); font-size: var(--fs-body); line-height: var(--lh-body);
 }
 .input::placeholder { color: var(--color-text-weak); }
-.input:focus { outline: none; border-color: var(--color-primary); }
+.input:focus { outline: none; border-color: var(--color-point); } /* 선택·입력 중 테두리는 포인트 색 (흰 바탕 대비 3.1:1, 테두리 기준 3:1 충족) */
 
 /* ───── 목록 행 ───── */
 .row {

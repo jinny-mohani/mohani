@@ -6,7 +6,7 @@ import { createTrip, saveRow, uploadPhoto, enterFromUrl } from '../store.js';
 import { replace } from '../router.js';
 import { randomCharacter } from '../members.js';
 import { resizeImage } from '../image.js';
-import { inviteUrl, shortUrl, copyText, shareInvite } from '../share.js';
+import { inviteUrl, copyText, shareInvite } from '../share.js';
 import { MemberAddSheet } from './member-add.js';
 import { DateRangeField } from '../ui/pickers.js';
 import { toast } from '../ui/toast.js';
@@ -172,8 +172,7 @@ export function TripCreated({ trip }) {
         <h1>${trip.title}을<br />만들었어요</h1>
         <p>친구들에게 링크를 보내면<br />바로 들어와서 함께 쓸 수 있어요</p>
       </div>
-      <div class="link-box" style="margin-top:40px"><span>${shortUrl(url)}</span></div>
-      <${ShareIcons} onShare=${share} onCopy=${copy} />
+      <${ShareIcons} onShare=${share} onCopy=${copy} style="margin-top:40px" />
       <p class="note"><${Icon} name="info" size=${14} />링크를 아는 사람은 누구나 들어올 수 있어요. 여행 멤버에게만 보내 주세요.</p>
       <div class="full__spacer"></div>
       <button class="link-center" style="text-decoration:none" onClick=${later}>${shared ? '홈으로 가기' : '나중에 보내기'}</button>
@@ -186,15 +185,14 @@ export function InviteSheet({ trip }) {
   const url = inviteUrl(trip.inviteCode);
   return html`<${Sheet} title="친구들을 아직 초대하지 않았어요">
     <p class="lead" style="margin-top:-8px">링크를 보내면 친구가 바로 들어와서 함께 쓸 수 있어요.<br />링크는 여행 카드에서도 언제든 복사할 수 있어요.</p>
-    <div class="link-box" style="margin-top:20px"><span>${shortUrl(url)}</span></div>
     <${ShareIcons} onShare=${() => shareInvite(trip, trip.inviteCode).then(() => closeOverlay())}
       onCopy=${() => { copyText(url); closeOverlay(); }} />
   <//>`;
 }
 
 /** 초대 링크 보내기: 글자 버튼 대신 동그란 아이콘 + 아래 이름 (13-1 · 02-1) */
-function ShareIcons({ onShare, onCopy }) {
-  return html`<div class="share-icons">
+function ShareIcons({ onShare, onCopy, style }) {
+  return html`<div class="share-icons" style=${style}>
     <button class="share-icon" onClick=${onShare}>
       <span class="share-icon__circle share-icon__circle--point"><${Icon} name="share-2" size=${24} /></span>카카오톡·공유
     </button>
