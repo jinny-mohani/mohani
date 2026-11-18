@@ -58,7 +58,7 @@
   font-size: var(--fs-button); font-weight: var(--fw-medium);
 }
 .btn--primary { background: var(--color-point); color: var(--color-on-point); }
-.btn--secondary { background: var(--color-point-weak); color: var(--color-point); }
+.btn--secondary { background: var(--color-point-weak); color: var(--color-point-strong); }
 .btn:disabled { background: var(--color-surface); color: var(--color-disabled); }
 .btn:active:not(:disabled) { opacity: 0.85; }
 /* 삭제처럼 작게 한 줄로 */
