@@ -111,8 +111,10 @@ declare t text;
 begin
   foreach t in array array['stickers', 'days', 'records', 'profile', 'memos'] loop
     -- 로그인 안 한 사람은 아무것도 못 한다
-    execute format('revoke all on public.%I from anon, public', t);
-    -- 로그인한 사람은 표를 쓸 수는 있지만, 아래 RLS 정책을 통과한 행만
+    -- (Supabase 기본 설정이 authenticated 에 TRUNCATE 등 모든 권한을 줄 수 있어서 함께 걷어낸다.
+    --  TRUNCATE 는 RLS 검사를 받지 않으므로 반드시 막는다)
+    execute format('revoke all on public.%I from anon, authenticated, public', t);
+    -- 로그인한 사람은 읽기·쓰기·고치기·지우기 4가지만, 그것도 아래 RLS 정책을 통과한 행만
     execute format('grant select, insert, update, delete on public.%I to authenticated', t);
 
     execute format('alter table public.%I enable row level security', t);
