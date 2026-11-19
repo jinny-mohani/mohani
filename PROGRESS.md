@@ -5,7 +5,7 @@
 ## 끝난 것
 - [x] 1단계: Vite 프로젝트로 분리 (기준본 `original/index.html`과 픽셀 단위 동일 확인)
 - [x] 2단계: `supabase/schema.sql` 실행 완료 — 테이블 5개 RLS on, authenticated 권한은 SELECT/INSERT/UPDATE/DELETE만, `ink` 비공개 버킷
-- [x] 3단계(코드): 표지 위 카카오·구글 로그인, 내 소개 왼쪽 위 로그아웃
+- [x] 3단계(코드): 표지 위 로그인 카드(신기함·덕덕 일기·카카오/구글 버튼·개인정보처리방침 링크), 내 소개 왼쪽 위 로그아웃
 - [x] Supabase Auth: Kakao·Google provider ENABLED, URL Configuration
       (Site URL은 배포 주소로 바꾸는 중, Redirect URLs: `http://localhost:5173/**`, `https://emotion-diary-five-omega.vercel.app/**`)
 - [x] 카카오 앱 '덕덕 일기': 카카오 로그인 ON, 리다이렉트 URI = Supabase callback, 클라이언트 시크릿 재발급 후 Supabase에 입력

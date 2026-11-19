@@ -618,10 +618,11 @@ document.querySelectorAll(".gnb-hit").forEach(b => b.onclick = () => {
 // ---- 로그인 (Supabase Auth: 카카오 / 구글) ----
 let user = null;
 const loginBox = document.getElementById("login"), coverGo = document.getElementById("coverGo");
+loginBox.querySelectorAll("[data-stk]").forEach(el => { el.innerHTML = svgOf(el.dataset.stk); });
 function showLogin(on){ loginBox.hidden = !on; coverGo.hidden = on; }
 loginBox.querySelectorAll(".login-btn").forEach(b => b.onclick = async () => {
   const provider = b.dataset.provider;
-  loginBox.querySelectorAll("button").forEach(x => x.disabled = true);
+  loginBox.querySelectorAll(".login-btn").forEach(x => x.disabled = true);
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
@@ -630,7 +631,7 @@ loginBox.querySelectorAll(".login-btn").forEach(b => b.onclick = async () => {
       ...(provider === "kakao" ? { scopes: "profile_nickname profile_image" } : {}),
     },
   });
-  if (error){ loginBox.querySelectorAll("button").forEach(x => x.disabled = false); showToast("로그인을 시작하지 못했어요"); }
+  if (error){ loginBox.querySelectorAll(".login-btn").forEach(x => x.disabled = false); showToast("로그인을 시작하지 못했어요"); }
 });
 document.getElementById("logout").onclick = async () => {
   if (!confirm("로그아웃할까요?")) return;
