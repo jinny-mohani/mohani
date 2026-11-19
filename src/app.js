@@ -34,7 +34,6 @@ const grid = document.getElementById("grid");
 const WD = ["일","월","화","수","목","금","토"];
 let cur = "2026-11";
 const pad = n => String(n).padStart(2, "0");
-const PEN_SVG = '<svg class="ic" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>';
 function rot(key){ let h = 0; for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) | 0; return ((Math.abs(h) % 11) - 5); }
 
 function render(){
@@ -62,17 +61,24 @@ function render(){
     b.innerHTML = `<img class="cell" src="${CELL[th]}" alt=""><span class="num">${d.getDate()}</span>`;
     if (inMonth && data[key] && BY_ID[data[key]]) addSticker(b, data[key], key);
     if (inMonth && hasDiary(key)) b.insertAdjacentHTML("beforeend", '<i class="dot"></i>');
-    if (inMonth){   // ✎ 누르면 팝업 없이 바로 그날 일기
-      const pen = document.createElement("span");
-      pen.className = "pen-go" + (hasDiary(key) ? " has" : ""); pen.setAttribute("role", "button");
-      pen.setAttribute("aria-label", `${d.getMonth()+1}월 ${d.getDate()}일 일기 쓰기`);
-      pen.innerHTML = PEN_SVG;
-      pen.onclick = e => { e.stopPropagation(); openDay(key); };
-      b.appendChild(pen);
-    }
-    b.onclick = () => openSheet(key);
+    if (inMonth) holdToOpen(b, key);
+    b.onclick = () => { if (held === key){ held = null; return; } openSheet(key); };
     grid.appendChild(b);
   }
+}
+// 날짜를 0.5초 길게 누르면 팝업 없이 바로 그날 일기
+let held = null;
+function holdToOpen(btn, key){
+  let t = null, sx = 0, sy = 0;
+  const cancel = () => { clearTimeout(t); t = null; btn.classList.remove("holding"); };
+  btn.addEventListener("pointerdown", e => {
+    if (!e.isPrimary) return;
+    sx = e.clientX; sy = e.clientY; held = null; btn.classList.add("holding");
+    t = setTimeout(() => { t = null; btn.classList.remove("holding"); held = key; openDay(key); }, 500);
+  });
+  btn.addEventListener("pointermove", e => { if (t && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev => btn.addEventListener(ev, cancel));
+  btn.addEventListener("contextmenu", e => e.preventDefault());
 }
 function addSticker(btn, id, key){
   const w = document.createElement("span");
@@ -159,6 +165,7 @@ function openSheet(key, type = "main", idx = 0){
   if (sel){ for (const c in STICKERS) if (STICKERS[c].some(s => s.id === sel)) cat = c; }
   rm.hidden = !sel;
   goDay.hidden = view !== "month";
+  document.getElementById("holdTip").hidden = view !== "month";
   hint.textContent = sel ? `지금 붙은 스티커: ${BY_ID[sel].name}` : "스티커를 누르면 바로 붙어요";
   drawStickers();
   dim.classList.add("on");
@@ -176,6 +183,10 @@ rm.onclick = () => apply(null);
 goDay.onclick = () => { const k = target.key; closeSheet(); openDay(k); };
 document.getElementById("shX").onclick = closeSheet;
 dim.addEventListener("click", e => { if (e.target === dim) closeSheet(); });
+
+// 월간 왼쪽 테이프 아래 '오늘의 일기'
+function todayKey(){ const t = new Date(); return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`; }
+document.getElementById("todayDiary").onclick = () => openDay(todayKey());
 
 // ---- 화면 전환 ----
 let view = "month";
