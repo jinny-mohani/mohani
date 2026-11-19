@@ -19,13 +19,14 @@
       - 로그아웃: 먼저 올리고(남으면 경고) 이 기기의 내 데이터 삭제
       - 확인: 2기기 동기화(스티커·글·날씨·손글씨·기록·소개·메모), 오프라인→재연결, 스티커 떼기, 로그아웃 후 B 계정에 A 흔적 없음
       - migration 001(days.weather) 실행 완료
+- [x] **5단계: A/B 보안 테스트 35개 항목 모두 차단** (docs/security-test.md)
 - [x] Vercel(개인 계정) 프로젝트 `emotion-diary` — 이 브랜치를 Production으로 추적
       주소: https://emotion-diary-five-omega.vercel.app
 
 ## 남은 것 (순서대로)
 1. (선택) 구글 정식 게시: 브랜딩에 홈페이지 = 배포 주소, 개인정보처리방침 = `/privacy.html`,
    승인된 도메인에 `emotion-diary-five-omega.vercel.app` 추가 → 대상 › 앱 게시
-2. 5단계: A/B 두 계정 보안 테스트 (API 직접 호출 + Storage). 테스트 계정 test-a/test-b@duckduck.test(대시보드에서 생성, 비밀번호는 저장소에 두지 않음) — 끝나면 삭제
+2. (선택) 테스트 계정 정리: test-a/test-b@duckduck.test 데이터·계정 삭제
 3. 6단계: 서비스워커(오프라인) 추가 → 아이패드 홈 화면 추가 시험 (manifest·앱 아이콘(피그마 '앱아이콘' 8182:6093, 신기함)·이름 '덕덕 일기'는 완료)
 
 ## 메모
