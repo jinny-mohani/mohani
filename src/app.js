@@ -34,6 +34,7 @@ const grid = document.getElementById("grid");
 const WD = ["일","월","화","수","목","금","토"];
 let cur = "2026-11";
 const pad = n => String(n).padStart(2, "0");
+const PEN_SVG = '<svg class="ic" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>';
 function rot(key){ let h = 0; for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) | 0; return ((Math.abs(h) % 11) - 5); }
 
 function render(){
@@ -61,6 +62,14 @@ function render(){
     b.innerHTML = `<img class="cell" src="${CELL[th]}" alt=""><span class="num">${d.getDate()}</span>`;
     if (inMonth && data[key] && BY_ID[data[key]]) addSticker(b, data[key], key);
     if (inMonth && hasDiary(key)) b.insertAdjacentHTML("beforeend", '<i class="dot"></i>');
+    if (inMonth){   // ✎ 누르면 팝업 없이 바로 그날 일기
+      const pen = document.createElement("span");
+      pen.className = "pen-go" + (hasDiary(key) ? " has" : ""); pen.setAttribute("role", "button");
+      pen.setAttribute("aria-label", `${d.getMonth()+1}월 ${d.getDate()}일 일기 쓰기`);
+      pen.innerHTML = PEN_SVG;
+      pen.onclick = e => { e.stopPropagation(); openDay(key); };
+      b.appendChild(pen);
+    }
     b.onclick = () => openSheet(key);
     grid.appendChild(b);
   }
