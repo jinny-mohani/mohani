@@ -19,7 +19,7 @@
       - 로그아웃: 먼저 올리고(남으면 경고) 이 기기의 내 데이터 삭제
       - 확인: 2기기 동기화(스티커·글·날씨·손글씨·기록·소개·메모), 오프라인→재연결, 스티커 떼기, 로그아웃 후 B 계정에 A 흔적 없음
       - migration 001(days.weather) 실행 완료
-- [x] **5단계: A/B 보안 테스트 35개 항목 모두 차단** (docs/security-test.md)
+- [x] **5단계: A/B 보안 테스트: 공격 33가지 모두 차단, 확인 3가지 정상** (docs/security-test.md)
 - [x] Vercel(개인 계정) 프로젝트 `emotion-diary` — 이 브랜치를 Production으로 추적
       주소: https://emotion-diary-five-omega.vercel.app
 
