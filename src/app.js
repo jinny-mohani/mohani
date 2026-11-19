@@ -1,5 +1,9 @@
 import stickersJson from "./stickers.json";
 import { supabase } from "./supabase.js";
+import { registerSW } from "virtual:pwa-register";
+
+// 오프라인용 서비스워커 (새 버전이 배포되면 다음에 열 때 자동으로 바뀐다)
+if ("serviceWorker" in navigator) registerSW({ immediate: true });
 
 const STICKERS = stickersJson;
 const CELL = {nov:"/assets/nov_cell.webp", dec:"/assets/dec_cell.webp"};
@@ -754,6 +758,18 @@ function syncNow(){ if (!UID) return; lastPull = Date.now(); pullAll().finally((
 addEventListener("online", syncNow);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastPull > 30000) syncNow(); else if (document.hidden) flush(); });
 
+// 인터넷 없이 열었는데 로그인 토큰이 만료돼 갱신을 못 한 경우, 기기에 남은 로그인 정보로 계속 쓴다
+function storedUser(){
+  try { const k = Object.keys(localStorage).find(k => /^sb-.*-auth-token$/.test(k));
+    const v = k && JSON.parse(localStorage.getItem(k)); return v?.user?.id ? v.user : null; } catch (e) { return null; }
+}
+// 토큰이 무효가 되어 저절로 로그아웃된 경우: 아직 못 올린 게 있으면 기기 저장분은 지우지 않는다(같은 계정으로 다시 로그인하면 이어서 올라감)
+function forgetMemory(){
+  UID = null; NS = "emodiary.anon.";
+  data = {}; stickerT = {}; days = {}; rec = {}; me = { name: "", a: ["", "", "", ""], photo: false, t: 0 };
+  memo = { pages: [newMemoPage()], t: 0 }; memoIdx = 0; dirty = {};
+}
+
 // ---- 로그인 (Supabase Auth: 카카오 / 구글) ----
 let user = null;
 const loginBox = document.getElementById("login"), coverGo = document.getElementById("coverGo");
@@ -781,7 +797,9 @@ document.getElementById("logout").onclick = async () => {
 };
 supabase.auth.onAuthStateChange((event, session) => {
   const was = user; user = session?.user ?? null;
-  if (event === "SIGNED_OUT" || (!user && was)){ closeSpace().then(() => { openCover(); showLogin(true); }); }
+  if (event === "SIGNED_OUT" || (!user && was)){
+    (UID && pendingCount() ? Promise.resolve(forgetMemory()) : closeSpace()).then(() => { openCover(); showLogin(true); });
+  }
   else if (user && !was && view === "cover" && !loginBox.hidden){
     openSpace(user.id).then(() => { showLogin(false); showMonth(todayYM()); setTimeout(syncNow, 0); });
   }
@@ -796,6 +814,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   let session = null;
   try { ({ data: { session } } = await supabase.auth.getSession()); } catch (e) {}
   user = session?.user ?? null;
+  if (!user && !navigator.onLine) user = storedUser();   // 오프라인: 저장된 계정으로 열기
   if (failed || location.search.includes("code=")) history.replaceState(null, "", location.pathname);
   if (user){ await openSpace(user.id); showLogin(false); setView("month"); render(); setTimeout(syncNow, 0); }
   else { openCover(); showLogin(true); }

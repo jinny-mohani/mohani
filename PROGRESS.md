@@ -20,6 +20,8 @@
       - 확인: 2기기 동기화(스티커·글·날씨·손글씨·기록·소개·메모), 오프라인→재연결, 스티커 떼기, 로그아웃 후 B 계정에 A 흔적 없음
       - migration 001(days.weather) 실행 완료
 - [x] **5단계: A/B 보안 테스트: 공격 33가지 모두 차단, 확인 3가지 정상** (docs/security-test.md)
+- [x] **6단계: 오프라인** — vite-plugin-pwa 서비스워커(앱 화면 89개 파일 미리 저장, 구글 글꼴 런타임 저장, Supabase 요청은 건드리지 않음).
+      확인: 인터넷 끊고 새로고침해도 월간·스티커·글꼴·일기 표시 / 만료된 토큰으로 오프라인 열기 가능 / 재연결 시 토큰 갱신·업로드 / privacy.html 정상
 - [x] Vercel(개인 계정) 프로젝트 `emotion-diary` — 이 브랜치를 Production으로 추적
       주소: https://emotion-diary-five-omega.vercel.app
 
@@ -27,7 +29,7 @@
 1. (선택) 구글 정식 게시: 브랜딩에 홈페이지 = 배포 주소, 개인정보처리방침 = `/privacy.html`,
    승인된 도메인에 `emotion-diary-five-omega.vercel.app` 추가 → 대상 › 앱 게시
 2. (선택) 테스트 계정 정리: test-a/test-b@duckduck.test 데이터·계정 삭제
-3. 6단계: 서비스워커(오프라인) 추가 → 아이패드 홈 화면 추가 시험 (manifest·앱 아이콘(피그마 '앱아이콘' 8182:6093, 신기함)·이름 '덕덕 일기'는 완료)
+3. 아이패드 실기기 시험: 홈 화면 추가 → 전체 화면·로그인 유지·비행기 모드·애플펜슬
 
 ## 메모
 - 이 코드는 `jinny-mohani/mohani` 저장소의 `claude/pensive-knuth-ek4xm4` 브랜치에 있다.
