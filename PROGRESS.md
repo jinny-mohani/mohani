@@ -13,16 +13,20 @@
       동의항목 이메일 '선택 동의'(정보 수집 후 제공 체크 안 함). 닉네임·프로필 사진 외 항목은 사용 안 함
 - [x] **배포 주소에서 카카오·구글 로그인 성공 확인**
 - [x] 구글 OAuth: 프로젝트 `emotion-diary`, 클라이언트 `supabase`(웹), 게시 상태 '테스트 중' + 테스트 사용자 등록
+- [x] **4단계: Supabase 저장/동기화** (실제 Supabase + 테스트 계정으로 확인)
+      - 기기별·사용자별 로컬 저장(emodiary.<uid>.*) → 올릴 목록(dirty) → 온라인이면 업로드, 실패 시 재시도
+      - 로그인/앱 복귀 시 내려받기, 행마다 updated_at 최신 우선. 손글씨·사진은 ink 버킷 {uid}/...
+      - 로그아웃: 먼저 올리고(남으면 경고) 이 기기의 내 데이터 삭제
+      - 확인: 2기기 동기화(스티커·글·날씨·손글씨·기록·소개·메모), 오프라인→재연결, 스티커 떼기, 로그아웃 후 B 계정에 A 흔적 없음
+      - migration 001(days.weather) 실행 완료
 - [x] Vercel(개인 계정) 프로젝트 `emotion-diary` — 이 브랜치를 Production으로 추적
       주소: https://emotion-diary-five-omega.vercel.app
 
 ## 남은 것 (순서대로)
 1. (선택) 구글 정식 게시: 브랜딩에 홈페이지 = 배포 주소, 개인정보처리방침 = `/privacy.html`,
    승인된 도메인에 `emotion-diary-five-omega.vercel.app` 추가 → 대상 › 앱 게시
-2. 4단계: 저장 함수를 Supabase로 교체 (localStorage/IndexedDB는 사용자별 오프라인 캐시, 로그아웃 시 삭제)
-   - days 테이블에 `weather text` 열 추가 필요 (일간의 4칸은 '함께 느낀 감정'이 아니라 날씨: sun/cloud/rain/snow). `minis` 열은 더 이상 쓰지 않음
-3. 5단계: A/B 두 계정 보안 테스트
-4. 6단계: 서비스워커(오프라인) 추가 → 아이패드 홈 화면 추가 시험 (manifest·앱 아이콘(피그마 '앱아이콘' 8182:6093, 신기함)·이름 '덕덕 일기'는 완료)
+2. 5단계: A/B 두 계정 보안 테스트 (API 직접 호출 + Storage). 테스트 계정 test-a/test-b@duckduck.test(대시보드에서 생성, 비밀번호는 저장소에 두지 않음) — 끝나면 삭제
+3. 6단계: 서비스워커(오프라인) 추가 → 아이패드 홈 화면 추가 시험 (manifest·앱 아이콘(피그마 '앱아이콘' 8182:6093, 신기함)·이름 '덕덕 일기'는 완료)
 
 ## 메모
 - 이 코드는 `jinny-mohani/mohani` 저장소의 `claude/pensive-knuth-ek4xm4` 브랜치에 있다.
@@ -30,3 +34,5 @@
 - 빈 저장소 `jinny-mohani/emotion-diary`를 만들어 두었다(비공개). 개인 Claude 계정에서 이어 갈 때
   이 저장소로 옮기면 Vercel에서 저장소/브랜치도 함께 바꿔야 한다.
 - 비밀 값(카카오·구글 시크릿, Supabase secret/service_role 키, DB 비밀번호)은 저장소에 넣지 않는다.
+
+- 이 클라우드 환경은 네트워크 허용 도메인에 `llewtihbcejijrjqpttk.supabase.co`를 추가해 두었다(실제 DB 시험 가능). Node fetch는 `NODE_USE_ENV_PROXY=1` 필요.
