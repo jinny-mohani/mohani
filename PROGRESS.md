@@ -21,7 +21,7 @@
    승인된 도메인에 `emotion-diary-five-omega.vercel.app` 추가 → 대상 › 앱 게시
 5. 4단계: 저장 함수를 Supabase로 교체 (localStorage/IndexedDB는 사용자별 오프라인 캐시, 로그아웃 시 삭제)
 6. 5단계: A/B 두 계정 보안 테스트
-7. 6단계: 서비스워커(오프라인) 추가 → 아이패드 홈 화면 추가 시험 (manifest·'기쁨' 아이콘·이름 '덕덕 일기'는 완료)
+7. 6단계: 서비스워커(오프라인) 추가 → 아이패드 홈 화면 추가 시험 (manifest·앱 아이콘(피그마 '앱아이콘' 8182:6093, 신기함)·이름 '덕덕 일기'는 완료)
 
 ## 메모
 - 이 코드는 `jinny-mohani/mohani` 저장소의 `claude/pensive-knuth-ek4xm4` 브랜치에 있다.
