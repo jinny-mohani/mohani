@@ -42,18 +42,21 @@ body.dec{--bgc:#b3ada0;--bgimg:url(/assets/dec_bg.webp);--accent:#8c8574;--num:#
 .sh-date{background:var(--accent);color:#fff;border-radius:16px;padding:6px 14px 4px;font-size:18px}
 .sh-q{color:var(--num);font-size:17px}
 .sh-x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:0;background:var(--soft);color:var(--num);font:inherit;font-size:20px;line-height:36px;cursor:pointer}
-.tabs{display:flex;gap:8px;margin:16px 0 10px;position:relative}
+/* 날짜 줄과 감정 탭 사이 점선, 탭 오른쪽 끝에 안내 문구 */
+.tab-row{display:flex;align-items:center;margin:16px 0 10px;padding-top:16px;border-top:2px dashed var(--line);position:relative}
+.tabs{display:flex;gap:8px;position:relative}
+.tab-row .hint{margin-left:auto}
 .tab{border:0;font:inherit;font-size:16px;padding:8px 18px 6px;border-radius:18px;background:var(--soft);color:var(--num);cursor:pointer}
 .tab small{font-size:12px;opacity:.7;margin-left:3px}
 .tab.on{background:var(--accent);color:#fff}
-.stks{display:grid;grid-template-columns:repeat(6,1fr);gap:4px 6px;max-height:372px;overflow-y:auto;position:relative;padding:4px 2px;align-content:start;-webkit-overflow-scrolling:touch}
+.stks{display:grid;grid-template-columns:repeat(6,1fr);gap:4px 6px;height:274px;overflow-y:auto;position:relative;padding:4px 2px;align-content:start;-webkit-overflow-scrolling:touch}
 .sb{border:0;background:transparent;padding:8px 0 6px;border-radius:18px;font:inherit;color:#3e4152;font-size:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
 .sv{position:relative;display:block}
 .sv img{position:absolute;max-width:none;pointer-events:none;-webkit-user-drag:none}
 .sb .sv{width:46px;height:46px;margin:2px 0 4px;transition:transform .15s}
 .stk .sv{width:100%;height:100%}
 .sb.sel{background:#fbefd9;box-shadow:inset 0 0 0 2px var(--line)}
-.sh-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;position:relative;min-height:38px}
+.sh-foot{display:flex;justify-content:flex-end;align-items:center;margin-top:8px;position:relative;min-height:38px}
 .rm{border:0;font:inherit;font-size:15px;padding:8px 16px 6px;border-radius:16px;background:transparent;color:#b0705a;box-shadow:inset 0 0 0 1.5px #e7b9a6;cursor:pointer}
 .hint{font-size:13px;color:#b9a58c}
 
