@@ -143,3 +143,16 @@ body.nov .ext .d{display:none}
 .go-day{border:0;font:inherit;font-size:15px;padding:8px 16px 6px;border-radius:16px;background:var(--accent);color:#fff;cursor:pointer}
 #toast{position:absolute;z-index:60;left:50%;bottom:30px;transform:translateX(-50%);background:rgba(62,65,82,.85);color:#fff;padding:9px 18px 7px;border-radius:18px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.on{opacity:1}
+
+/* ---- 로그인 / 로그아웃 ---- */
+body.booting #stage{visibility:hidden}     /* 로그인 여부를 확인하는 아주 짧은 순간 */
+#login{position:absolute;left:0;top:626px;width:1024px;display:flex;justify-content:center;gap:14px;z-index:2}
+#login[hidden]{display:none}
+.login-btn{width:206px;height:44px;border:0;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;
+  font:17px 'Jua',sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(70,50,120,.18)}
+.login-btn svg{width:20px;height:20px;flex:none}
+.login-btn.kakao{background:#FEE500;color:rgba(0,0,0,.85)}
+.login-btn.google{background:#fff;color:#1f1f1f;box-shadow:inset 0 0 0 1px #c9c4d6,0 2px 8px rgba(70,50,120,.18)}
+.login-btn:disabled{opacity:.6}
+#logout{position:absolute;left:24px;top:16px;height:30px;padding:3px 14px 0;border:0;border-radius:15px;background:rgba(255,252,242,.7);
+  color:#6f5fb0;font:14px 'Jua',sans-serif;cursor:pointer}

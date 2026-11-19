@@ -1,4 +1,5 @@
 import stickersJson from "./stickers.json";
+import { supabase } from "./supabase.js";
 
 const STICKERS = stickersJson;
 const CELL = {nov:"/assets/nov_cell.webp", dec:"/assets/dec_cell.webp"};
@@ -604,6 +605,7 @@ const toast = document.getElementById("toast"); let tt;
 function showToast(msg){ toast.textContent = msg; toast.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => toast.classList.remove("on"), 1400); }
 document.querySelectorAll(".gnb-hit").forEach(b => b.onclick = () => {
   const g = b.dataset.go;
+  if (!user) return showToast("먼저 로그인해 주세요");
   if (g === "soon") return showToast(`${b.getAttribute("aria-label")} 화면은 다음 단계에서 만들어요`);
   if (g === "rec") return openRec(recPage);
   if (g === "intro") return openIntro(introPage);
@@ -613,7 +615,46 @@ document.querySelectorAll(".gnb-hit").forEach(b => b.onclick = () => {
   showMonth(g);
 });
 
+// ---- 로그인 (Supabase Auth: 카카오 / 구글) ----
+let user = null;
+const loginBox = document.getElementById("login"), coverGo = document.getElementById("coverGo");
+function showLogin(on){ loginBox.hidden = !on; coverGo.hidden = on; }
+loginBox.querySelectorAll(".login-btn").forEach(b => b.onclick = async () => {
+  const provider = b.dataset.provider;
+  loginBox.querySelectorAll("button").forEach(x => x.disabled = true);
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: location.origin + location.pathname,
+      // 카카오: 이메일(비즈 앱 전용)은 요청하지 않는다
+      ...(provider === "kakao" ? { scopes: "profile_nickname profile_image" } : {}),
+    },
+  });
+  if (error){ loginBox.querySelectorAll("button").forEach(x => x.disabled = false); showToast("로그인을 시작하지 못했어요"); }
+});
+document.getElementById("logout").onclick = async () => {
+  if (!confirm("로그아웃할까요?")) return;
+  commitAll();
+  await supabase.auth.signOut();
+};
+supabase.auth.onAuthStateChange((event, session) => {
+  const was = user; user = session?.user ?? null;
+  if (event === "SIGNED_OUT" || (!user && was)){ openCover(); showLogin(true); }
+  else if (user && !was && view === "cover" && !loginBox.hidden){ showLogin(false); showMonth(todayYM()); }
+});
+
 // 처음 열 때: 오늘이 11·12월이면 그 달, 아니면 11월
 (() => { const t = new Date(); if (t.getFullYear() === 2026 && (t.getMonth() === 10 || t.getMonth() === 11)) cur = `2026-${t.getMonth()+1}`; })();
-setView("month");
-render();
+(async () => {
+  document.body.classList.add("booting");
+  const q = new URLSearchParams(location.search + "&" + location.hash.slice(1));
+  const failed = q.get("error_description") || q.get("error");
+  let session = null;
+  try { ({ data: { session } } = await supabase.auth.getSession()); } catch (e) {}
+  user = session?.user ?? null;
+  if (failed || location.search.includes("code=")) history.replaceState(null, "", location.pathname);
+  if (user){ showLogin(false); setView("month"); render(); }
+  else { openCover(); showLogin(true); }
+  document.body.classList.remove("booting");
+  if (failed && !user) showToast("로그인하지 못했어요. 다시 시도해 주세요");
+})();

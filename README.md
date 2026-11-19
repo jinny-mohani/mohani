@@ -19,3 +19,6 @@ npm run build    # dist/ 에 배포용 파일
 - `src/app.js` — 동작 전체
 - `src/stickers.json` — 감정 스티커 40개(이름·정중앙 정렬 값), 이미지는 `public/assets/stickers/`
 - `public/assets/` — 화면 배경·가장자리 이미지
+- `src/supabase.js` — Supabase 연결(로그인 상태 유지)
+- `.env` — Supabase 주소와 공개용(publishable) 키. Secret 키는 절대 넣지 않는다
+- `supabase/schema.sql` — 테이블·RLS·Storage 정책 (SQL Editor에 붙여 넣어 실행)
