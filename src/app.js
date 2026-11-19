@@ -86,12 +86,22 @@ function addSticker(btn, id, key){
   btn.appendChild(w);
 }
 
+// ---- 날씨 (일간 '오늘 느낀 감정' 줄 오른쪽 4칸) ----
+const CLOUD = 'M6.6 19.2h10.6a3.7 3.7 0 0 0 .5-7.36 5.3 5.3 0 0 0-10.2-1.1A4.25 4.25 0 0 0 6.6 19.2z';
+const WEATHER = [
+  ["sun", "맑음", `<circle cx="12" cy="12" r="5.2" fill="#FFC83D"/><g stroke="#FFB12B" stroke-width="2.2" stroke-linecap="round"><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M5.4 18.6l1.5-1.5M17.1 6.9l1.5-1.5"/></g>`],
+  ["cloud", "흐림", `<path d="${CLOUD}" fill="#B8C4D4"/><path d="M8.2 13.2a3 3 0 0 1 3.3-2.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".8"/>`],
+  ["rain", "비", `<path d="M3 12.6a9 7.8 0 0 1 18 0q-1.5-1.3-3 0q-1.5-1.3-3 0q-1.5-1.3-3 0q-1.5-1.3-3 0q-1.5-1.3-3 0q-1.5-1.3-3 0z" fill="#5FB0F0"/><path d="M12 4.8v7.8" stroke="#3E95DA" stroke-width="1.1" opacity=".55"/><path d="M12 12.4v6.3a1.9 1.9 0 0 1-3.8 0" stroke="#8A6D4F" stroke-width="1.8" stroke-linecap="round" fill="none"/><g stroke="#4FA9EE" stroke-width="1.7" stroke-linecap="round"><path d="M4.6 1.6l-.6 1.8M19.8 1.6l-.6 1.8M3.4 15.6l-.6 1.8M20.8 15.6l-.6 1.8M17 17.4l-.6 1.8"/></g>`],
+  ["snow", "눈", `<g transform="translate(0 -3)"><path d="${CLOUD}" fill="#C9D6E6"/></g><g fill="#7EC4F1"><circle cx="8" cy="19.6" r="1.35"/><circle cx="12" cy="21.2" r="1.35"/><circle cx="16" cy="19.6" r="1.35"/></g>`],
+];
+const wxSvg = i => `<svg viewBox="0 0 24 24" aria-hidden="true">${WEATHER[i][2]}</svg>`;
+
 // ---- 일기 데이터 (글: localStorage, 손글씨: IndexedDB) ----
 const DKEY = "emodiary.days";
 let days = {};
 try { days = JSON.parse(localStorage.getItem(DKEY) || "{}") || {}; } catch (e) {}
-function dayOf(k){ return days[k] || (days[k] = {tags:["","",""], feel:"", tmr:"", minis:[], ink:false, t:0}); }
-function hasDiary(k){ const d = days[k]; return !!d && (d.ink || d.feel || d.tmr || d.tags.some(Boolean) || d.minis.some(Boolean)); }
+function dayOf(k){ const d = days[k] || (days[k] = {tags:["","",""], feel:"", tmr:"", weather:"", ink:false, t:0}); if (d.weather == null) d.weather = ""; return d; }
+function hasDiary(k){ const d = days[k]; return !!d && (d.ink || d.feel || d.tmr || d.tags.some(Boolean) || !!d.weather); }
 const pushTimers = {};
 function saveDay(k){
   const d = dayOf(k); d.t = Date.now();
@@ -114,7 +124,7 @@ let cloudCol = null;
 async function pushDay(k){
   if (!cloudCol) return;
   const d = dayOf(k); const ink = d.ink ? await inkGet(k) : null;
-  try { await cloudCol.doc("day-" + k).set({ tags: d.tags, feel: d.feel, tmr: d.tmr, minis: d.minis, ink: ink || "", t: d.t }); } catch (e) {}
+  try { await cloudCol.doc("day-" + k).set({ tags: d.tags, feel: d.feel, tmr: d.tmr, weather: d.weather, ink: ink || "", t: d.t }); } catch (e) {}
 }
 async function pullDay(k){
   if (!cloudCol) return false;
@@ -122,7 +132,7 @@ async function pullDay(k){
     const snap = await cloudCol.doc("day-" + k).get();
     const v = snap && (typeof snap.data === "function" ? snap.data() : (snap.data ?? snap));
     if (!v || !v.t || v.t <= (days[k]?.t || 0)) return false;
-    days[k] = { tags: v.tags || ["","",""], feel: v.feel || "", tmr: v.tmr || "", minis: v.minis || [], ink: !!v.ink, t: v.t };
+    days[k] = { tags: v.tags || ["","",""], feel: v.feel || "", tmr: v.tmr || "", weather: v.weather || "", ink: !!v.ink, t: v.t };
     await inkPut(k, v.ink || null);
     try { localStorage.setItem(DKEY, JSON.stringify(days)); } catch (e) {}
     return true;
@@ -141,7 +151,7 @@ CATS.forEach(([c, label]) => {
   tabs.appendChild(t);
 });
 function curSel(){ if (!target) return null;
-  const id = target.type === "main" ? data[target.key] : (days[target.key]?.minis || [])[target.idx];
+  const id = data[target.key];
   return BY_ID[id] ? id : null; }
 function drawStickers(){
   tabs.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.c === cat));
@@ -160,7 +170,7 @@ function openSheet(key, type = "main", idx = 0){
   target = { key, type, idx };
   const d = new Date(key + "T00:00:00");
   document.getElementById("shDate").textContent = `${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
-  document.querySelector(".sh-q").textContent = type === "main" ? "오늘은 어떤 기분인가요?" : "함께 느낀 감정을 골라요";
+  document.querySelector(".sh-q").textContent = type === "main" ? "오늘은 어떤 기분인가요?" : "오늘은 어떤 기분인가요?";
   const sel = curSel();
   if (sel){ for (const c in STICKERS) if (STICKERS[c].some(s => s.id === sel)) cat = c; }
   rm.hidden = !sel;
@@ -174,7 +184,6 @@ function closeSheet(){ dim.classList.remove("on"); target = null; }
 function apply(id){
   const { key, type, idx } = target;
   if (type === "main"){ if (id) data[key] = id; else delete data[key]; save(); }
-  else { const d = dayOf(key); d.minis[idx] = id || ""; saveDay(key); }
   closeSheet();
   if (view === "month") render(); else renderDay();
 }
@@ -214,17 +223,19 @@ const pages = [...document.querySelectorAll(".pg")].map((el, side) => {
     <input class="tag" style="left:140px" maxlength="8" enterkeyhint="next">
     <input class="tag" style="left:239px" maxlength="8" enterkeyhint="next">
     <input class="tag" style="left:337px" maxlength="8" enterkeyhint="done">
-    ${[346,374,403,432].map((x,i)=>`<button class="mini" data-i="${i}" style="left:${x}px" aria-label="함께 느낀 감정 ${i+1}"></button>`).join("")}
+    ${[346,374,403,432].map((x,i)=>`<button class="wx" data-i="${i}" style="left:${x}px" aria-label="날씨 ${WEATHER[i][1]}">${wxSvg(i)}</button>`).join("")}
     <textarea class="ta feel" placeholder="오늘 있었던 일과 느낀 감정을 적어요"></textarea>
     <textarea class="ta tmr" placeholder=""></textarea>
     <canvas class="ink" width="${Math.round(473*K)}" height="${Math.round(616*K)}"></canvas>`;
   const pg = { el, side, key: null, strokes: [], base: null,
     date: el.querySelector(".pdate"), slot: el.querySelector(".main-slot"),
-    tags: [...el.querySelectorAll(".tag")], minis: [...el.querySelectorAll(".mini")],
+    tags: [...el.querySelectorAll(".tag")], wx: [...el.querySelectorAll(".wx")],
     feel: el.querySelector(".feel"), tmr: el.querySelector(".tmr"), cv: el.querySelector(".ink") };
   pg.ctx = pg.cv.getContext("2d");
   pg.slot.onclick = () => openSheet(pg.key, "main");
-  pg.minis.forEach(b => b.onclick = () => openSheet(pg.key, "mini", +b.dataset.i));
+  pg.wx.forEach(b => b.onclick = () => {   // 하나만 고르기, 다시 누르면 지우기
+    if (!pg.key) return; const d = dayOf(pg.key), w = WEATHER[+b.dataset.i][0];
+    d.weather = d.weather === w ? "" : w; saveDay(pg.key); renderDay(); });
   const onText = () => { if (!pg.key) return; const d = dayOf(pg.key);
     d.tags = pg.tags.map(i => i.value.trim()); d.feel = pg.feel.value; d.tmr = pg.tmr.value; saveDay(pg.key); };
   [...pg.tags, pg.feel, pg.tmr].forEach(i => i.addEventListener("input", onText));
@@ -258,8 +269,8 @@ async function renderDay(force = false){
       pg.slot.dataset.id = mainId;
       pg.slot.innerHTML = mainId ? `<span class="stk">${svgOf(mainId)}</span>` : `<span class="ph">눌러서<br>감정 붙이기</span>`;
     }
-    pg.minis.forEach((b, i) => { const id = BY_ID[e.minis[i]] ? e.minis[i] : "";
-      if (changed || b.dataset.id !== id){ b.dataset.id = id; b.innerHTML = id ? svgOf(id) : ""; } });
+    pg.wx.forEach((b, i) => { const on = (e.weather || "") === WEATHER[i][0];
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
     pg.tags.forEach((inp, i) => { if (document.activeElement !== inp) inp.value = e.tags[i] || ""; });
     if (document.activeElement !== pg.feel) pg.feel.value = e.feel || "";
     if (document.activeElement !== pg.tmr) pg.tmr.value = e.tmr || "";
@@ -613,7 +624,7 @@ const NO_BUMP = ".gnb-hit, #coverGo, .me-link";
 document.addEventListener("pointerdown", e => {
   const b = e.target.closest("button");
   if (!b || b.matches(NO_BUMP) || b.disabled) return;
-  if (stage.classList.contains("pen") && e.pointerType === "pen" && b.closest(".pg, #recView, #memoView") && !b.matches(".main-slot, .mini, .nav")) return;
+  if (stage.classList.contains("pen") && e.pointerType === "pen" && b.closest(".pg, #recView, #memoView") && !b.matches(".main-slot, .wx, .nav")) return;
   b.getAnimations().forEach(a => a.id === "bump" && a.cancel());
   const a = b.animate([{ transform: "scale(1)" }, { transform: "scale(.86)", offset: .35 }, { transform: "scale(1.06)", offset: .7 }, { transform: "scale(1)" }],
     { duration: 340, easing: "ease-out" });

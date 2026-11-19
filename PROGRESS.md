@@ -20,6 +20,7 @@
 1. (선택) 구글 정식 게시: 브랜딩에 홈페이지 = 배포 주소, 개인정보처리방침 = `/privacy.html`,
    승인된 도메인에 `emotion-diary-five-omega.vercel.app` 추가 → 대상 › 앱 게시
 2. 4단계: 저장 함수를 Supabase로 교체 (localStorage/IndexedDB는 사용자별 오프라인 캐시, 로그아웃 시 삭제)
+   - days 테이블에 `weather text` 열 추가 필요 (일간의 4칸은 '함께 느낀 감정'이 아니라 날씨: sun/cloud/rain/snow). `minis` 열은 더 이상 쓰지 않음
 3. 5단계: A/B 두 계정 보안 테스트
 4. 6단계: 서비스워커(오프라인) 추가 → 아이패드 홈 화면 추가 시험 (manifest·앱 아이콘(피그마 '앱아이콘' 8182:6093, 신기함)·이름 '덕덕 일기'는 완료)
 
