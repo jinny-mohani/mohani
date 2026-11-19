@@ -143,9 +143,10 @@ body.nov .ext .d{display:none}
 .nav{position:absolute;top:326px;width:34px;height:48px;border:0;border-radius:17px;background:rgba(255,252,242,.7);color:var(--accent);font:26px/1 'Jua';cursor:pointer;box-shadow:0 1px 4px rgba(80,50,20,.15)}
 .day{-webkit-touch-callout:none}
 .day.holding .cell{transform:scale(.92)}
-#todayDiary{position:absolute;left:18px;top:236px;width:92px;height:34px;border:0;border-radius:17px;background:var(--accent);color:#fff;
-  font:14px/1 'Jua',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;padding:2px 0 0;cursor:pointer;box-shadow:0 2px 6px rgba(80,50,20,.18)}
-#todayDiary .ic{width:14px;height:14px}
+/* 오늘의 일기: 피그마 '오늘의 일기' 테이프 (11월 갈색 / 12월 회색) */
+#todayDiary{position:absolute;left:15px;top:226px;width:98.5px;height:52.8px;border:0;padding:0;background:transparent;cursor:pointer}
+#todayDiary img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
+body.dec #todayDiary .td-nov, body.nov #todayDiary .td-dec{display:none}
 .hold-tip{font-size:13px;color:#b9a58c;margin-right:auto}
 .hold-tip[hidden]{display:none}
 .day .dot{position:absolute;left:4px;top:15px;width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.6}
