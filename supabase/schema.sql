@@ -36,7 +36,8 @@ create table if not exists public.days (
   tags       text[]      not null default '{}' check (cardinality(tags)  <= 3),
   feel       text        not null default ''   check (char_length(feel) <= 1000),
   tmr        text        not null default ''   check (char_length(tmr)  <= 500),
-  minis      text[]      not null default '{}' check (cardinality(minis) <= 4),
+  minis      text[]      not null default '{}' check (cardinality(minis) <= 4),   -- (안 씀: 예전 '함께 느낀 감정')
+  weather    text        not null default '' check (weather in ('', 'sun', 'cloud', 'rain', 'snow')),
   ink_path   text,
   updated_at timestamptz not null default now(),
   primary key (user_id, date)

@@ -11,12 +11,20 @@ const BY_ID = {}; for (const c in STICKERS) for (const s of STICKERS[c]) BY_ID[s
 // 피그마 '감정' 원본 컴포넌트를 그대로 렌더한 이미지 — 몸통 중심을 칸 정중앙에
 function svgOf(id){ const s = BY_ID[id]; return `<span class="sv"><img src="${s.src}" alt="" draggable="false" style="left:${s.l}%;top:${s.t}%;width:${s.w}%;height:${s.h}%"></span>`; }
 
-// ---- 저장 (아이패드 브라우저 안에 저장) ----
-const KEY = "emodiary.v1";
-let data = {};
-try { data = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { data = {}; }
-for (const k in data) if (!BY_ID[data[k]]) delete data[k];   // 없는 스티커 번호는 버려요
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} }
+// ---- 저장 ----
+// 기기 안(localStorage·IndexedDB)에 먼저 저장하고, 로그인한 사람의 Supabase로 올린다(sync 부분).
+// 기기 안 저장 공간은 사용자마다 따로: emodiary.<user_id>.*
+let UID = null, NS = "emodiary.anon.";
+const ls = {
+  get(k, d){ try { const v = JSON.parse(localStorage.getItem(NS + k)); return v ?? d; } catch (e) { return d; } },
+  set(k, v){ try { localStorage.setItem(NS + k, JSON.stringify(v)); } catch (e) {} },
+};
+let data = {};        // 날짜 → 스티커 id
+let stickerT = {};    // 날짜 → 마지막으로 바꾼 시각(ms). 뗀 스티커도 시각을 남겨야 다른 기기에 전달된다
+function save(k){
+  if (k){ stickerT[k] = Date.now(); markDirty("sticker:" + k); }
+  ls.set("v1", data); ls.set("stickerT", stickerT);
+}
 
 // ---- 화면 크기 맞춤: 가운데 정렬 + 비율 유지 ----
 const stage = document.getElementById("stage");
@@ -97,16 +105,12 @@ const WEATHER = [
 const wxSvg = i => `<svg viewBox="0 0 24 24" aria-hidden="true">${WEATHER[i][2]}</svg>`;
 
 // ---- 일기 데이터 (글: localStorage, 손글씨: IndexedDB) ----
-const DKEY = "emodiary.days";
 let days = {};
-try { days = JSON.parse(localStorage.getItem(DKEY) || "{}") || {}; } catch (e) {}
 function dayOf(k){ const d = days[k] || (days[k] = {tags:["","",""], feel:"", tmr:"", weather:"", ink:false, t:0}); if (d.weather == null) d.weather = ""; return d; }
 function hasDiary(k){ const d = days[k]; return !!d && (d.ink || d.feel || d.tmr || d.tags.some(Boolean) || !!d.weather); }
-const pushTimers = {};
 function saveDay(k){
   const d = dayOf(k); d.t = Date.now();
-  try { localStorage.setItem(DKEY, JSON.stringify(days)); } catch (e) {}
-  clearTimeout(pushTimers[k]); pushTimers[k] = setTimeout(() => pushDay(k), 1200);
+  ls.set("days", days); markDirty("day:" + k);
 }
 let idb = null;
 const idbReady = new Promise(res => {
@@ -115,29 +119,18 @@ const idbReady = new Promise(res => {
     r.onsuccess = () => { idb = r.result; res(); }; r.onerror = () => res();
   } catch (e) { res(); }
 });
+const inkKey = k => (UID || "anon") + "/" + k;
 async function inkGet(k){ await idbReady; if (!idb) return null;
-  return new Promise(res => { try { const q = idb.transaction("ink").objectStore("ink").get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); } catch (e) { res(null); } }); }
+  return new Promise(res => { try { const q = idb.transaction("ink").objectStore("ink").get(inkKey(k)); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); } catch (e) { res(null); } }); }
 async function inkPut(k, v){ await idbReady; if (!idb) return;
-  try { const tx = idb.transaction("ink", "readwrite"); v ? tx.objectStore("ink").put(v, k) : tx.objectStore("ink").delete(k); } catch (e) {} }
-// 클라우드 저장 자리 (4단계에서 Supabase로 바꿔요). 지금은 연결이 없어 로컬에만 저장돼요.
-let cloudCol = null;
-async function pushDay(k){
-  if (!cloudCol) return;
-  const d = dayOf(k); const ink = d.ink ? await inkGet(k) : null;
-  try { await cloudCol.doc("day-" + k).set({ tags: d.tags, feel: d.feel, tmr: d.tmr, weather: d.weather, ink: ink || "", t: d.t }); } catch (e) {}
-}
-async function pullDay(k){
-  if (!cloudCol) return false;
-  try {
-    const snap = await cloudCol.doc("day-" + k).get();
-    const v = snap && (typeof snap.data === "function" ? snap.data() : (snap.data ?? snap));
-    if (!v || !v.t || v.t <= (days[k]?.t || 0)) return false;
-    days[k] = { tags: v.tags || ["","",""], feel: v.feel || "", tmr: v.tmr || "", weather: v.weather || "", ink: !!v.ink, t: v.t };
-    await inkPut(k, v.ink || null);
-    try { localStorage.setItem(DKEY, JSON.stringify(days)); } catch (e) {}
-    return true;
-  } catch (e) { return false; }
-}
+  return new Promise(res => { try { const tx = idb.transaction("ink", "readwrite"); v ? tx.objectStore("ink").put(v, inkKey(k)) : tx.objectStore("ink").delete(inkKey(k));
+    tx.oncomplete = () => res(); tx.onerror = () => res(); } catch (e) { res(); } }); }
+async function idbAll(){ await idbReady; if (!idb) return [];   // [키, 값] 전부 (옮기기·지우기용)
+  return new Promise(res => { const out = []; try { const q = idb.transaction("ink").objectStore("ink").openCursor();
+    q.onsuccess = () => { const c = q.result; if (c){ out.push([c.key, c.value]); c.continue(); } else res(out); }; q.onerror = () => res(out); } catch (e) { res(out); } }); }
+async function idbDel(keys){ await idbReady; if (!idb || !keys.length) return;
+  return new Promise(res => { try { const tx = idb.transaction("ink", "readwrite"); keys.forEach(k => tx.objectStore("ink").delete(k));
+    tx.oncomplete = () => res(); tx.onerror = () => res(); } catch (e) { res(); } }); }
 
 // ---- 팝업 (월간 날짜 / 일간 대표 감정 / 작은 감정 칸 공용) ----
 const dim = document.getElementById("dim"), tabs = document.getElementById("tabs"), stks = document.getElementById("stks");
@@ -183,7 +176,7 @@ function openSheet(key, type = "main", idx = 0){
 function closeSheet(){ dim.classList.remove("on"); target = null; }
 function apply(id){
   const { key, type, idx } = target;
-  if (type === "main"){ if (id) data[key] = id; else delete data[key]; save(); }
+  if (type === "main"){ if (id) data[key] = id; else delete data[key]; save(key); }
   closeSheet();
   if (view === "month") render(); else renderDay();
 }
@@ -253,7 +246,6 @@ function openDay(k){
   commitAll();
   dayKey = k; setView("day");
   renderDay(true);
-  Promise.all(pages.map(p => pullDay(p.key))).then(ch => { if (ch.some(Boolean)) renderDay(true); });
 }
 async function renderDay(force = false){
   const m = +dayKey.slice(5, 7);
@@ -377,7 +369,7 @@ async function commitInk(pg){
   await inkPut(pg.key, url);
   if (pg.onInk) pg.onInk(!!url); else { dayOf(pg.key).ink = !!url; saveDay(pg.key); }
 }
-function commitAll(){ for (const pg of [...pages, recPad, typeof memoPad !== "undefined" ? memoPad : null]) if (pg && pg.inkT) commitInk(pg); }
+function commitAll(){ const ps = []; for (const pg of [...pages, recPad, typeof memoPad !== "undefined" ? memoPad : null]) if (pg && pg.inkT) ps.push(commitInk(pg)); return Promise.all(ps); }
 async function loadInk(pg){
   const k = pg.key; pg.strokes = []; pg.base = null;
   pg.ctx.clearRect(0, 0, pg.cv.width, pg.cv.height);
@@ -393,8 +385,7 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) commi
 
 // ---- 감정 기록 (3쪽) ----
 const REC_LINES = [[[80, 262], [80, 370], [80, 478], [80, 587], [380, 145], [380, 256], [380, 366], [380, 476], [380, 587], [680, 145], [680, 256], [680, 366], [680, 476], [680, 587]], [[80, 256], [80, 366], [80, 476], [80, 587], [380, 145], [380, 256], [380, 366], [380, 476], [380, 587], [680, 145], [680, 256], [680, 366], [680, 476], [680, 587]], [[80, 180], [80, 291], [80, 401], [80, 564], [380, 180], [380, 291], [380, 401], [380, 511], [680, 180], [680, 291], [680, 401], [680, 511]]];           // 쪽마다 질문 칸의 첫 줄 위치 [x, y]
-const RKEY = "emodiary.rec";
-let rec = {}; try { rec = JSON.parse(localStorage.getItem(RKEY) || "{}") || {}; } catch (e) {}
+let rec = {};
 let recPage = 1;
 const recFields = document.getElementById("recFields");
 const recPad = { cv: document.getElementById("recInk"), strokes: [], base: null, key: null, k: 2 };
@@ -402,23 +393,9 @@ recPad.ctx = recPad.cv.getContext("2d");
 recPad.hasInk = k => !!rec[k]?.ink;
 recPad.onInk = has => { const r = rec[recPad.key] || (rec[recPad.key] = { f: {}, ink: false, t: 0 }); r.ink = has; saveRec(recPad.key); };
 setupInk(recPad);
-const recTimers = {};
 function saveRec(k){
   rec[k].t = Date.now();
-  try { localStorage.setItem(RKEY, JSON.stringify(rec)); } catch (e) {}
-  clearTimeout(recTimers[k]); recTimers[k] = setTimeout(async () => {
-    if (!cloudCol) return; const r = rec[k]; const ink = r.ink ? await inkGet(k) : null;
-    try { await cloudCol.doc(k).set({ f: r.f, ink: ink || "", t: r.t }); } catch (e) {}
-  }, 1200);
-}
-async function pullRec(k){
-  if (!cloudCol) return false;
-  try { const snap = await cloudCol.doc(k).get();
-    const v = snap && (typeof snap.data === "function" ? snap.data() : (snap.data ?? snap));
-    if (!v || !v.t || v.t <= (rec[k]?.t || 0)) return false;
-    rec[k] = { f: v.f || {}, ink: !!v.ink, t: v.t }; await inkPut(k, v.ink || null);
-    try { localStorage.setItem(RKEY, JSON.stringify(rec)); } catch (e) {}
-    return true; } catch (e) { return false; }
+  ls.set("rec", rec); markDirty("rec:" + k);
 }
 async function renderRec(){
   const k = "rec-" + recPage; recPad.key = k;
@@ -441,7 +418,6 @@ async function renderRec(){
 }
 function openRec(n){
   commitAll(); recPage = n; document.body.className = "rec"; setView("rec"); renderRec();
-  pullRec("rec-" + n).then(ch => { if (ch && view === "rec" && recPage === n) renderRec(); });
 }
 function recStep(dir){ const n = recPage + dir; if (n < 1 || n > 3) return turnEdge(dir); openRec(n); turn(recView, dir); }
 function turnEdge(dir){ showToast(dir > 0 ? "마지막 쪽이에요" : "첫 쪽이에요"); }
@@ -472,27 +448,11 @@ document.getElementById("coverGo").onclick = () => showMonth(todayYM());
 function todayYM(){ const t = new Date(); return (t.getFullYear() === 2026 && t.getMonth() === 11) ? "2026-12" : "2026-11"; }
 
 // ---- 내 소개 ----
-const MKEY = "emodiary.me";
 let me = { name: "", a: ["", "", "", ""], photo: false, t: 0 };
-try { me = Object.assign(me, JSON.parse(localStorage.getItem(MKEY) || "{}")); } catch (e) {}
 const meName = document.getElementById("meName"), meAs = [...document.querySelectorAll(".me-a")];
 const mePhoto = document.getElementById("mePhoto"), mePhotoDel = document.getElementById("mePhotoDel");
-let meTimer;
 function saveMe(){
-  me.t = Date.now(); try { localStorage.setItem(MKEY, JSON.stringify(me)); } catch (e) {}
-  clearTimeout(meTimer); meTimer = setTimeout(async () => {
-    if (!cloudCol) return; const photo = me.photo ? await inkGet("me-photo") : null;
-    try { await cloudCol.doc("profile").set({ name: me.name, a: me.a, photo: photo || "", t: me.t }); } catch (e) {}
-  }, 1200);
-}
-async function pullMe(){
-  if (!cloudCol) return false;
-  try { const snap = await cloudCol.doc("profile").get();
-    const v = snap && (typeof snap.data === "function" ? snap.data() : (snap.data ?? snap));
-    if (!v || !v.t || v.t <= me.t) return false;
-    me = { name: v.name || "", a: v.a || ["","","",""], photo: !!v.photo, t: v.t };
-    await inkPut("me-photo", v.photo || null); try { localStorage.setItem(MKEY, JSON.stringify(me)); } catch (e) {}
-    return true; } catch (e) { return false; }
+  me.t = Date.now(); ls.set("me", me); markDirty("profile");
 }
 meName.addEventListener("input", () => { me.name = meName.value; saveMe(); });
 meAs.forEach((inp, i) => inp.addEventListener("input", () => { me.a[i] = inp.value; saveMe(); }));
@@ -535,15 +495,13 @@ async function renderMe(){
 }
 function openMe(){
   commitAll(); document.body.className = "purple edge me"; setView("me"); renderMe();
-  pullMe().then(ch => { if (ch && view === "me") renderMe(); });
 }
 
 // ---- 메모 (여러 장, 줄 노트 / 모눈 노트) ----
 const MEMOBG = { line: "/assets/memoLine.webp", dot: "/assets/memoDot.webp" };
-const NKEY = "emodiary.memo";
 let memo = { pages: [], t: 0 };
-try { memo = Object.assign(memo, JSON.parse(localStorage.getItem(NKEY) || "{}")); } catch (e) {}
-if (!memo.pages.length) memo.pages.push({ id: "m" + Date.now().toString(36), type: "line", text: "", ink: false, t: 0 });
+const newMemoPage = (type = "line") => ({ id: "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type, text: "", ink: false, t: 0 });
+memo.pages.push(newMemoPage());
 let memoIdx = 0;
 const memoTa = document.getElementById("memoTa");
 const memoPad = { cv: document.getElementById("memoInk"), strokes: [], base: null, key: null, k: 2 };
@@ -551,33 +509,9 @@ memoPad.ctx = memoPad.cv.getContext("2d");
 memoPad.hasInk = k => !!memo.pages.find(p => "memo-" + p.id === k)?.ink;
 memoPad.onInk = has => { const p = memo.pages[memoIdx]; if (p && "memo-" + p.id === memoPad.key){ p.ink = has; saveMemo(p); } };
 setupInk(memoPad);
-let memoTimers = {};
 function saveMemo(p){
   p.t = Date.now(); memo.t = p.t;
-  try { localStorage.setItem(NKEY, JSON.stringify(memo)); } catch (e) {}
-  clearTimeout(memoTimers[p.id]); memoTimers[p.id] = setTimeout(async () => {
-    if (!cloudCol) return; const ink = p.ink ? await inkGet("memo-" + p.id) : null;
-    try {
-      await cloudCol.doc("memo-" + p.id).set({ type: p.type, text: p.text, ink: ink || "", t: p.t });
-      await cloudCol.doc("memo").set({ ids: memo.pages.map(x => x.id), t: memo.t });
-    } catch (e) {}
-  }, 1200);
-}
-async function pullMemo(){
-  if (!cloudCol) return false;
-  try {
-    const sn = await cloudCol.doc("memo").get(); const v = sn && (typeof sn.data === "function" ? sn.data() : (sn.data ?? sn));
-    if (!v || !v.ids || v.t <= memo.t) return false;
-    const pagesNew = [];
-    for (const id of v.ids){
-      const s = await cloudCol.doc("memo-" + id).get(); const d = s && (typeof s.data === "function" ? s.data() : (s.data ?? s));
-      if (!d) continue; pagesNew.push({ id, type: d.type || "line", text: d.text || "", ink: !!d.ink, t: d.t || 0 });
-      await inkPut("memo-" + id, d.ink || null);
-    }
-    if (!pagesNew.length) return false;
-    memo = { pages: pagesNew, t: v.t }; try { localStorage.setItem(NKEY, JSON.stringify(memo)); } catch (e) {}
-    return true;
-  } catch (e) { return false; }
+  ls.set("memo", memo); markDirty("memo:" + p.id);
 }
 function memoRows(){ return memo.pages[memoIdx].type === "line" ? 15 : 23; }
 async function renderMemo(){
@@ -602,7 +536,6 @@ document.querySelectorAll(".ptype").forEach(b => b.onclick = () => {
 });
 function openMemo(i){
   commitAll(); memoIdx = Math.max(0, Math.min(i, memo.pages.length - 1)); setView("memo"); renderMemo();
-  pullMemo().then(ch => { if (ch && view === "memo"){ memoIdx = Math.min(memoIdx, memo.pages.length - 1); renderMemo(); } });
 }
 function memoStep(dir){
   commitAll();
@@ -611,7 +544,7 @@ function memoStep(dir){
   if (n >= memo.pages.length){
     const cur = memo.pages[memoIdx];
     if (!cur.text && !cur.ink) return showToast("이 장을 먼저 써야 새 장이 생겨요");
-    memo.pages.push({ id: "m" + Date.now().toString(36), type: cur.type, text: "", ink: false, t: 0 });
+    memo.pages.push(newMemoPage(cur.type));
     saveMemo(memo.pages[memo.pages.length - 1]); showToast("새 메모 장을 만들었어요");
   }
   memoIdx = n; renderMemo(); turn(memoView, dir);
@@ -646,6 +579,181 @@ document.querySelectorAll(".gnb-hit").forEach(b => b.onclick = () => {
   showMonth(g);
 });
 
+// ---- Supabase 동기화 ----
+// 원칙: 쓰면 바로 기기에 저장 → '올릴 목록(dirty)'에 적어 두고 → 온라인이면 Supabase로 올린다.
+// 내려받을 때는 updated_at(마지막으로 고친 시각)이 더 최근인 쪽이 이긴다. DB도 옛 수정은 무시한다(keep_newest).
+let dirty = {};
+let flushTimer = null, flushing = false;
+const iso = t => new Date(t || Date.now()).toISOString();
+const ms = v => v ? Date.parse(v) : 0;
+function markDirty(id){ if (!UID) return; dirty[id] = 1; ls.set("dirty", dirty); scheduleFlush(); }
+function scheduleFlush(wait = 1200){ clearTimeout(flushTimer); flushTimer = setTimeout(flush, wait); }
+function pendingCount(){ return Object.keys(dirty).length; }
+
+// 손글씨·사진: dataURL ↔ Storage 파일
+async function uploadInk(path, dataUrl, type){
+  const blob = await (await fetch(dataUrl)).blob();
+  const { error } = await supabase.storage.from("ink").upload(path, blob, { upsert: true, contentType: type, cacheControl: "0" });
+  if (error) throw error;
+  return path;
+}
+async function removeInk(path){ try { await supabase.storage.from("ink").remove([path]); } catch (e) {} }
+async function downloadInk(path){
+  const { data: blob, error } = await supabase.storage.from("ink").download(path);
+  if (error || !blob) return null;
+  return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => res(null); r.readAsDataURL(blob); });
+}
+async function inkPath(localKey, has, file, type = "image/png"){
+  const path = `${UID}/${file}`;
+  if (has){ const url = await inkGet(localKey); if (url) return uploadInk(path, url, type); }
+  await removeInk(path); return null;
+}
+
+async function pushOne(id){
+  const [kind, key] = id.split(/:(.*)/s);
+  const db = (t, row, conflict) => supabase.from(t).upsert({ user_id: UID, ...row }, { onConflict: conflict });
+  let res;
+  if (kind === "sticker"){
+    res = await db("stickers", { date: key, sticker_id: data[key] || null, updated_at: iso(stickerT[key]) }, "user_id,date");
+  } else if (kind === "day"){
+    const d = days[key]; if (!d) return true;
+    const ink_path = await inkPath(key, d.ink, `day-${key}.png`);
+    res = await db("days", { date: key, tags: (d.tags || []).slice(0, 3), feel: d.feel || "", tmr: d.tmr || "", weather: d.weather || "", ink_path, updated_at: iso(d.t) }, "user_id,date");
+  } else if (kind === "rec"){
+    const r = rec[key]; if (!r) return true;
+    const ink_path = await inkPath(key, r.ink, `${key}.png`);
+    res = await db("records", { page: +key.split("-")[1], fields: r.f || {}, ink_path, updated_at: iso(r.t) }, "user_id,page");
+  } else if (kind === "profile"){
+    const photo_path = await inkPath("me-photo", me.photo, "profile.jpg", "image/jpeg");
+    res = await db("profile", { name: me.name || "", answers: (me.a || []).slice(0, 4), photo_path, updated_at: iso(me.t) }, "user_id");
+  } else if (kind === "memo"){
+    const i = memo.pages.findIndex(p => p.id === key), p = memo.pages[i]; if (!p) return true;
+    const ink_path = await inkPath("memo-" + p.id, p.ink, `memo-${p.id}.png`);
+    res = await db("memos", { id: p.id, sort: i, type: p.type, text: p.text || "", ink_path, deleted: false, updated_at: iso(p.t || memo.t) }, "user_id,id");
+  } else return true;
+  if (res.error) throw res.error;
+  return true;
+}
+let flushAgain = false;
+async function flush(){
+  if (!UID) return;
+  if (flushing){ flushAgain = true; return; }     // 올리는 중에 새로 고친 것은 끝나자마자 이어서
+  if (!navigator.onLine){ return; }               // 다시 연결되면 'online'에서 이어서 올린다
+  flushing = true; flushAgain = false; let failed = false;
+  try {
+    for (const id of Object.keys(dirty)){
+      const was = UID;
+      try { await pushOne(id); if (UID === was){ delete dirty[id]; ls.set("dirty", dirty); } }
+      catch (e){ failed = true; console.warn("올리기 실패", id, e?.message || e); }
+    }
+  } finally { flushing = false; }
+  if (flushAgain) scheduleFlush(300);
+  else if (failed) scheduleFlush(15000);         // 잠시 뒤 다시
+}
+
+async function pullAll(){
+  if (!UID || !navigator.onLine) return false;
+  const was = UID;
+  const q = t => supabase.from(t).select("*");
+  const [st, dy, rc, pf, mm] = await Promise.all([q("stickers"), q("days"), q("records"), q("profile"), q("memos")]);
+  if (UID !== was) return false;
+  for (const r of [st, dy, rc, pf, mm]) if (r.error){ console.warn("내려받기 실패", r.error.message); return false; }
+  let changed = false;
+  for (const row of st.data){
+    const t = ms(row.updated_at); if (t <= (stickerT[row.date] || 0)) continue;
+    if (row.sticker_id && BY_ID[row.sticker_id]) data[row.date] = row.sticker_id; else delete data[row.date];
+    stickerT[row.date] = t; delete dirty["sticker:" + row.date]; changed = true;
+  }
+  for (const row of dy.data){
+    const t = ms(row.updated_at), k = row.date; if (t <= (days[k]?.t || 0)) continue;
+    const tags = [...(row.tags || []), "", "", ""].slice(0, 3);
+    days[k] = { tags, feel: row.feel || "", tmr: row.tmr || "", weather: row.weather || "", ink: !!row.ink_path, t };
+    await inkPut(k, row.ink_path ? await downloadInk(row.ink_path) : null);
+    delete dirty["day:" + k]; changed = true;
+  }
+  for (const row of rc.data){
+    const t = ms(row.updated_at), k = "rec-" + row.page; if (t <= (rec[k]?.t || 0)) continue;
+    rec[k] = { f: row.fields || {}, ink: !!row.ink_path, t };
+    await inkPut(k, row.ink_path ? await downloadInk(row.ink_path) : null);
+    delete dirty["rec:" + k]; changed = true;
+  }
+  for (const row of pf.data){
+    const t = ms(row.updated_at); if (t <= (me.t || 0)) continue;
+    me = { name: row.name || "", a: [...(row.answers || []), "", "", "", ""].slice(0, 4), photo: !!row.photo_path, t };
+    await inkPut("me-photo", row.photo_path ? await downloadInk(row.photo_path) : null);
+    delete dirty.profile; changed = true;
+  }
+  const rows = mm.data.filter(r => !r.deleted).sort((a, b) => a.sort - b.sort);
+  if (rows.length){
+    const onlyBlank = memo.pages.length === 1 && !memo.pages[0].t && !memo.pages[0].text && !memo.pages[0].ink;
+    if (onlyBlank) memo.pages = [];
+    for (const row of rows){
+      const t = ms(row.updated_at); let p = memo.pages.find(x => x.id === row.id);
+      if (p && t <= (p.t || 0)) continue;
+      if (!p){ p = { id: row.id }; memo.pages.push(p); }
+      Object.assign(p, { type: row.type || "line", text: row.text || "", ink: !!row.ink_path, t });
+      await inkPut("memo-" + row.id, row.ink_path ? await downloadInk(row.ink_path) : null);
+      delete dirty["memo:" + row.id]; changed = true;
+    }
+    if (!memo.pages.length) memo.pages.push(newMemoPage());
+  }
+  if (UID !== was) return false;
+  if (changed){
+    ls.set("v1", data); ls.set("stickerT", stickerT); ls.set("days", days); ls.set("rec", rec); ls.set("me", me); ls.set("memo", memo); ls.set("dirty", dirty);
+    refreshView();
+  }
+  return changed;
+}
+function refreshView(){
+  if (view === "month") render();
+  else if (view === "day") renderDay(true);
+  else if (view === "rec") renderRec();
+  else if (view === "me") renderMe();
+  else if (view === "memo"){ memoIdx = Math.min(memoIdx, memo.pages.length - 1); renderMemo(); }
+}
+
+// 로그인한 사람의 기기 안 저장 공간을 연다 (처음이면 예전 기기 저장분을 옮겨 온다)
+const LEGACY = { v1: "emodiary.v1", days: "emodiary.days", rec: "emodiary.rec", me: "emodiary.me", memo: "emodiary.memo" };
+async function openSpace(uid){
+  UID = uid; NS = `emodiary.${uid}.`;
+  let moved = false;
+  if (localStorage.getItem(NS + "v1") === null && Object.values(LEGACY).some(k => localStorage.getItem(k) !== null)){
+    for (const [n, k] of Object.entries(LEGACY)){ const v = localStorage.getItem(k); if (v !== null) localStorage.setItem(NS + n, v); }
+    const legacyInk = (await idbAll()).filter(([k]) => typeof k === "string" && !k.includes("/"));
+    for (const [k, v] of legacyInk) await inkPut(k, v);
+    await idbDel(legacyInk.map(([k]) => k));
+    Object.values(LEGACY).forEach(k => localStorage.removeItem(k)); localStorage.removeItem("emodiary.v1.ver");
+    moved = true;
+  }
+  data = ls.get("v1", {}); for (const k in data) if (!BY_ID[data[k]]) delete data[k];
+  stickerT = ls.get("stickerT", {}); days = ls.get("days", {}); rec = ls.get("rec", {});
+  me = Object.assign({ name: "", a: ["", "", "", ""], photo: false, t: 0 }, ls.get("me", {}));
+  memo = Object.assign({ pages: [], t: 0 }, ls.get("memo", {})); if (!memo.pages.length) memo.pages.push(newMemoPage());
+  memoIdx = 0; dirty = ls.get("dirty", {});
+  if (moved){   // 옮겨 온 내용은 모두 올릴 목록에
+    const now = Date.now();
+    for (const k in data){ stickerT[k] = stickerT[k] || now; dirty["sticker:" + k] = 1; }
+    for (const k in days) dirty["day:" + k] = 1;
+    for (const k in rec) dirty["rec:" + k] = 1;
+    if (me.t) dirty.profile = 1;
+    memo.pages.forEach(p => { if (p.t) dirty["memo:" + p.id] = 1; });
+    ls.set("stickerT", stickerT); ls.set("dirty", dirty);
+  }
+}
+// 로그아웃: 이 기기에 남은 내 일기를 지운다(같은 아이패드를 다른 친구가 써도 안 보이게)
+async function closeSpace(){
+  const uid = UID; if (!uid) return;
+  Object.keys(localStorage).filter(k => k.startsWith(`emodiary.${uid}.`)).forEach(k => localStorage.removeItem(k));
+  await idbDel((await idbAll()).map(([k]) => k).filter(k => typeof k === "string" && k.startsWith(uid + "/")));
+  UID = null; NS = "emodiary.anon.";
+  data = {}; stickerT = {}; days = {}; rec = {}; me = { name: "", a: ["", "", "", ""], photo: false, t: 0 };
+  memo = { pages: [newMemoPage()], t: 0 }; memoIdx = 0; dirty = {};
+}
+let lastPull = 0;
+function syncNow(){ if (!UID) return; lastPull = Date.now(); pullAll().finally(() => flush()); }
+addEventListener("online", syncNow);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastPull > 30000) syncNow(); else if (document.hidden) flush(); });
+
 // ---- 로그인 (Supabase Auth: 카카오 / 구글) ----
 let user = null;
 const loginBox = document.getElementById("login"), coverGo = document.getElementById("coverGo");
@@ -666,13 +774,17 @@ loginBox.querySelectorAll(".login-btn").forEach(b => b.onclick = async () => {
 });
 document.getElementById("logout").onclick = async () => {
   if (!confirm("로그아웃할까요?")) return;
-  commitAll();
+  await commitAll(); clearTimeout(flushTimer); await flush();
+  if (pendingCount() && !confirm("아직 올라가지 않은 일기가 있어요(인터넷 연결 확인).\n로그아웃하면 이 기기에서 사라져요. 그래도 로그아웃할까요?")) return;
+  await closeSpace();
   await supabase.auth.signOut();
 };
 supabase.auth.onAuthStateChange((event, session) => {
   const was = user; user = session?.user ?? null;
-  if (event === "SIGNED_OUT" || (!user && was)){ openCover(); showLogin(true); }
-  else if (user && !was && view === "cover" && !loginBox.hidden){ showLogin(false); showMonth(todayYM()); }
+  if (event === "SIGNED_OUT" || (!user && was)){ closeSpace().then(() => { openCover(); showLogin(true); }); }
+  else if (user && !was && view === "cover" && !loginBox.hidden){
+    openSpace(user.id).then(() => { showLogin(false); showMonth(todayYM()); setTimeout(syncNow, 0); });
+  }
 });
 
 // 처음 열 때: 오늘이 11·12월이면 그 달, 아니면 11월
@@ -685,7 +797,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   try { ({ data: { session } } = await supabase.auth.getSession()); } catch (e) {}
   user = session?.user ?? null;
   if (failed || location.search.includes("code=")) history.replaceState(null, "", location.pathname);
-  if (user){ showLogin(false); setView("month"); render(); }
+  if (user){ await openSpace(user.id); showLogin(false); setView("month"); render(); setTimeout(syncNow, 0); }
   else { openCover(); showLogin(true); }
   document.body.classList.remove("booting");
   if (failed && !user) showToast("로그인하지 못했어요. 다시 시도해 주세요");
