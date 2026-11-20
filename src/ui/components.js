@@ -6,17 +6,18 @@ import { closeOverlay } from '../overlay.js';
 import { syncText } from '../date.js';
 import { profileSrc } from '../members.js';
 
-/** lucide 아이콘. filled는 하단 탭 선택 상태(면) */
+/** Solar 아이콘(선). stroke: 선 굵기(기본 1.5). filled는 하단 탭 선택 상태(채움) */
 export function Icon({ name, size = 24, filled = false, stroke = 1.5, label }) {
-  const inner = (filled && FILLED[name]) || ICONS[name] || '';
+  const fill = filled && FILLED[name];
+  const inner = fill || ICONS[name] || '';
   return html`<svg
     class="icon"
     width=${size}
     height=${size}
     viewBox="0 0 24 24"
     fill="none"
-    stroke="currentColor"
-    stroke-width=${stroke}
+    stroke=${fill ? 'none' : 'currentColor'}
+    stroke-width=${fill ? null : stroke}
     stroke-linecap="round"
     stroke-linejoin="round"
     role=${label ? 'img' : null}
