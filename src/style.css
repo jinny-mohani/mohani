@@ -209,3 +209,5 @@ body.booting #stage{visibility:hidden}     /* 로그인 여부를 확인하는 �
 /* 내 소개 손글씨: 왼쪽 카드 위 */
 #stage.v-me #tools{display:flex;left:132px}
 #meInk{z-index:2}
+/* 나의 감정 기록 설명 문구 (피그마 배경의 문구를 지우고 글자로 넣음) */
+.me-sub{position:absolute;font:14.5px/18px 'Jua',sans-serif;color:#fff;white-space:nowrap;pointer-events:none}
