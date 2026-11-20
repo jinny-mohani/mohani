@@ -612,6 +612,6 @@
 .done-hero__icon { margin-bottom: 64px; background: rgba(16, 166, 107, 0.2); color: var(--color-point); }
 .done-hero h1 { font-size: 24px; line-height: 1.4; }
 .done-hero h1 + p { margin-top: 20px; }
-.done-hero p em { font-style: normal; color: var(--color-point); }
+.done-hero p em { font-style: normal; color: var(--color-point-strong); }
 .done-hero .done-hero__sub { margin-top: 6px; }
 .done-later { font-size: 13px; font-weight: var(--fw-regular); color: var(--grey-600); text-decoration: underline; }
