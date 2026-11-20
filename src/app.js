@@ -305,11 +305,12 @@ function attachSwipe(el, onPrev, onNext){
 
 
 // ---- 손글씨 (애플펜슬만 그림, 손가락은 무시) ----
-document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
-  document.querySelectorAll(".seg button").forEach(x => x.classList.toggle("on", x === b));
-  stage.classList.toggle("pen", b.dataset.mode === "pen");
-  if (b.dataset.mode === "pen") document.activeElement?.blur?.();
-});
+function setMode(mode){
+  document.querySelectorAll(".seg button").forEach(x => x.classList.toggle("on", x.dataset.mode === mode));
+  stage.classList.toggle("pen", mode === "pen");
+  if (mode === "pen") document.activeElement?.blur?.();
+}
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => setMode(b.dataset.mode));
 const tColor = document.getElementById("tColor"), tErase = document.getElementById("tErase");
 function setPenUI(){ stage.style.setProperty("--pen", PEN_COLORS[penColor]); tErase.classList.toggle("on", erasing); tColor.classList.toggle("on", !erasing); }
 const cpop = document.getElementById("cpop");
@@ -320,7 +321,7 @@ cpop.onclick = e => { e.stopPropagation(); const b = e.target.closest(".sw"); if
 document.addEventListener("pointerdown", e => { if (!e.target.closest(".cwrap")) cpop.classList.remove("on"); });
 tErase.onclick = () => { erasing = !erasing; setPenUI(); };
 document.getElementById("tUndo").onclick = () => {
-  const pool = view === "rec" ? [recPad] : view === "memo" ? [memoPad] : pages;
+  const pool = view === "rec" ? [recPad] : view === "memo" ? [memoPad] : view === "me" ? [mePad] : pages;
   const pg = pool.reduce((a, b) => (b.lastT || 0) > (a.lastT || 0) ? b : a);
   if (!pg.strokes.length) return showToast("되돌릴 손글씨가 없어요");
   pg.strokes.pop(); redraw(pg); queueInk(pg);
@@ -373,7 +374,7 @@ async function commitInk(pg){
   await inkPut(pg.key, url);
   if (pg.onInk) pg.onInk(!!url); else { dayOf(pg.key).ink = !!url; saveDay(pg.key); }
 }
-function commitAll(){ const ps = []; for (const pg of [...pages, recPad, typeof memoPad !== "undefined" ? memoPad : null]) if (pg && pg.inkT) ps.push(commitInk(pg)); return Promise.all(ps); }
+function commitAll(){ const ps = []; for (const pg of [...pages, recPad, typeof memoPad !== "undefined" ? memoPad : null, typeof mePad !== "undefined" ? mePad : null]) if (pg && pg.inkT) ps.push(commitInk(pg)); return Promise.all(ps); }
 async function loadInk(pg){
   const k = pg.key; pg.strokes = []; pg.base = null;
   pg.ctx.clearRect(0, 0, pg.cv.width, pg.cv.height);
@@ -408,7 +409,7 @@ async function renderRec(){
   recFields.innerHTML = "";
   REC_LINES[recPage - 1].forEach(([x, y], i) => {
     const ta = document.createElement("textarea");
-    ta.className = "rq"; ta.style.left = (x + 4) + "px"; ta.style.top = (y - 19) + "px";
+    ta.className = "rq"; ta.style.left = (x + 4) + "px"; ta.style.top = (y + 1) + "px";   // 질문 아래 첫 점선부터 3줄
     ta.value = r.f[i] || "";
     ta.addEventListener("input", () => {
       while (ta.scrollHeight > 3 * 22 + 2 && ta.value.length) ta.value = ta.value.slice(0, -1);
@@ -452,7 +453,7 @@ document.getElementById("coverGo").onclick = () => showMonth(todayYM());
 function todayYM(){ const t = new Date(); return (t.getFullYear() === 2026 && t.getMonth() === 11) ? "2026-12" : "2026-11"; }
 
 // ---- 내 소개 ----
-let me = { name: "", a: ["", "", "", ""], photo: false, t: 0 };
+let me = { name: "", a: ["", "", "", ""], photo: false, ink: false, t: 0 };
 const meName = document.getElementById("meName"), meAs = [...document.querySelectorAll(".me-a")];
 const mePhoto = document.getElementById("mePhoto"), mePhotoDel = document.getElementById("mePhotoDel");
 function saveMe(){
@@ -474,11 +475,26 @@ document.getElementById("meFile").onchange = async e => {
 };
 mePhotoDel.onclick = async () => { await inkPut("me-photo", null); me.photo = false; saveMe(); renderMe(); };
 document.querySelectorAll(".me-link").forEach(b => b.onclick = () => b.dataset.go === "intro" ? openIntro(1) : openRec(1));
+// 안내 그림을 누르면 그 화면으로
+document.querySelectorAll(".gd").forEach(b => b.onclick = () => {
+  const o = b.dataset.open;
+  if (o === "month") return showMonth(todayYM());
+  if (o.startsWith("intro")) return openIntro(+o.slice(5));
+  openRec(1);
+  if (o === "rec2" || o === "rec3") setMode(o === "rec3" ? "pen" : "key");
+});
+// 내 소개 손글씨 (왼쪽 카드 위)
+const mePad = { cv: document.getElementById("meInk"), strokes: [], base: null, key: "me-ink", k: 2 };
+mePad.ctx = mePad.cv.getContext("2d");
+mePad.hasInk = () => !!me.ink;
+mePad.onInk = has => { me.ink = has; saveMe(); };
+setupInk(mePad);
 async function renderMe(){
   if (document.activeElement !== meName) meName.value = me.name || "";
   meAs.forEach((inp, i) => { if (document.activeElement !== inp) inp.value = me.a[i] || ""; });
   const url = me.photo ? await inkGet("me-photo") : null;
   mePhoto.hidden = !url; mePhotoDel.hidden = !url; if (url) mePhoto.src = url;
+  if (!mePad.inkT) loadInk(mePad);
   // 작은 달력 (2026년 11·12월) — 스티커가 있으면 숫자 대신 스티커
   const box = document.getElementById("meCal"); box.innerHTML = "";
   const t = new Date(); const todayKey = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
@@ -561,7 +577,7 @@ const NO_BUMP = ".gnb-hit, #coverGo, .me-link";
 document.addEventListener("pointerdown", e => {
   const b = e.target.closest("button");
   if (!b || b.matches(NO_BUMP) || b.disabled) return;
-  if (stage.classList.contains("pen") && e.pointerType === "pen" && b.closest(".pg, #recView, #memoView") && !b.matches(".main-slot, .wx, .nav")) return;
+  if (stage.classList.contains("pen") && e.pointerType === "pen" && b.closest(".pg, #recView, #memoView, #meView") && !b.matches(".main-slot, .wx, .nav")) return;
   b.getAnimations().forEach(a => a.id === "bump" && a.cancel());
   const a = b.animate([{ transform: "scale(1)" }, { transform: "scale(.86)", offset: .35 }, { transform: "scale(1.06)", offset: .7 }, { transform: "scale(1)" }],
     { duration: 340, easing: "ease-out" });
@@ -629,7 +645,11 @@ async function pushOne(id){
     res = await db("records", { page: +key.split("-")[1], fields: r.f || {}, ink_path, updated_at: iso(r.t) }, "user_id,page");
   } else if (kind === "profile"){
     const photo_path = await inkPath("me-photo", me.photo, "profile.jpg", "image/jpeg");
-    res = await db("profile", { name: me.name || "", answers: (me.a || []).slice(0, 4), photo_path, updated_at: iso(me.t) }, "user_id");
+    const ink_path = await inkPath("me-ink", me.ink, "profile-ink.png");
+    const row = { name: me.name || "", answers: (me.a || []).slice(0, 4), photo_path, ink_path, updated_at: iso(me.t) };
+    res = await db("profile", row, "user_id");
+    // DB에 아직 ink_path 칸이 없으면(002 마이그레이션 전) 손글씨만 빼고 저장
+    if (res.error && /ink_path/.test(res.error.message || "")){ delete row.ink_path; res = await db("profile", row, "user_id"); if (!res.error && me.ink) throw new Error("profile.ink_path 칸이 없어요 (002 마이그레이션 필요)"); }
   } else if (kind === "memo"){
     const i = memo.pages.findIndex(p => p.id === key), p = memo.pages[i]; if (!p) return true;
     const ink_path = await inkPath("memo-" + p.id, p.ink, `memo-${p.id}.png`);
@@ -683,8 +703,9 @@ async function pullAll(){
   }
   for (const row of pf.data){
     const t = ms(row.updated_at); if (t <= (me.t || 0)) continue;
-    me = { name: row.name || "", a: [...(row.answers || []), "", "", "", ""].slice(0, 4), photo: !!row.photo_path, t };
+    me = { name: row.name || "", a: [...(row.answers || []), "", "", "", ""].slice(0, 4), photo: !!row.photo_path, ink: !!row.ink_path, t };
     await inkPut("me-photo", row.photo_path ? await downloadInk(row.photo_path) : null);
+    await inkPut("me-ink", row.ink_path ? await downloadInk(row.ink_path) : null);
     delete dirty.profile; changed = true;
   }
   const rows = mm.data.filter(r => !r.deleted).sort((a, b) => a.sort - b.sort);
@@ -731,7 +752,7 @@ async function openSpace(uid){
   }
   data = ls.get("v1", {}); for (const k in data) if (!BY_ID[data[k]]) delete data[k];
   stickerT = ls.get("stickerT", {}); days = ls.get("days", {}); rec = ls.get("rec", {});
-  me = Object.assign({ name: "", a: ["", "", "", ""], photo: false, t: 0 }, ls.get("me", {}));
+  me = Object.assign({ name: "", a: ["", "", "", ""], photo: false, ink: false, t: 0 }, ls.get("me", {}));
   memo = Object.assign({ pages: [], t: 0 }, ls.get("memo", {})); if (!memo.pages.length) memo.pages.push(newMemoPage());
   memoIdx = 0; dirty = ls.get("dirty", {});
   if (moved){   // 옮겨 온 내용은 모두 올릴 목록에
@@ -788,10 +809,26 @@ loginBox.querySelectorAll(".login-btn").forEach(b => b.onclick = async () => {
   });
   if (error){ loginBox.querySelectorAll(".login-btn").forEach(x => x.disabled = false); showToast("로그인을 시작하지 못했어요"); }
 });
+// 확인 팝업: ask({...}) → 확인이면 true, 취소면 false
+const askDim = document.getElementById("askDim");
+function ask({ icon, title, msg = "", ok = "확인", no = "취소", warn = false }){
+  document.getElementById("askIcon").innerHTML = BY_ID[icon] ? svgOf(icon) : "";
+  document.getElementById("askTitle").textContent = title;
+  document.getElementById("askMsg").textContent = msg;
+  const bOk = document.getElementById("askOk"), bNo = document.getElementById("askNo");
+  bOk.textContent = ok; bNo.textContent = no; bOk.classList.toggle("warn", warn);
+  askDim.classList.add("on");
+  return new Promise(res => {
+    const done = v => { askDim.classList.remove("on"); bOk.onclick = bNo.onclick = askDim.onclick = null; setTimeout(() => res(v), 120); };
+    bOk.onclick = () => done(true); bNo.onclick = () => done(false);
+    askDim.onclick = e => { if (e.target === askDim) done(false); };
+  });
+}
 document.getElementById("logout").onclick = async () => {
-  if (!confirm("로그아웃할까요?")) return;
+  if (!await ask({ icon: "neg01", title: "로그아웃할까요?", msg: "일기는 안전하게 저장돼 있어요.\n다시 로그인하면 그대로 볼 수 있어요.", ok: "로그아웃" })) return;
+  showToast("일기를 저장하는 중이에요…");
   await commitAll(); clearTimeout(flushTimer); await flush();
-  if (pendingCount() && !confirm("아직 올라가지 않은 일기가 있어요(인터넷 연결 확인).\n로그아웃하면 이 기기에서 사라져요. 그래도 로그아웃할까요?")) return;
+  if (pendingCount() && !await ask({ icon: "neg09", title: "아직 저장 중인 일기가 있어요", msg: "인터넷 연결을 확인해 주세요.\n지금 로그아웃하면 이 기기에서 쓴 내용이 사라져요.", ok: "그래도 로그아웃", no: "기다릴게요", warn: true })) return;
   await closeSpace();
   await supabase.auth.signOut();
 };

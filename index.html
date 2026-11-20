@@ -98,6 +98,18 @@
   <input class="me-a" style="left:246px;top:563px;width:150px" maxlength="20" enterkeyhint="done">
   <button class="me-link" style="left:540px;top:102px;width:260px" data-go="intro" aria-label="감정 소개 보기"></button>
   <button class="me-link" style="left:540px;top:240px;width:300px" data-go="rec" aria-label="나의 감정 기록 보기"></button>
+  <canvas class="ink" id="meInk" style="left:70px;top:70px;width:380px;height:560px" width="760" height="1120"></canvas>
+  <!-- 감정 소개 · 나의 감정 기록: 어떻게 쓰는지 작은 화면 그림으로 안내 (누르면 그 화면으로) -->
+  <div class="guide" style="top:136px">
+   <button class="gd" data-open="intro1"><img src="/assets/guide/intro1.webp" alt=""><span>① 40가지 감정 알아보기</span></button>
+   <button class="gd" data-open="intro2"><img src="/assets/guide/intro2.webp" alt=""><span>② 옆으로 밀어서 넘기기</span></button>
+   <button class="gd" data-open="month"><img src="/assets/guide/month.webp" alt=""><span>③ 날짜에 감정 붙이기</span></button>
+  </div>
+  <div class="guide" style="top:280px">
+   <button class="gd" data-open="rec1"><img src="/assets/guide/rec1.webp" alt=""><span>① 감정별 질문에 답하기</span></button>
+   <button class="gd" data-open="rec2"><img src="/assets/guide/rec_key.webp" alt=""><span>② <b>가</b> 키보드로 쓰기</span></button>
+   <button class="gd" data-open="rec3"><img src="/assets/guide/rec_pen.webp" alt=""><span>③ <b>✎</b> 펜슬로 쓰기</span></button>
+  </div>
   <div id="meCal"></div>
   <button id="logout">로그아웃</button>
  </div>
@@ -163,6 +175,15 @@
         <span class="hold-tip" id="holdTip">날짜를 길게 누르면 바로 일기를 쓸 수 있어요</span>
         <span class="foot-r"><button class="rm" id="rm" hidden>스티커 떼기</button><button class="go-day" id="goDay">일기 쓰기 ✎</button></span>
       </div>
+    </div>
+  </div>
+  <!-- 확인 팝업 (로그아웃 등) -->
+  <div id="askDim">
+    <div id="ask" role="alertdialog" aria-modal="true" aria-labelledby="askTitle">
+      <span class="ask-icon" id="askIcon"></span>
+      <h2 class="ask-title" id="askTitle"></h2>
+      <p class="ask-msg" id="askMsg"></p>
+      <div class="ask-btns"><button class="ask-no" id="askNo"></button><button class="ask-ok" id="askOk"></button></div>
     </div>
   </div>
   <div id="toast"></div>

@@ -59,6 +59,7 @@ create table if not exists public.profile (
   name       text        not null default '' check (char_length(name) <= 12),
   answers    text[]      not null default '{}' check (cardinality(answers) <= 4),
   photo_path text,
+  ink_path   text,
   updated_at timestamptz not null default now()
 );
 
@@ -132,7 +133,7 @@ end $$;
 -- ---------------------------------------------------------------------
 -- 4. Storage: 비공개 버킷 ink
 --    경로: {user_id}/day-2026-11-05.png, {user_id}/rec-1.png,
---          {user_id}/memo-<id>.png, {user_id}/profile.jpg
+--          {user_id}/memo-<id>.png, {user_id}/profile.jpg, {user_id}/profile-ink.png
 -- ---------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('ink', 'ink', false, 2097152, array['image/png', 'image/jpeg'])   -- 파일 하나 2MB까지

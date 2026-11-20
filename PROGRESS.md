@@ -39,3 +39,10 @@
 - 비밀 값(카카오·구글 시크릿, Supabase secret/service_role 키, DB 비밀번호)은 저장소에 넣지 않는다.
 
 - 이 클라우드 환경은 네트워크 허용 도메인에 `llewtihbcejijrjqpttk.supabase.co`를 추가해 두었다(실제 DB 시험 가능). Node fetch는 `NODE_USE_ENV_PROXY=1` 필요.
+
+## 2026-11-20 추가 수정
+- 로그아웃 확인 팝업을 앱 디자인으로 교체 (`ask()` 함수, 저장 안 된 게 있으면 경고 팝업 한 번 더)
+- 내 소개: '감정 소개' · '나의 감정 기록' 아래에 실제 화면 그림 6장으로 사용법 안내 (`public/assets/guide/`, 누르면 해당 화면으로)
+- 내 소개 손글씨 (`#meInk`, 왼쪽 카드 위) → Storage `{user_id}/profile-ink.png`, `profile.ink_path`
+  - **Supabase에서 `supabase/migrations/002_profile_ink.sql` 실행 필요** (실행 전에는 손글씨만 기기에 남고 나머지는 정상 저장)
+- 감정 기록: 답 칸이 질문 글자와 겹치던 문제 수정 (원본부터 있던 위치 오류, 질문 아래 첫 점선부터 3줄)
