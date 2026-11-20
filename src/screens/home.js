@@ -117,15 +117,16 @@ export function Home({ data, me }) {
             const done = items.filter((c) => isDone(c, me)).length;
             const open = () => go('/home/checklist?group=' + gi);
             return html`<div class="check-card">
-              <button class="check-card__head" onClick=${open}>
+              <button class="check-card__head" onClick=${open} aria-label=${group + ' ' + done + '개 완료, 전체 ' + items.length + '개'}>
                 <h3>${group}</h3>
-                <span>${done} / ${items.length}</span>
+                <span class="check-card__count" aria-hidden="true">${done}<i>/</i>${items.length}</span>
               </button>
-              ${!items.length && html`<button class="check-card__empty" onClick=${() => openOverlay(html`<${ChecklistSheet} group=${group} />`)}>+ 할 일을 추가해 보세요</button>`}
+              ${!items.length && html`<button class="check-card__empty" onClick=${() => openOverlay(html`<${ChecklistSheet} group=${group} />`)}>
+                <span class="checkbox" aria-hidden="true"></span>할 일을 추가해 보세요</button>`}
               ${gi === 0
-                ? homePick(items, me, 3).map(
+                ? items.length > 0 && html`<div class="check-card__rows">${homePick(items, me, 3).map(
                     (c) => html`<${CheckRow} key=${c.id} checked=${isDone(c, me)} label=${c.title} meta=${assignee(c)} onToggle=${() => toggle(c)} />`
-                  )
+                  )}</div>`
                 : items.length > 0 &&
                   html`<div class="tags">
                     ${homePick(items, me, 5).map((c) => {
@@ -140,20 +141,19 @@ export function Home({ data, me }) {
         </div>
       </section>
 
-      <section class="home-section">
-        <button class="home-section__head" onClick=${() => go('/places')}>
-          <h2>장소</h2>
-          <${Icon} name="chevron-right" size=${20} label="전체 보기" />
-        </button>
-        ${places.length
-          ? placeGroups(places).map(({ c, list }) => html`<div class="home-place" key=${c}>
-              <button class="home-place__head" onClick=${() => go('/places?category=' + encodeURIComponent(c))}>
-                <h3>${c}</h3><${Icon} name="chevron-right" size=${18} label=${c + ' 전체 보기'} />
-              </button>
-              <div class="place-row">${list.slice(0, 5).map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>
-            </div>`)
-          : html`<button class="check-card check-card__empty" style="width:100%" onClick=${() => openOverlay(html`<${PlaceForm} />`)}>+ 가고 싶은 장소를 등록해 보세요</button>`}
-      </section>
+      ${places.length
+        ? placeGroups(places).map(({ c, list }) => html`<section class="home-section" key=${c}>
+            <button class="home-section__head" onClick=${() => go('/places?category=' + encodeURIComponent(c))}>
+              <h2>${c}</h2><${Icon} name="chevron-right" size=${20} label=${c + ' 전체 보기'} />
+            </button>
+            <div class="place-row">${list.slice(0, 5).map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>
+          </section>`)
+        : html`<section class="home-section">
+            <button class="home-section__head" onClick=${() => go('/places')}>
+              <h2>장소</h2><${Icon} name="chevron-right" size=${20} label="전체 보기" />
+            </button>
+            <button class="check-card check-card__empty" style="width:100%" onClick=${() => openOverlay(html`<${PlaceForm} />`)}>+ 가고 싶은 장소를 등록해 보세요</button>
+          </section>`}
     </div>
   </main>`;
 }

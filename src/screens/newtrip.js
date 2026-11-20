@@ -170,12 +170,12 @@ export function TripCreated({ trip }) {
       <div class="done-hero">
         <span class="done-hero__icon"><${Icon} name="check" size=${32} stroke=${2} /></span>
         <h1>${trip.title}을<br />만들었어요</h1>
-        <p>친구들에게 링크를 보내면<br />바로 들어와서 함께 쓸 수 있어요</p>
+        <p>친구들에게 링크를 보내면<br /><em>바로 들어와서 함께 쓸 수 있어요</em></p>
+        <p class="done-hero__sub">여행 멤버에게만 보내 주세요.</p>
       </div>
       <${ShareIcons} onShare=${share} onCopy=${copy} style="margin-top:40px" />
-      <p class="note"><${Icon} name="info" size=${14} />링크를 아는 사람은 누구나 들어올 수 있어요. 여행 멤버에게만 보내 주세요.</p>
       <div class="full__spacer"></div>
-      <button class="link-center" style="text-decoration:none" onClick=${later}>${shared ? '홈으로 가기' : '나중에 보내기'}</button>
+      <button class="link-center done-later" onClick=${later}>${shared ? '홈으로 가기' : '나중에 보내기'}</button>
     </div>
   </div>`;
 }

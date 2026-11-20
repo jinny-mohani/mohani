@@ -289,15 +289,15 @@
 }
 .check-row[aria-checked='true'] .checkbox { border-color: var(--color-primary); background: var(--color-primary); }
 .check-row__label { flex: 1; min-width: 0; font-size: var(--fs-body); line-height: var(--lh-body); }
-.check-row[aria-checked='true'] .check-row__label { text-decoration: line-through; color: var(--color-text-faint); }
-.check-row__meta { flex-shrink: 0; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); }
+.check-row[aria-checked='true'] .check-row__label { text-decoration: line-through; color: var(--grey-500); }
+.check-row__meta { flex-shrink: 0; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--grey-700); }
 
 /* ───── 태그 (짐 꾸리기 등) ───── */
 .tags { display: flex; gap: var(--gap-s); overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; }
 .tags::-webkit-scrollbar { display: none; }
 .tag {
   display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
-  padding: 6px 12px 6px 10px; border-radius: 16px;
+  height: 30px; padding: 0 12px 0 10px; border-radius: 15px;
   background: var(--color-surface); color: var(--color-text);
   font-size: var(--fs-small); font-weight: var(--fw-medium); line-height: 1.3;
 }

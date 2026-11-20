@@ -22,10 +22,6 @@
   display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit);
   color: var(--white);
 }
-.home-hero__settings::before {
-  content: ''; position: absolute; width: 36px; height: 36px; border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.25);
-}
 .home-hero__settings .icon { position: relative; }
 .home-hero__text {
   position: absolute; left: 0; right: 0; top: 18px; z-index: 1;
@@ -51,10 +47,11 @@
 .home-members__row { display: flex; gap: var(--gap-s); width: max-content; margin: 0 auto; padding: 0 24px; }
 .home-members::-webkit-scrollbar { display: none; }
 .home-members button { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 72px; }
+/* 이름표: 글자 길이만큼 (피그마 Nov 20: 13px, 좌우 18) */
 .home-members__name {
-  width: 72px; padding: 4px 6px; border-radius: 20px;
+  max-width: 76px; padding: 5px 18px; border-radius: 18px;
   background: var(--color-primary); color: var(--color-on-primary);
-  font-size: var(--fs-small); font-weight: var(--fw-medium); line-height: 20px;
+  font-size: 13px; font-weight: var(--fw-medium); line-height: 20px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .character { position: relative; display: flex; align-items: flex-end; justify-content: center; width: 72px; }
@@ -66,31 +63,41 @@
   color: var(--color-text-sub); font-size: var(--fs-heading); line-height: var(--lh-heading); font-weight: var(--fw-bold);
 }
 
-.home-section { margin-top: 32px; }
-.home-section + .home-section { margin-top: 32px; }
-.home-section__head { display: flex; align-items: center; gap: 2px; width: 100%; min-height: var(--hit); margin-bottom: 4px; text-align: left; }
-.home-section__head h2 { flex: 1; font-size: var(--fs-heading); line-height: var(--lh-heading); font-weight: var(--fw-bold); }
-.home-section__head span { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); color: var(--color-text-weak); }
-.home-section__head .icon { color: var(--color-text-weak); }
+/* 홈 섹션 (피그마 Nov 20): 제목 16 Bold + 오른쪽 › 20 (연회색), 제목→내용 12, 섹션 사이 36 */
+.home-section { margin-top: 36px; }
+.home .page > .home-section:first-child { margin-top: 24px; }
+.home-section__head {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  min-height: var(--hit); margin-top: -12px; text-align: left; /* 눌리는 높이 44, 보이는 제목 줄은 20 */
+}
+.home-section__head h2 { font-size: var(--fs-body); line-height: 20px; font-weight: var(--fw-bold); color: var(--color-text); }
+.home-section__head .icon { color: var(--color-icon-faint); }
 
 .res-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .res-card {
   display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
-  padding: 16px 14px; border-radius: 16px; background: var(--color-surface-weak); text-align: left;
+  height: 112px; padding: 16px 14px; border-radius: 16px; background: var(--color-surface-weak); text-align: left;
 }
+.res-card .icon { margin-bottom: 2px; color: var(--color-text); }
 .res-card__name { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); }
 .res-card__count { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); }
 
 .check-cards { display: flex; flex-direction: column; gap: var(--gap-m); }
+/* 체크 리스트 묶음 카드 (피그마 Nov 20): 안쪽 여백 20, 제목 줄 → 항목 12, 항목 사이 2 */
 .check-card {
-  display: flex; flex-direction: column; gap: 4px; overflow: hidden;
-  padding: 12px 20px 20px; border-radius: 16px; background: var(--color-surface-weak);
+  display: flex; flex-direction: column; gap: 12px; overflow: hidden;
+  padding: 20px; border-radius: 18px; background: var(--color-surface-weak);
 }
-.check-card__head { display: flex; align-items: center; min-height: var(--hit); text-align: left; }
-.check-card__head h3 { flex: 1; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-bold); }
-.check-card__head span { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); color: var(--color-text-faint); }
-.check-card__empty { min-height: var(--hit); text-align: left; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); }
-.check-card .tags { margin-top: 4px; }
+.check-card__head { display: flex; align-items: center; min-height: 21px; margin: -12px 0; padding: 12px 0; text-align: left; }
+.check-card__head h3 { flex: 1; font-size: var(--fs-small); line-height: 21px; font-weight: var(--fw-medium); color: var(--color-text); }
+.check-card__count { display: inline-flex; align-items: center; gap: 2px; font-size: var(--fs-small); color: var(--grey-700); }
+.check-card__count i { font-style: normal; font-size: 11px; font-weight: var(--fw-medium); color: var(--grey-500); }
+.check-card__rows { display: flex; flex-direction: column; gap: 2px; }
+.check-card .check-row { min-height: 40px; }
+/* 할 일 없음: 점선 체크 칸 + 안내 */
+.check-card__empty { display: flex; align-items: center; gap: 12px; min-height: 40px; text-align: left; font-size: var(--fs-small); line-height: 21px; color: var(--grey-500); }
+.check-card__empty .checkbox { border: 1px dashed var(--color-border-strong); }
+.check-card .tags { margin-top: 12px; }
 
 /* 03-8 친구 프로필 */
 .friend-pop { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--gap-s); padding-top: 8px; }
@@ -585,9 +592,7 @@
 .friend .friend__edit { pointer-events: auto; }
 
 /* 03 홈 장소: 카테고리별 한 줄 (최대 5개) */
-.home-place + .home-place { margin-top: var(--gap-l); }
-.home-place__head { display: inline-flex; align-items: center; gap: 2px; min-height: var(--hit); margin-bottom: var(--gap-xs); color: var(--color-text-sub); }
-.home-place__head h3 { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-medium); color: var(--color-text); }
+.home-section .place-row { margin-top: 0; }
 
 /* 13-1 · 02-1 초대 링크 보내기 아이콘 */
 .share-icons { display: flex; justify-content: center; gap: var(--gap-2xl); margin-top: var(--gap-xl); }
@@ -601,3 +606,12 @@
 }
 .share-icon__circle--point { background: var(--color-point); color: var(--color-on-point); }
 .share-icon:active .share-icon__circle { opacity: 0.85; }
+
+/* 13-1 초대 링크 공유 (피그마 Nov 20) */
+.done-hero { gap: 0; margin-top: 42px; }
+.done-hero__icon { margin-bottom: 64px; background: rgba(16, 166, 107, 0.2); color: var(--color-point); }
+.done-hero h1 { font-size: 24px; line-height: 1.4; }
+.done-hero h1 + p { margin-top: 20px; }
+.done-hero p em { font-style: normal; color: var(--color-point); }
+.done-hero .done-hero__sub { margin-top: 6px; }
+.done-later { font-size: 13px; font-weight: var(--fw-regular); color: var(--grey-600); text-decoration: underline; }
