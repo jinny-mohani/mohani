@@ -45,7 +45,7 @@
   --color-bg-tint: #f3f4f6;              /* 목록 화면 바탕 (01·02·03·05·09·11, Nov 17 피드백). 그 위 카드는 흰색 */
 
   /* 글자 */
-  --font: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --font: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;
   /* 타이포 5단계 (Nov 18 결정) — 크기 · 줄 간격 짝으로 써요. 굵기는 Regular/Medium/Bold 세 가지 */
   --fs-caption: 12px;  --lh-caption: 1.4;  /* 캡션: 탭바 이름, 라벨, 작은 표시 */
   --fs-small: 14px;    --lh-small: 1.5;    /* 보조: 설명, 날짜·담당, 칩, 입력칸 제목 */

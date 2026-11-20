@@ -1,7 +1,7 @@
 // 서비스 워커: 앱 파일을 휴대폰에 저장해 두어, 인터넷이 약해도 앱이 열리게 해요.
 // 시트 데이터는 여기서 다루지 않고 앱이 따로 저장해요 (src/store.js).
 // 앱 파일을 바꾸면 VERSION을 올려 주세요. (네트워크 우선이라 안 올려도 새 파일을 받지만, 옛 캐시 정리용)
-const VERSION = 'v3-21';
+const VERSION = 'v3-22';
 const CACHE = 'hamkke-' + VERSION;
 const SHELL = [
   './',
@@ -52,6 +52,7 @@ const SHELL = [
   'src/screens/places.js',
   'src/screens/friends.js',
   'src/screens/entry.js',
+  'src/fonts/pretendard/pretendard.css',
   'src/styles/tokens.css',
   'src/styles/base.css',
   'src/styles/components.css',
@@ -75,8 +76,8 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // 글꼴: 한 번 받으면 저장해 두고 재사용
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+  // 글꼴(프리텐다드 조각 파일): 내용이 안 바뀌므로 한 번 받으면 저장해 두고 재사용
+  if (url.origin === self.location.origin && url.pathname.endsWith('.woff2')) {
     e.respondWith(
       caches.match(req).then((hit) => hit || fetch(req).then((res) => {
         const copy = res.clone();
