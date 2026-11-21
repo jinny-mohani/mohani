@@ -207,6 +207,9 @@ const data = {
   await page.evaluate(() => { document.getElementById('app').scrollTop = 220; }); await page.waitForTimeout(250); await shot('10-place-detail-scroll');
   await page.evaluate(() => { document.getElementById('app').scrollTop = 0; }); await page.waitForTimeout(150);
   await page.click('.place-detail__thumbs button >> nth=1'); await page.waitForSelector('.viewer'); await shot('10-viewer'); console.log('viewer:', await page.textContent('.viewer__count')); await page.click('.viewer__close'); await page.waitForTimeout(200); await page.click('[aria-label="더 보기"]'); await shot('10-menu'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
+  await page.click('[aria-label="운영시간"]'); await page.waitForSelector('.hours-col'); await shot('09-3-hours');
+  await page.click('.hours-col >> nth=0 >> text=오전 11시 30분'); await page.click('.hours-col >> nth=1 >> text=오후 9시'); await page.waitForTimeout(300);
+  console.log('hours picked:', await page.textContent('[aria-label="운영시간"]'), '| sheet closed:', !(await page.$('.hours-col')));
   await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
   // 사진 있는 장소 등록: 저장 누르면 바로 닫히고, 사진은 뒤에서 올라가요
   await page.goto(B + '?t=CODE#/places'); await page.waitForSelector('.chips');

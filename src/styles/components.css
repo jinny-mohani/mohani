@@ -448,6 +448,9 @@ button.status::after { content: ''; position: absolute; inset: -8px; } /* 터치
 /* 시간 고르기 */
 .time-preview { text-align: center; font-size: var(--fs-display); line-height: var(--lh-display); font-weight: var(--fw-bold); margin: 4px 0 12px; }
 .time-cols { display: flex; gap: 8px; }
+.hours-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--gap-s); }
+.hours-col__label { text-align: center; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-semibold); color: var(--color-text-sub); }
+.hours-col .time-col { flex: none; }
 .time-col {
   flex: 1; height: 264px; overflow-y: auto; overscroll-behavior: contain;
   display: flex; flex-direction: column; gap: 2px; padding: 4px; border-radius: var(--radius-m); background: var(--color-surface-weak);

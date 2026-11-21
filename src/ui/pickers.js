@@ -146,6 +146,56 @@ export function TimeField({ label, value, onChange, placeholder = '시간' }) {
     onClick=${() => openOverlay(html`<${TimeSheet} title=${label} value=${value} onPick=${onChange} />`)} />`;
 }
 
+/* ───── 운영시간 고르기: 여는 시간 | 닫는 시간을 한 팝업에서 (30분 단위) ───── */
+const HALF_HOURS = HOURS.flatMap((h) => [`${h}:00`, `${h}:30`]);
+export function timeText(v) {
+  if (!v) return '';
+  const [h, m] = v.split(':');
+  return hourLabel(h) + (m && m !== '00' ? ` ${Number(m)}분` : '');
+}
+/** 여는 시간을 누르고 닫는 시간을 누르면 바로 저장하고 닫혀요 (탭 3번) */
+export function HoursSheet({ title = '운영시간', open, close, onPick, labels = ['여는 시간', '닫는 시간'] }) {
+  const [a, setA] = useState(open || '');
+  const [b, setB] = useState(close || '');
+  const list = (cur) => (cur && !HALF_HOURS.includes(cur) ? [...HALF_HOURS, cur].sort() : HALF_HOURS);
+  // 처음 열 때 고른 칸(없으면 오전 9시 / 오후 9시)이 가운데쯤 보이게
+  const centerOn = (fallback) => (el) => {
+    if (!el || el.dataset.done) return;
+    el.dataset.done = '1';
+    requestAnimationFrame(() => { // 화면에 그려진 뒤에 위치 계산
+      const on = el.querySelector('[aria-pressed="true"]') || el.querySelector(`[data-v="${fallback}"]`);
+      if (on) el.scrollTop = on.offsetTop - el.offsetTop - el.clientHeight / 2 + on.clientHeight / 2;
+    });
+  };
+  const done = (x, y) => { onPick(x, y); closeOverlay(); };
+  // 여는 시간 → 닫는 시간 순서로 누르면 닫는 시간을 누를 때 저장. 여는 시간만 바꿀 때는 '선택 완료'
+  const pickA = (v) => setA(v);
+  const pickB = (v) => { setB(v); if (a) done(a, v); };
+  const col = (label, cur, pick, fallback) => html`<div class="hours-col">
+    <span class="hours-col__label">${label}</span>
+    <div class="time-col" role="listbox" aria-label=${label} ref=${centerOn(fallback)}>
+      ${list(cur).map((v) => html`<button role="option" key=${v} data-v=${v} aria-selected=${v === cur} aria-pressed=${v === cur ? 'true' : 'false'}
+        class="time-opt" onClick=${() => pick(v)}>${timeText(v)}</button>`)}
+    </div>
+  </div>`;
+  return html`<${Sheet} title=${title} footer=${html`<div class="modal__foot--split">
+      <${Button} variant="secondary" onClick=${() => done('', '')}>지우기<//>
+      <${Button} disabled=${!a || !b} onClick=${() => done(a, b)}>선택 완료<//>
+    </div>`}>
+    <p class="time-preview" aria-live="polite">${a ? timeText(a) : labels[0]} – ${b ? timeText(b) : labels[1]}</p>
+    <div class="time-cols">
+      ${col(labels[0], a, pickA, '09:00')}
+      ${col(labels[1], b, pickB, '21:00')}
+    </div>
+  <//>`;
+}
+/** 운영시간 칸 하나: 누르면 HoursSheet */
+export function HoursField({ label = '운영시간', open, close, onChange, placeholder = '여는 시간 – 닫는 시간', labels }) {
+  const value = open || close ? `${timeText(open) || '?'} – ${timeText(close) || '?'}` : '';
+  return html`<${SelectField} label=${label} value=${value} placeholder=${placeholder}
+    onClick=${() => openOverlay(html`<${HoursSheet} title=${label} open=${open} close=${close} labels=${labels} onPick=${onChange} />`)} />`;
+}
+
 /* ───── 기간 고르기 (시작 → 끝을 한 달력에서 연속으로) ───── */
 export function DateRangeSheet({ title = '날짜 선택', start, end, onPick, labels = ['출발', '도착'] }) {
   const base = parseDate(start) || new Date();

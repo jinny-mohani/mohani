@@ -14,7 +14,7 @@ import { copyText } from '../share.js';
 import { syncText } from '../date.js';
 import { toast } from '../ui/toast.js';
 import { PhotoViewer } from '../ui/viewer.js';
-import { TimeField } from '../ui/pickers.js';
+import { HoursField } from '../ui/pickers.js';
 
 export const CATEGORIES = ['음식점', '즐길거리', '쇼핑', '디저트'];
 
@@ -239,11 +239,6 @@ export function PlaceForm({ row, category }) {
       </div>`
     : html`<${Button} onClick=${save} disabled=${busy}>${busy ? '저장 중…' : '저장하기'}<//>`;
 
-  const timePair = (a, b, la, lb) => html`<div class="field-pair">
-    <${TimeField} label=${la} value=${f[a]} onChange=${set(a)} placeholder=${la.includes('여는') ? '여는 시간' : '시작'} />
-    <span class="field-pair__dash">–</span>
-    <${TimeField} label=${lb} value=${f[b]} onChange=${set(b)} placeholder=${lb.includes('닫는') ? '닫는 시간' : '끝'} />
-  </div>`;
 
   return html`<${Modal} title=${isEdit ? '장소 수정' : '장소 등록'} footer=${footer}>
     <div class="form">
@@ -263,7 +258,7 @@ export function PlaceForm({ row, category }) {
         help="장소 상세에서 누르면 바로 전화를 걸 수 있어요" />
       <div class="field">
         <${FieldLabel}>운영시간<//>
-        ${timePair('open', 'close', '여는 시간', '닫는 시간')}
+        <${HoursField} open=${f.open} close=${f.close} onChange=${(o, c) => setF((x) => ({ ...x, open: o, close: c }))} />
       </div>
       <div class="field">
         <${FieldLabel}>브레이크타임<//>
