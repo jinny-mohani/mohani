@@ -1,5 +1,6 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{position:fixed;inset:0}   /* iOS: 몸통 자체를 고정해 페이지가 밀려 스크롤되지 않게 */
 body{
   font-family:'Jua',system-ui,sans-serif;
   background:var(--bgc) var(--bgimg) center/cover no-repeat;

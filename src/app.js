@@ -41,6 +41,29 @@ function fit(){
 }
 addEventListener("resize", fit); addEventListener("orientationchange", () => setTimeout(fit, 200)); fit();
 
+// ---- 화면 밀림 방지 (iPad) ----
+// 키보드가 올라오거나 두 손가락으로 벌리면 iOS가 페이지 전체를 스크롤·확대해 둔다.
+// 키보드가 내려가도 그 위치가 남아 무대가 한쪽으로 쏠려 보이므로, 항상 (0,0)·배율 1로 되돌린다.
+try { history.scrollRestoration = "manual"; } catch {}
+function unshift(){
+  if (scrollX || scrollY) scrollTo(0, 0);
+  const se = document.scrollingElement;
+  if (se && (se.scrollLeft || se.scrollTop)){ se.scrollLeft = 0; se.scrollTop = 0; }
+  if (document.body.scrollLeft || document.body.scrollTop){ document.body.scrollLeft = 0; document.body.scrollTop = 0; }
+}
+function refit(){ unshift(); fit(); }
+document.addEventListener("scroll", e => {   // 창·html·body가 스크롤될 때만 (메모 칸 안의 스크롤은 그대로)
+  const t = e.target;
+  if (t !== document && t !== document.documentElement && t !== document.body) return;
+  if (!document.activeElement?.matches?.("textarea,input")) unshift();
+}, { capture: true, passive: true });
+addEventListener("focusout", () => setTimeout(refit, 60));
+addEventListener("pageshow", refit);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refit(); });
+window.visualViewport?.addEventListener("resize", () => { if (!document.activeElement?.matches?.("textarea,input")) refit(); });
+for (const ev of ["gesturestart", "gesturechange"]) document.addEventListener(ev, e => e.preventDefault(), { passive: false });
+refit();
+
 // ---- 달력 ----
 const grid = document.getElementById("grid");
 const WD = ["일","월","화","수","목","금","토"];
