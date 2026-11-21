@@ -84,7 +84,7 @@
 }
 .chip[aria-pressed='true'] { background: var(--color-primary); color: var(--color-on-primary); }
 /* 입력 폼의 고르기 칩 (피그마 Chip): 글자 길이만큼 폭, 선택 = 포인트 초록 */
-.field .chip { height: 40px; min-height: 40px; padding: 0 18px; border: 1px solid var(--color-border); background: var(--color-bg); color: var(--grey-700); font-weight: var(--fw-regular); line-height: 21px; }
+.field .chip { height: 40px; min-height: 40px; padding: 0 18px; border: 1px solid var(--color-border); background: var(--color-bg); color: var(--grey-700); font-weight: var(--fw-regular); line-height: var(--lh-small); }
 .field .chip[aria-pressed='true'] { border-color: var(--color-point); background: var(--color-point); color: var(--color-on-point); font-weight: var(--fw-semibold); }
 
 /* ───── 입력칸 ───── */
@@ -94,7 +94,7 @@
   display: flex; align-items: center; gap: var(--gap-s); padding: 0 0 var(--gap-m) 2px;
   font-size: var(--fs-body); line-height: 18px; font-weight: var(--fw-semibold); color: var(--color-text);
 }
-.field__label .icon { color: var(--color-icon-faint); }
+.field__label .icon { color: var(--color-icon-faint); } /* 18px (11.21 피그마 Input_tit) */
 .field > .input + .input, .field > .field-pair + .field-pair, .field > .input + .field-pair, .field > .field-pair + .input { margin-top: var(--gap-s); }
 .field__foot { display: flex; align-items: flex-start; gap: var(--gap-s); margin-top: 6px; }
 .field__foot .field__help { flex: 1; margin-top: 0; }
@@ -103,7 +103,7 @@
 .field__count b { font-weight: var(--fw-regular); color: var(--color-point); }
 .field__count i { font-style: normal; font-size: 10px; color: var(--grey-400); }
 .field__count small { margin-left: 4px; font-size: var(--fs-caption); font-weight: var(--fw-light); }
-.field__help { margin-top: 6px; font-size: var(--fs-helper); line-height: 19px; font-weight: var(--fw-light); color: var(--color-text-weak); }
+.field__help { margin-top: 6px; font-size: var(--fs-helper); line-height: var(--lh-helper); font-weight: var(--fw-light); color: var(--color-text-weak); }
 .input {
   width: 100%; height: var(--control-h); padding: 0 16px;
   border: 1px solid var(--color-border); border-radius: var(--radius-m);
@@ -344,7 +344,7 @@
 .collapse__title { flex: 1; display: flex; flex-direction: column; }
 .collapse__title strong { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-bold); }
 .collapse__title small { margin-top: 2px; font-size: var(--fs-caption); line-height: 1.4; font-weight: var(--fw-light); color: var(--color-text-weak); }
-.collapse__toggle { display: inline-flex; align-items: center; gap: var(--gap-s); font-size: var(--fs-helper); line-height: 21px; font-weight: var(--fw-light); color: var(--color-text-sub); }
+.collapse__toggle { display: inline-flex; align-items: center; gap: var(--gap-s); font-size: var(--fs-helper); line-height: var(--lh-helper); font-weight: var(--fw-light); color: var(--color-text-sub); }
 .collapse__toggle .icon { color: var(--grey-800); }
 /* 펼쳤을 때: 위에 화면 폭 12px 회색 띠로 구역 나누기 (피그마 07-1) */
 .collapse--open { background: none; border-radius: 0; margin: 0 calc(-1 * var(--page-x)); padding: var(--gap-2xl) var(--page-x) 0; border-top: 12px solid var(--color-bg-tint); }

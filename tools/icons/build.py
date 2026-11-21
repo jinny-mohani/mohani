@@ -30,6 +30,9 @@ BOLD = ['widget', 'airplane', 'map-point', 'calendar', 'clock-circle', 'cup-hot'
 CUSTOM = {
   'select-down': '<path d="M5 8.33L12 15.67L19 8.33"/>',
   'select-up': '<path d="M5 15.67L12 8.33L19 15.67"/>',
+  # 장소 상세 위쪽 흐림 버튼 (피그마 8210:11473): 뒤로 화살표 7×14, 점 3개 — 선 2
+  'glass-back': '<path d="M15.5 19L8.5 12L15.5 5"/>',
+  'glass-more': '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
 }
 
 icons = json.load(open(sys.argv[1]))['icons']

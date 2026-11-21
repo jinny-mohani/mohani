@@ -63,7 +63,7 @@ export function fieldIcon(title) {
 /** 입력 제목 (Input_tit): 회색 채운 아이콘 16 + 제목 */
 export function FieldLabel({ children, id, icon }) {
   const text = Array.isArray(children) ? children.join('') : children;
-  return html`<span class="field__label" id=${id}><${Icon} name=${icon || fieldIcon(text)} size=${16} bold /><span>${children}</span></span>`;
+  return html`<span class="field__label" id=${id}><${Icon} name=${icon || fieldIcon(text)} size=${18} bold /><span>${children}</span></span>`;
 }
 
 /** 하단 탭바 (TabBar) — 탭끼리는 뒤로 가기 기록을 쌓지 않아요 */

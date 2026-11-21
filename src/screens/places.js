@@ -128,9 +128,9 @@ export function PlaceDetail({ data, id }) {
 
   return html`<main class="screen screen--sub place-detail">
     <div class=${'place-detail__bar' + (solid ? ' place-detail__bar--solid' : '')}>
-      <button class="glass-btn glass-btn--left" aria-label="뒤로" onClick=${() => back('/places')}><span><${Icon} name="chevron-left" size=${24} stroke=${2} /></span></button>
+      <button class="glass-btn glass-btn--left" aria-label="뒤로" onClick=${() => back('/places')}><span><${Icon} name="glass-back" size=${24} stroke=${2} /></span></button>
       ${solid && html`<strong class="place-detail__bartitle">${p.name}</strong>`}
-      <button class="glass-btn glass-btn--right" aria-label="더 보기" onClick=${more}><span><${Icon} name="ellipsis" size=${24} stroke=${2} /></span></button>
+      <button class="glass-btn glass-btn--right" aria-label="더 보기" onClick=${more}><span><${Icon} name="glass-more" size=${24} stroke=${2} /></span></button>
     </div>
     <div class="place-detail__hero" ref=${heroRef}>
       ${photos[0]
