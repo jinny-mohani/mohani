@@ -257,7 +257,7 @@ export function ReservationDetail({ data, id }) {
       ${r.memo && html`<p class="pd-memo"><${Icon} name="memo" size=${16} /><span>${r.memo}</span></p>`}
       <${InfoRows} rows=${[
         { icon: 'calendar', content: r.startAt && rangeText(r.startAt, r.endAt) + (r.type === '숙소' && nights ? ` · ${nights}박` : '') },
-        { icon: 'map', content: r.address || (r.mapUrl && '지도에서 보기') },
+        { icon: 'map-point', content: r.address || (r.mapUrl && '지도에서 보기') },
         { icon: 'hashtag', content: html`${r.bookingNo
           ? html`<button class="pd-info__copy" onClick=${() => copyText(r.bookingNo, '예약번호를 복사했어요')}><span class="pd-info__line"><b>예약번호</b><i aria-hidden="true"></i>${r.bookingNo}</span><${Icon} name="copy" size=${14} /></button>`
           : html`<span class="muted">예약번호 아직 없음</span>`}` },

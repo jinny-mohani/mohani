@@ -119,7 +119,7 @@ export function PlaceDetail({ data, id }) {
     <${InfoRows} rows=${[
       { icon: 'shop', content: hasHours && html`${hoursLine('영업', p.hours)}${p.breakTime && p.breakTime !== '없음' && hoursLine('브레이크', p.breakTime)}${hoursLine('웨이팅', p.waiting)}` },
       { icon: 'phone', content: p.phone && html`<a class="pd-info__tel" href=${'tel:' + tel}>${p.phone}</a>` },
-      { icon: 'map', content: p.address },
+      { icon: 'map-point', content: p.address },
       { icon: 'car', content: p.parking },
     ]} />
     ${p.updatedBy && html`<p class="detail__edited">마지막 수정 · ${p.updatedBy}${p.updatedAt ? ' · ' + syncText(Date.parse(p.updatedAt)) : ''}</p>`}
