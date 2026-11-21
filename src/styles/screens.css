@@ -161,6 +161,8 @@
 .trip-card__date { display: block; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); }
 .trip-card--past .trip-card__title { color: var(--color-text-weak); }
 .trip-card .member-stack { padding: 0 4px; }
+.pick-kinds { display: flex; gap: var(--gap-s); }
+.pick-kinds .btn-outline { flex: 1; min-width: 0; min-height: 52px; padding: 0 8px; font-size: var(--fs-small); white-space: nowrap; }
 .btn-outline {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; min-height: 48px; border-radius: var(--radius-m);

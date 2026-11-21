@@ -9,7 +9,7 @@ import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
 import { getState, refresh, myName } from '../store.js';
 import { api } from '../api.js';
 import { saveLater, deleteWithUndo } from '../save.js';
-import { tripDays, dayDate, datePart, formatDay, formatTime } from '../date.js';
+import { tripDays, dayDate, datePart, formatDay, formatTime, rangeText } from '../date.js';
 import { TYPE_ICON, OTHER_ICON, firstPhoto, sized } from '../reservation-util.js';
 import { TimeField } from '../ui/pickers.js';
 import { toast } from '../ui/toast.js';
@@ -19,13 +19,23 @@ const PLACE_CATEGORIES = ['음식점', '즐길거리', '쇼핑', '디저트'];
 
 const byOrder = (a, b) => (Number(a.order) || 0) - (Number(b.order) || 0);
 
+/** 숙소·기타 예약을 일정 줄에서 장소처럼 쓰기 위한 모양 (11.22: 일정 추가에서 예약도 고르기) */
+function resAsPlace(r) {
+  return { id: r.id, name: r.title || r.type, category: r.type === '기타' ? r.subType || '기타 예약' : r.type, photos: r.photos, isRes: true, r };
+}
+/** 일정의 placeId → 장소, 또는 숙소·기타 예약 (같은 칸에 예약 id를 넣어요) */
 function placeOf(data, s) {
-  return (s.placeId && data.places.find((p) => p.id === s.placeId && !p.deleted)) || null;
+  if (!s.placeId) return null;
+  const p = data.places.find((x) => x.id === s.placeId && !x.deleted);
+  if (p) return p;
+  const r = data.reservations.find((x) => x.id === s.placeId && !x.deleted);
+  return r ? resAsPlace(r) : null;
 }
 
 /** 장소 한 줄 설명: 음식점 · 운영 07:00 – 20:00 (브레이크타임이 있으면 그걸) */
 export function placeLine(p) {
   if (!p) return '';
+  if (p.isRes) return [p.category, p.r.startAt && rangeText(p.r.startAt, p.r.endAt)].filter(Boolean).join(' · ');
   // 브레이크타임 시간이 있으면 그걸, 아니면 운영시간
   const hours = /\d/.test(p.breakTime || '') ? '브레이크타임 ' + p.breakTime : p.hours ? '운영 ' + p.hours : '';
   return [p.category, hours].filter(Boolean).join(' · ');
@@ -35,8 +45,9 @@ export function placeLine(p) {
 function timeline(data, day) {
   const items = data.schedule.filter((s) => !s.deleted && Number(s.day) === day).sort(byOrder);
   const date = dayDate(data.trip, day);
+  const added = new Set(items.map((s) => s.placeId).filter(Boolean)); // 일정에 직접 넣은 예약은 자동으로 또 넣지 않아요
   const res = data.reservations
-    .filter((r) => !r.deleted && r.startAt && datePart(r.startAt) === date)
+    .filter((r) => !r.deleted && r.startAt && datePart(r.startAt) === date && !added.has(r.id))
     .sort((a, b) => a.startAt.localeCompare(b.startAt));
   const rows = items.map((s) => ({ kind: 'item', s }));
   res.forEach((r) => {
@@ -102,7 +113,7 @@ export function Schedule({ data, query }) {
                   <span class=${'tl__rail' + (last ? ' tl__rail--last' : '')}><i></i></span>
                   <div class="tl__body">
                     <button class="tl__edit" aria-label=${p ? p.name + ' 장소 보기' : (s.placeName || '일정') + ' 수정'}
-                      onClick=${() => (p ? go('/places/' + p.id) : openOverlay(html`<${ScheduleForm} day=${day} row=${s} />`))}></button>
+                      onClick=${() => (p ? go((p.isRes ? '/reservations/' : '/places/') + p.id) : openOverlay(html`<${ScheduleForm} day=${day} row=${s} />`))}></button>
                     <span class="tl__title">${p ? p.name : s.placeName || '일정'}</span>
                     ${sub && html`<span class="tl__sub">${sub}</span>`}
                   </div>
@@ -215,10 +226,10 @@ export function ScheduleForm({ day, row, placeId }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const set = (k) => (v) => setF((x) => ({ ...x, [k]: v && v.currentTarget ? v.currentTarget.value : v }));
-  const place = f.placeId && data.places.find((p) => p.id === f.placeId);
-
-  const pickPlace = () =>
-    openOverlay(html`<${PlacePicker} selected=${f.placeId} onPick=${(id) => setF((x) => ({ ...x, placeId: id, placeName: '' }))} />`);
+  const place = placeOf(data, f);
+  const kindOf = (p) => (!p || !p.isRes ? 'place' : p.r.type === '숙소' ? '숙소' : '기타');
+  const pickPlace = (kind = kindOf(place)) =>
+    openOverlay(html`<${PlacePicker} kind=${kind} selected=${f.placeId} onPick=${(id) => setF((x) => ({ ...x, placeId: id, placeName: '' }))} />`);
 
   const save = async () => {
     if (!f.placeId && !f.placeName.trim()) return setError('장소를 고르거나 직접 입력해 주세요.');
@@ -260,15 +271,17 @@ export function ScheduleForm({ day, row, placeId }) {
           ? html`<div class="place-pick">
               <span class="place-pick__img">${firstPhoto(place) ? html`<img src=${sized(firstPhoto(place), 200)} alt="" />` : html`<${Icon} name="image" size=${18} />`}</span>
               <span class="place-pick__text"><b>${place.name}</b><small>${placeLine(place)}</small></span>
-              <button class="place-pick__change" onClick=${pickPlace}>변경</button>
+              <button class="place-pick__change" onClick=${() => pickPlace()}>변경</button>
             </div>`
-          : html`<button class="btn-outline" style="min-height:52px;font-size:var(--fs-body)" onClick=${pickPlace}>
-              <${Icon} name="map-pin" size=${18} />장소 목록에서 고르기
-            </button>`}
+          : html`<div class="pick-kinds">
+              <button class="btn-outline" onClick=${() => pickPlace('place')}><${Icon} name="map-pin" size=${18} />장소</button>
+              <button class="btn-outline" onClick=${() => pickPlace('숙소')}><${Icon} name="bed-double" size=${18} />숙소</button>
+              <button class="btn-outline" onClick=${() => pickPlace('기타')}><${Icon} name="ticket" size=${18} />기타 예약</button>
+            </div>`}
         <div class="or-line"><span>또는</span></div>
         <input class="input" placeholder="직접 입력  예) 숙소 출발, 휴식" aria-label="장소 직접 입력" value=${f.placeId ? '' : f.placeName}
           onInput=${(e) => setF((x) => ({ ...x, placeName: e.currentTarget.value, placeId: '' }))} />
-        <span class="field__help">장소 목록에 없는 일정(이동, 휴식 등)은 직접 입력해요</span>
+        <span class="field__help">장소·예약 목록에 없는 일정(이동, 휴식 등)은 직접 입력해요</span>
       </div>
       <${ChipField} title="이동수단" value=${customTr ? '__custom' : f.transport}
         options=${[...knownTransports.map((t) => ({ value: t, label: t, toggle: true })), { value: '__custom', label: '+ 직접 입력' }]}
@@ -282,42 +295,51 @@ export function ScheduleForm({ day, row, placeId }) {
 }
 
 /** 08-2 장소 선택 (바텀시트) */
-function PlacePicker({ selected, onPick }) {
+function PlacePicker({ kind = 'place', selected, onPick }) {
   const { data } = getState();
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('전체');
   const [pick, setPick] = useState(selected || '');
-  const list = data.places
-    .filter((p) => !p.deleted)
-    .filter((p) => cat === '전체' || p.category === cat)
-    .filter((p) => !q.trim() || String(p.name).includes(q.trim()));
+  const isRes = kind !== 'place';
+  const t = q.trim();
+  const list = isRes
+    ? data.reservations
+        .filter((r) => !r.deleted && r.type === kind)
+        .sort((a, b) => String(a.startAt || '').localeCompare(String(b.startAt || '')))
+        .map(resAsPlace)
+        .filter((p) => !t || String(p.name).includes(t))
+    : data.places
+        .filter((p) => !p.deleted)
+        .filter((p) => cat === '전체' || p.category === cat)
+        .filter((p) => !t || String(p.name).includes(t));
+  const what = { place: '장소', 숙소: '숙소', 기타: '기타 예약' }[kind];
 
   const newPlace = async () => {
     const { PlaceForm } = await import('./places.js');
     replaceOverlay(html`<${PlaceForm} />`);
   };
 
-  return html`<${Sheet} title="장소 선택" footer=${html`<${Button} disabled=${!pick} onClick=${() => { onPick(pick); closeOverlay(); }}>선택 완료<//>`}>
+  return html`<${Sheet} title=${what + ' 선택'} footer=${html`<${Button} disabled=${!pick} onClick=${() => { onPick(pick); closeOverlay(); }}>선택 완료<//>`}>
     <div class="search">
       <${Icon} name="search" size=${18} />
-      <input placeholder="장소 이름 검색" aria-label="장소 이름 검색" value=${q} onInput=${(e) => setQ(e.currentTarget.value)} />
+      <input placeholder=${what + ' 이름 검색'} aria-label=${what + ' 이름 검색'} value=${q} onInput=${(e) => setQ(e.currentTarget.value)} />
     </div>
-    <div style="margin:12px 0">
+    ${!isRes && html`<div style="margin:12px 0">
       <${ChipGroup} label="카테고리" value=${cat} onChange=${setCat} options=${['전체', ...PLACE_CATEGORIES].map((v) => ({ value: v, label: v }))} />
-    </div>
-    <button class="pick-row" onClick=${newPlace}>
+    </div>`}
+    ${!isRes && html`<button class="pick-row" onClick=${newPlace}>
       <span class="pick-row__img pick-row__img--new"><${Icon} name="plus" size=${20} /></span>
       <span class="pick-row__text"><b>새 장소 등록하기</b></span>
-    </button>
-    <ul>
+    </button>`}
+    <ul style=${isRes ? 'margin-top:12px' : ''}>
       ${list.map((p) => html`<li key=${p.id}>
         <button class=${'pick-row' + (pick === p.id ? ' pick-row--on' : '')} aria-pressed=${pick === p.id ? 'true' : 'false'} onClick=${() => setPick(pick === p.id ? '' : p.id)}>
-          <span class="pick-row__img">${firstPhoto(p) ? html`<img src=${sized(firstPhoto(p), 200)} alt="" />` : html`<${Icon} name="image" size=${16} />`}</span>
+          <span class="pick-row__img">${firstPhoto(p) ? html`<img src=${sized(firstPhoto(p), 200)} alt="" />` : html`<${Icon} name=${isRes ? (kind === '숙소' ? 'bed-double' : 'ticket') : 'image'} size=${16} />`}</span>
           <span class="pick-row__text"><b>${p.name}</b><small>${placeLine(p)}</small></span>
           ${pick === p.id && html`<span class="pick-row__check"><${Icon} name="check" size=${14} stroke=${2.5} /></span>`}
         </button>
       </li>`)}
     </ul>
-    ${!list.length && html`<p class="muted" style="padding:12px 0">${q ? '찾는 장소가 없어요' : '아직 등록한 장소가 없어요'}</p>`}
+    ${!list.length && html`<p class="muted" style="padding:12px 0">${q ? '찾는 결과가 없어요' : isRes ? `아직 등록한 ${what} 정보가 없어요 · 예약 탭에서 추가해요` : '아직 등록한 장소가 없어요'}</p>`}
   <//>`;
 }

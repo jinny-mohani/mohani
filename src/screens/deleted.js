@@ -11,8 +11,8 @@ const KINDS = [
   { table: 'reservations', label: '예약', icon: 'ticket', name: (r) => r.title || r.type },
   { table: 'places', label: '장소', icon: 'map-pin', name: (r) => r.name },
   { table: 'schedule', label: '일정', icon: 'calendar-days', name: (r, d) => {
-    const p = r.placeId && d.places.find((x) => x.id === r.placeId);
-    return (p && p.name) || r.placeName || '일정';
+    const p = r.placeId && (d.places.find((x) => x.id === r.placeId) || d.reservations.find((x) => x.id === r.placeId));
+    return (p && (p.name || p.title)) || r.placeName || '일정';
   } },
   { table: 'members', label: '멤버', icon: 'user', name: (r) => r.name },
 ];

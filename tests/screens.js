@@ -200,7 +200,13 @@ const data = {
   console.log('reorder posted:', JSON.stringify((posts.filter((p) => p.action === 'reorder').pop() || {}).ids));
   await page.click('text=완료');
   await page.click('[aria-label="일정 추가"]'); await page.waitForSelector('.modal'); await shot('08-1-schedule-form');
-  await page.click('text=장소 목록에서 고르기'); await page.waitForSelector('.sheet'); await page.click('.sheet >> text=쿠시카츠 다루마'); await shot('08-2-place-picker');
+  await shot('08-1-schedule-form-kinds');
+  await page.click('.pick-kinds >> text=숙소'); await page.waitForSelector('.sheet'); await shot('08-2-1-stay-picker');
+  await page.click('.sheet .pick-row >> nth=0'); await page.click('text=선택 완료'); await page.waitForTimeout(200);
+  console.log('picked stay shown:', await page.textContent('.place-pick__text b'));
+  await page.click('.place-pick__change'); await page.waitForSelector('.sheet'); await page.click('[aria-label="닫기"] >> nth=-1'); await page.waitForTimeout(200);
+  await page.fill('[aria-label="장소 직접 입력"]', 'x'); await page.fill('[aria-label="장소 직접 입력"]', ''); await page.waitForTimeout(100);
+  await page.click('.pick-kinds >> text=장소'); await page.waitForSelector('.sheet'); await page.click('.sheet >> text=쿠시카츠 다루마'); await shot('08-2-place-picker');
   await page.click('text=선택 완료'); await page.waitForTimeout(200);
   console.log('picked place shown:', await page.textContent('.place-pick__text b'));
   await page.click('.modal >> text=저장하기'); await page.waitForTimeout(400);

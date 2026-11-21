@@ -1,7 +1,7 @@
 // 서비스 워커: 앱 파일을 휴대폰에 저장해 두어, 인터넷이 약해도 앱이 열리게 해요.
 // 시트 데이터는 여기서 다루지 않고 앱이 따로 저장해요 (src/store.js).
 // 앱 파일을 바꾸면 VERSION을 올려 주세요. (네트워크 우선이라 안 올려도 새 파일을 받지만, 옛 캐시 정리용)
-const VERSION = 'v3-33';
+const VERSION = 'v3-34';
 const CACHE = 'hamkke-' + VERSION;
 const SHELL = [
   './',
