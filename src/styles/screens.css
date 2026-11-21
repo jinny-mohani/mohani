@@ -529,7 +529,8 @@
 /* 사진: 화면 위에 고정된 듯 천천히 올라감 (JS가 translateY), 위쪽은 어두운 그라데이션으로 버튼이 잘 보이게 */
 .place-detail__hero { position: relative; height: 360px; background: var(--color-divider); overflow: hidden; will-change: transform; }
 .place-detail__hero::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 88px; background: linear-gradient(rgba(34, 34, 34, 0.6), rgba(34, 34, 34, 0)); pointer-events: none; }
-.place-detail__heroimg { display: block; width: 100%; height: 100%; }
+.place-detail__heroimg { display: block; width: 100%; height: 100%; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.place-detail__heroimg-img { animation: fade-in var(--dur) var(--ease); -webkit-user-drag: none; }
 .place-detail__hero img { width: 100%; height: 100%; object-fit: cover; }
 .place-detail__ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--color-placeholder); }
 /* 본문 흰 박스: 사진 위로 24px 겹침, 위 모서리 30, 위로 은은한 그림자 */
@@ -545,6 +546,8 @@
 .place-detail__thumbs button { display: block; width: 40px; height: 36px; padding: 0; border: 1.2px solid var(--white); border-radius: 6px; overflow: hidden; background: var(--color-bg); position: relative; }
 .place-detail__thumbs button::before { content: ''; position: absolute; inset: -4px; } /* 누르는 영역 넓히기 */
 .place-detail__thumbs img { width: 100%; height: 100%; object-fit: cover; }
+/* 지금 큰 사진에 보이는 썸네일: 초록 테두리 */
+.place-detail__thumbs button[aria-pressed='true'] { border: 2px solid var(--color-point); }
 .place-detail__head { display: flex; flex-direction: column; gap: 6px; }
 .place-detail__title { font-size: var(--fs-display); line-height: var(--lh-display); font-weight: var(--fw-extrabold); word-break: keep-all; }
 .place-detail__sub--row { display: flex; align-items: center; gap: var(--gap-s); }

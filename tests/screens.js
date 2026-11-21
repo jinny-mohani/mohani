@@ -216,7 +216,13 @@ const data = {
   await page.click('.place-card__open >> nth=0'); await page.waitForSelector('.place-detail'); await shot('10-place-detail');
   await page.evaluate(() => { document.getElementById('app').scrollTop = 220; }); await page.waitForTimeout(250); await shot('10-place-detail-scroll');
   await page.evaluate(() => { document.getElementById('app').scrollTop = 0; }); await page.waitForTimeout(150);
-  await page.click('.place-detail__thumbs button >> nth=1'); await page.waitForSelector('.viewer'); await shot('10-viewer'); console.log('viewer:', await page.textContent('.viewer__count')); await page.click('.viewer__close'); await page.waitForTimeout(200); await page.click('[aria-label="더 보기"]'); await shot('10-menu'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
+  const src0 = await page.getAttribute('.place-detail__heroimg img', 'src');
+  await page.click('.place-detail__thumbs button >> nth=1'); await page.waitForTimeout(200); await shot('10-place-detail-thumb2');
+  console.log('thumb switches hero:', src0 !== await page.getAttribute('.place-detail__heroimg img', 'src'), '| pressed:', await page.getAttribute('.place-detail__thumbs button >> nth=1', 'aria-pressed'));
+  { const hb = await page.$('.place-detail__heroimg').then((e) => e.boundingBox()); const before = await page.getAttribute('.place-detail__heroimg img', 'src');
+    await page.mouse.move(hb.x + 260, hb.y + 150); await page.mouse.down(); await page.mouse.move(hb.x + 80, hb.y + 155, { steps: 6 }); await page.mouse.up(); await page.waitForTimeout(200);
+    console.log('swipe changes hero:', before !== await page.getAttribute('.place-detail__heroimg img', 'src'), '| viewer opened by swipe:', !!(await page.$('.viewer'))); }
+  await page.click('.place-detail__heroimg'); await page.waitForSelector('.viewer'); await shot('10-viewer'); console.log('viewer:', await page.textContent('.viewer__count')); await page.click('.viewer__close'); await page.waitForTimeout(200); await page.click('[aria-label="더 보기"]'); await shot('10-menu'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
   await page.click('[aria-label="운영시간"]'); await page.waitForSelector('.hours-col'); await shot('09-3-hours');
   await page.click('.hours-col >> nth=0 >> text=오전 11시 30분'); await page.click('.hours-col >> nth=1 >> text=오후 9시'); await page.waitForTimeout(300);
   console.log('hours picked:', await page.textContent('[aria-label="운영시간"]'), '| sheet closed:', !(await page.$('.hours-col')));
