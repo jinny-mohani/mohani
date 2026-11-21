@@ -1,6 +1,6 @@
 // 13 새 여행 만들기 (전체 화면 팝업) · 13-1 초대 링크 공유 · 02-1 초대 안내 시트
 import { html, useState } from '../vendor/preact-htm.js';
-import { Avatar, Button, Icon, Modal, Sheet, TextField , FormError } from '../ui/components.js';
+import { Avatar, Button, Icon, Modal, Sheet, TextField, FormError, FieldLabel } from '../ui/components.js';
 import { openOverlay, closeOverlay, closeAllOverlays, replaceOverlay } from '../overlay.js';
 import { createTrip, saveRow, uploadPhoto, enterFromUrl } from '../store.js';
 import { replace } from '../router.js';
@@ -84,13 +84,13 @@ export function NewTripModal() {
       <${TextField} title="목적지" placeholder="예) 제주도" value=${destination} maxLength="30"
         onInput=${(e) => setDestination(e.currentTarget.value)} />
       <div class="field">
-        <span class="field__label" id="date-label">날짜</span>
+        <${FieldLabel} id="date-label">날짜<//>
         <${DateRangeField} label="여행 날짜" placeholder="출발일 – 도착일" start=${startDate} end=${endDate}
           onChange=${(a, b) => { setStartDate(a); setEndDate(b); }} />
         <span class="field__help">날짜를 고르면 Day 탭이 자동으로 만들어져요</span>
       </div>
       <div class="field">
-        <span class="field__label">대표 이미지</span>
+        <${FieldLabel}>대표 이미지<//>
         <label class="photo-pick">
           ${cover
             ? html`<img src=${cover.dataUrl} alt="고른 대표 이미지" />`
@@ -100,7 +100,7 @@ export function NewTripModal() {
         <span class="field__help">선택 · 여행 목록에 보여요</span>
       </div>
       <div class="field">
-        <span class="field__label">내 프로필</span>
+        <${FieldLabel}>내 프로필<//>
         <div class="me-row">
           <${Avatar} member=${{ name: myName || ' ', profile: myProfile }} size=${64} />
           <${TextField} title="내 이름" placeholder="예) 지니" value=${myName} maxLength="20"

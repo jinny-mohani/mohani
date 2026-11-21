@@ -3,8 +3,7 @@ import { html, useState } from '../vendor/preact-htm.js';
 import {
   Avatar, Button, ChipField, ChipGroup, Empty, Icon, Modal, PhotoField, Sheet, TextArea, TextField,
   FormError,
-  Fab,
-} from '../ui/components.js';
+  Fab, FieldLabel } from '../ui/components.js';
 import { go, replace, back } from '../router.js';
 import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
 import { getState, uploadPhoto } from '../store.js';
@@ -211,11 +210,11 @@ export function PlaceForm({ row, category }) {
       <${TextField} title="정확한 주소" placeholder="예) 제주시 탑동로 00, 1층" value=${f.address} onInput=${set('address')}
         help="건물 이름, 층, 근처 랜드마크까지 적으면 찾기 쉬워요" />
       <div class="field">
-        <span class="field__label">운영시간</span>
+        <${FieldLabel}>운영시간<//>
         ${timePair('open', 'close', '여는 시간', '닫는 시간')}
       </div>
       <div class="field">
-        <span class="field__label">브레이크타임</span>
+        <${FieldLabel}>브레이크타임<//>
         <div class="chips chips--wrap">
           <button class="chip" aria-pressed=${f.hasBreak === true ? 'true' : 'false'} onClick=${() => set('hasBreak')(f.hasBreak === true ? null : true)}>있음</button>
           <button class="chip" aria-pressed=${f.hasBreak === false ? 'true' : 'false'} onClick=${() => set('hasBreak')(f.hasBreak === false ? null : false)}>없음</button>

@@ -55,11 +55,11 @@
   display: flex; align-items: center; justify-content: center; gap: var(--gap-s);
   width: 100%; height: var(--control-h); padding: 0 20px;
   border-radius: var(--radius-m);
-  font-size: var(--fs-button); font-weight: var(--fw-medium);
+  font-size: var(--fs-button); line-height: 1.5; font-weight: var(--fw-semibold);
 }
-.btn--primary { background: var(--color-point); color: var(--color-on-point); }
+.btn--primary { background: var(--color-point); color: var(--color-on-point); font-weight: var(--fw-bold); }
 .btn--secondary { background: var(--color-point-weak); color: var(--color-point-strong); }
-.btn:disabled { background: var(--color-surface); color: var(--color-disabled); }
+.btn:disabled { background: var(--color-surface); color: var(--color-disabled); font-weight: var(--fw-semibold); }
 .btn:active:not(:disabled) { opacity: 0.85; }
 /* 삭제처럼 작게 한 줄로 */
 .btn-text {
@@ -83,17 +83,33 @@
   font-size: var(--fs-small); font-weight: var(--fw-medium); line-height: var(--lh);
 }
 .chip[aria-pressed='true'] { background: var(--color-primary); color: var(--color-on-primary); }
+/* 입력 폼의 고르기 칩 (피그마 Chip): 글자 길이만큼 폭, 선택 = 포인트 초록 */
+.field .chip { height: 40px; min-height: 40px; padding: 0 18px; border: 1px solid var(--color-border); background: var(--color-bg); color: var(--grey-700); font-weight: var(--fw-regular); line-height: 21px; }
+.field .chip[aria-pressed='true'] { border-color: var(--color-point); background: var(--color-point); color: var(--color-on-point); font-weight: var(--fw-semibold); }
 
 /* ───── 입력칸 ───── */
-.field { display: flex; flex-direction: column; gap: var(--gap-s); }
-.field__label { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); color: var(--color-text-sub); }
-.field__help { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); }
+/* 입력 묶음 (피그마 Input_tit + Input): 제목 → 12px → 입력칸 → 6px → 도움말 */
+.field { display: flex; flex-direction: column; gap: 0; }
+.field__label {
+  display: flex; align-items: center; gap: var(--gap-s); padding: 0 0 var(--gap-m) 2px;
+  font-size: var(--fs-body); line-height: 18px; font-weight: var(--fw-semibold); color: var(--color-text);
+}
+.field__label .icon { color: var(--color-icon-faint); }
+.field > .input + .input, .field > .field-pair + .field-pair, .field > .input + .field-pair, .field > .field-pair + .input { margin-top: var(--gap-s); }
+.field__foot { display: flex; align-items: flex-start; gap: var(--gap-s); margin-top: 6px; }
+.field__foot .field__help { flex: 1; margin-top: 0; }
+/* 글자 수 (피그마 07-1 메모): 쓴 글자 초록 · 빗금 연회색 · 최대 회색 */
+.field__count { display: inline-flex; align-items: baseline; gap: 2px; margin-left: auto; font-size: var(--fs-caption); line-height: 16px; color: var(--color-text-weak); white-space: nowrap; }
+.field__count b { font-weight: var(--fw-regular); color: var(--color-point-strong); }
+.field__count i { font-style: normal; font-size: 10px; color: var(--grey-400); }
+.field__count small { margin-left: 4px; font-size: var(--fs-caption); font-weight: var(--fw-light); }
+.field__help { margin-top: 6px; font-size: 13px; line-height: 19px; font-weight: var(--fw-light); color: var(--color-text-weak); }
 .input {
   width: 100%; height: var(--control-h); padding: 0 16px;
   border: 1px solid var(--color-border); border-radius: var(--radius-m);
   background: var(--color-bg); font-size: var(--fs-body); line-height: var(--lh-body);
 }
-.input::placeholder { color: var(--color-text-weak); }
+.input::placeholder { color: var(--grey-500); font-weight: var(--fw-light); } /* 피그마 Input: 예시 글자 Light #9E9E9E */
 .input:focus { outline: none; border-color: var(--color-point); } /* 선택·입력 중 테두리는 포인트 색 (흰 바탕 대비 3.1:1, 테두리 기준 3:1 충족) */
 
 /* ───── 목록 행 ───── */
@@ -249,12 +265,12 @@
   transform: translateX(-50%);
   display: flex; align-items: center; gap: var(--gap-l);
   width: calc(min(100vw, var(--app-max)) - 2 * var(--page-x));
-  padding: 14px 16px; border-radius: var(--radius-m);
-  background: var(--color-surface-inverse); color: var(--color-on-inverse); font-size: var(--fs-small); line-height: var(--lh-small);
+  padding: 16px; border-radius: 14px;
+  background: var(--color-surface-inverse); color: var(--color-on-inverse); font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-light);
   animation: fade-in var(--dur) var(--ease);
 }
 .toast span { flex: 1; }
-.toast__action { color: var(--white); font-weight: var(--fw-bold); text-decoration: underline; min-height: var(--hit); }
+.toast__action { color: var(--white); font-weight: var(--fw-semibold); min-height: var(--hit); margin: -14px 0; }
 
 /* 입력칸 두 개 나란히 (출발일 – 도착일) */
 .field-pair { display: flex; align-items: center; gap: var(--gap-s); }
@@ -262,7 +278,7 @@
 .field-pair__dash { color: var(--color-text-weak); }
 .input[type='date'] { -webkit-appearance: none; appearance: none; text-align: left; }
 .input[type='date']:invalid, .input--empty { color: var(--color-text-weak); }
-.form { display: flex; flex-direction: column; gap: var(--gap-xl); }
+.form { display: flex; flex-direction: column; gap: var(--gap-2xl); } /* 피그마 30 → 4px 단위 32 */
 .form__error { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text); font-weight: var(--fw-medium); }
 .lead { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); margin-top: -4px; }
 .divider { height: 1px; background: var(--color-divider); border: 0; margin: 0; }
@@ -319,18 +335,20 @@
 .conflict .stack-btns { width: 100%; }
 
 .chips--wrap { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; }
-.textarea { height: auto; padding: 14px 16px; resize: none; line-height: var(--lh); }
+.textarea { height: auto; padding: 14px 16px; resize: none; line-height: 26px; }
 
 /* 추가 정보 (접기·펼치기) */
 .collapse { border-radius: var(--radius-m); background: var(--color-surface-weak); }
 .collapse__head { display: flex; align-items: center; gap: var(--gap-m); width: 100%; min-height: 64px; padding: 12px 16px; text-align: left; }
 .collapse__title { flex: 1; display: flex; flex-direction: column; }
 .collapse__title strong { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-bold); }
-.collapse__title small { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--color-text-weak); }
-.collapse__toggle { display: inline-flex; align-items: center; gap: 2px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-sub); }
-.collapse--open { background: none; }
-.collapse--open .collapse__head { padding: 12px 0; border-top: 1px solid var(--color-divider); border-radius: 0; }
-.collapse__body { display: flex; flex-direction: column; gap: var(--gap-xl); }
+.collapse__title small { margin-top: 2px; font-size: var(--fs-caption); line-height: 1.4; font-weight: var(--fw-light); color: var(--color-text-weak); }
+.collapse__toggle { display: inline-flex; align-items: center; gap: var(--gap-s); font-size: 13px; line-height: 21px; font-weight: var(--fw-light); color: var(--color-text-sub); }
+.collapse__toggle .icon { color: var(--grey-800); }
+/* 펼쳤을 때: 위에 화면 폭 12px 회색 띠로 구역 나누기 (피그마 07-1) */
+.collapse--open { background: none; border-radius: 0; margin: 0 calc(-1 * var(--page-x)); padding: var(--gap-2xl) var(--page-x) 0; border-top: 12px solid var(--color-bg-tint); }
+.collapse--open .collapse__head { align-items: flex-start; min-height: 0; padding: 0 0 var(--gap-m); border-radius: 0; }
+.collapse__body { display: flex; flex-direction: column; gap: var(--gap-2xl); padding-top: var(--gap-lx); }
 
 /* 상태 라벨 */
 .status {
@@ -378,7 +396,7 @@ button.status::after { content: ''; position: absolute; inset: -8px; } /* 터치
 /* 고르기 칸 */
 .select { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; color: var(--color-text); }
 .select span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.select.input--empty { color: var(--color-text-weak); }
+.select.input--empty { color: var(--color-text-weak); font-weight: var(--fw-light); }
 .select .icon { flex-shrink: 0; color: var(--color-text-weak); }
 .opt-list { margin-top: 8px; }
 .opt { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; text-align: left; border-bottom: 1px solid var(--color-divider); }

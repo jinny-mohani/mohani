@@ -1,6 +1,6 @@
 // 11 친구들 · 11-1 내 프로필 수정 · 11-2 프로필 사진 선택 · 11-3 멤버 추가
 import { html, useState } from '../vendor/preact-htm.js';
-import { Avatar, Button, Icon, Modal, Sheet, TextArea, TextField , FormError } from '../ui/components.js';
+import { Avatar, Button, Icon, Modal, Sheet, TextArea, TextField, FormError } from '../ui/components.js';
 import { openOverlay, closeOverlay } from '../overlay.js';
 import { getState, saveRow, uploadPhoto } from '../store.js';
 import { saveLater } from '../save.js';

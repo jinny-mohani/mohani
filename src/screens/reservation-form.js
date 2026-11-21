@@ -1,7 +1,7 @@
 // 07-1 항공권 · 07-2 숙소 · 07-3 기타 — 새로 쓰기와 수정이 같은 화면을 써요 (전체 화면 팝업)
 // 07-1-1 추가 정보 펼침 · 07-3-1 종류 직접 입력
 import { html, useState } from '../vendor/preact-htm.js';
-import { Button, ChipField, Collapsible, Modal, PhotoField, TextArea, TextField , FormError } from '../ui/components.js';
+import { Button, ChipField, Collapsible, Modal, PhotoField, TextArea, TextField, FormError, FieldLabel } from '../ui/components.js';
 import { closeOverlay, openOverlay } from '../overlay.js';
 import { getState, uploadPhoto } from '../store.js';
 import { saveLater, deleteWithUndo } from '../save.js';
@@ -172,7 +172,7 @@ export function ReservationForm({ type, row }) {
     body = html`
       <${ChipField} title="구분" options=${['가는 편', '오는 편']} value=${f.direction} onChange=${set('direction')} />
       <div class="field">
-        <span class="field__label">항공편</span>
+        <${FieldLabel}>항공편<//>
         <div class="field-pair">
           <${SelectField} label="항공사" value=${f.airline} placeholder="항공사"
             onClick=${() => openOverlay(html`<${OptionSheet} title="항공사" options=${AIRLINES} value=${f.airline} onPick=${set('airline')} />`)} />
@@ -182,7 +182,7 @@ export function ReservationForm({ type, row }) {
         <span class="field__help">편명은 숫자만 · 예) 7C<b>101</b> 이면 101</span>
       </div>
       <div class="field">
-        <span class="field__label">출발 · 도착</span>
+        <${FieldLabel}>출발 도착<//>
         <div class="field-pair">
           <${SelectField} label="출발 공항" value=${f.fromAirport} placeholder="출발 공항"
             onClick=${() => openOverlay(html`<${OptionSheet} title="출발 공항" options=${AIRPORTS} groups=${['국내', '일본', '중화권', '동남아', '그 외']} value=${f.fromAirport} onPick=${set('fromAirport')} />`)} />
@@ -191,7 +191,7 @@ export function ReservationForm({ type, row }) {
         </div>
       </div>
       <div class="field">
-        <span class="field__label">날짜 · 시간</span>
+        <${FieldLabel}>날짜 시간<//>
         <${DateField} label="날짜" value=${f.date} onChange=${set('date')} trip=${getState().data.trip} />
         <div class="field-pair">
           <${TimeField} label="출발 시간" value=${f.startTime} onChange=${set('startTime')} placeholder="출발 시간" />
@@ -210,7 +210,7 @@ export function ReservationForm({ type, row }) {
     body = html`
       <${TextField} title="숙소 이름" placeholder="예) 성산 오션뷰 펜션" value=${f.title} onInput=${set('title')} />
       <div class="field">
-        <span class="field__label">체크인 · 체크아웃</span>
+        <${FieldLabel}>체크인 체크아웃<//>
         <${DateRangeField} label="체크인 · 체크아웃" placeholder="체크인 – 체크아웃" start=${f.startDate} end=${f.endDate} labels=${['체크인', '체크아웃']}
           onChange=${(a, b) => setF((x) => ({ ...x, startDate: a, endDate: b }))} />
       </div>
@@ -245,7 +245,7 @@ export function ReservationForm({ type, row }) {
         help="목록에 없는 종류를 적어요. 다음부터 칩으로 보여요" />`}
       <${TextField} title="예약명" placeholder="예) 렌터카 (4인승 SUV)" value=${f.title} onInput=${set('title')} />
       <div class="field">
-        <span class="field__label">날짜 · 시간</span>
+        <${FieldLabel}>날짜 시간<//>
         <${DateTime} label="시작" date=${f.startDate} time=${f.startTime} onDate=${set('startDate')} onTime=${set('startTime')} />
         <${DateTime} label="종료" date=${f.endDate} time=${f.endTime} onDate=${set('endDate')} onTime=${set('endTime')} min=${f.startDate} />
         <span class="field__help">투어처럼 하루짜리면 시작만 입력해도 돼요</span>

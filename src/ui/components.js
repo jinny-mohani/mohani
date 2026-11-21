@@ -1,14 +1,14 @@
 // 공통 컴포넌트 — 피그마 'Components' 프레임과 같은 이름으로 맞췄어요.
 import { html, useEffect, useRef, useState } from '../vendor/preact-htm.js';
-import { ICONS, FILLED } from './icons.js';
+import { ICONS, FILLED, BOLD } from './icons.js';
 import { TABS, back, replace } from '../router.js';
 import { closeOverlay } from '../overlay.js';
 import { syncText } from '../date.js';
 import { profileSrc } from '../members.js';
 
-/** Solar 아이콘(선). stroke: 선 굵기(기본 1.5). filled는 하단 탭 선택 상태(채움) */
-export function Icon({ name, size = 24, filled = false, stroke = 1.5, label }) {
-  const fill = filled && FILLED[name];
+/** Solar 아이콘(선). stroke: 선 굵기(기본 1.5). filled는 하단 탭 선택 상태(채움). bold는 채운 작은 아이콘(BOLD 목록 이름) */
+export function Icon({ name, size = 24, filled = false, bold = false, stroke = 1.5, label }) {
+  const fill = (bold && BOLD[name]) || (filled && FILLED[name]);
   const inner = fill || ICONS[name] || '';
   return html`<svg
     class="icon"
@@ -25,6 +25,45 @@ export function Icon({ name, size = 24, filled = false, stroke = 1.5, label }) {
     aria-hidden=${label ? null : 'true'}
     dangerouslySetInnerHTML=${{ __html: inner }}
   ></svg>`;
+}
+
+/** 입력 제목 왼쪽 아이콘 — 제목 글자로 고름 (피그마 Input_tit). 새 제목이면 여기에 한 줄 추가 */
+const FIELD_ICONS = [
+  [/구분|카테고리|^종류$/, 'widget'],
+  [/항공|비행/, 'airplane'],
+  [/출발|도착|주소|장소|목적지/, 'map-point'],
+  [/지도/, 'map'],
+  [/날짜|체크인|기간/, 'calendar'],
+  [/브레이크/, 'cup-hot'],
+  [/시간/, 'clock-circle'],
+  [/예약번호/, 'hashtag'],
+  [/상태/, 'check-circle'],
+  [/담당|인원|내 이름|^이름$/, 'user'],
+  [/프로필/, 'user-circle'],
+  [/예약처/, 'shop'],
+  [/터미널/, 'buildings'],
+  [/좌석/, 'armchair'],
+  [/메모|소개/, 'clipboard-text'],
+  [/이미지|사진/, 'gallery'],
+  [/이동수단/, 'bus'],
+  [/웨이팅/, 'users-group-rounded'],
+  [/비용/, 'wallet'],
+  [/방 크기/, 'ruler'],
+  [/객실/, 'bed'],
+  [/전화/, 'phone'],
+  [/주차/, 'car'],
+  [/할 일/, 'checklist'],
+];
+export function fieldIcon(title) {
+  const t = String(title || '');
+  const hit = FIELD_ICONS.find(([re]) => re.test(t));
+  return hit ? hit[1] : 'pen';
+}
+
+/** 입력 제목 (Input_tit): 회색 채운 아이콘 16 + 제목 */
+export function FieldLabel({ children, id, icon }) {
+  const text = Array.isArray(children) ? children.join('') : children;
+  return html`<span class="field__label" id=${id}><${Icon} name=${icon || fieldIcon(text)} size=${16} bold /><span>${children}</span></span>`;
 }
 
 /** 하단 탭바 (TabBar) — 탭끼리는 뒤로 가기 기록을 쌓지 않아요 */
@@ -87,7 +126,7 @@ export function ChipGroup({ options, value, onChange, label }) {
 /** 입력칸 제목 + 입력칸 + 설명 (TextField) */
 export function TextField({ title, help, ...input }) {
   return html`<label class="field">
-    <span class="field__label">${title}</span>
+    <${FieldLabel}>${title}<//>
     <input class="input" ...${input} />
     ${help && html`<span class="field__help">${help}</span>`}
   </label>`;
@@ -228,7 +267,7 @@ export function Dialog({ label, children }) {
 /** 제목 + 칩 고르기 (구분·상태·담당 등) */
 export function ChipField({ title, options, value, onChange, help, scroll }) {
   return html`<div class="field">
-    <span class="field__label">${title}</span>
+    <${FieldLabel}>${title}<//>
     <div class=${'chips' + (scroll ? '' : ' chips--wrap')} role="radiogroup" aria-label=${title}>
       ${options.map((o) => {
         const opt = typeof o === 'string' ? { value: o, label: o } : o;
@@ -246,16 +285,20 @@ export function ChipField({ title, options, value, onChange, help, scroll }) {
 }
 
 /** 메모 칸 (Textarea) — 줄바꿈 포함 최대 5줄 (기획안) */
-export function TextArea({ title, help, value, onInput, placeholder, maxLines = 5 }) {
+export function TextArea({ title, help, value, onInput, placeholder, maxLines = 5, maxLength = 200 }) {
   const limit = (e) => {
-    const v = e.currentTarget.value.split('\n').slice(0, maxLines).join('\n');
+    const v = e.currentTarget.value.split('\n').slice(0, maxLines).join('\n').slice(0, maxLength);
     if (v !== e.currentTarget.value) e.currentTarget.value = v;
     onInput(v);
   };
+  const n = (value || '').length;
   return html`<label class="field">
-    <span class="field__label">${title}</span>
-    <textarea class="input textarea" rows=${Math.max(2, maxLines)} placeholder=${placeholder} value=${value} onInput=${limit}></textarea>
-    <span class="field__help">${help || `최대 ${maxLines}줄 · 줄바꿈 가능`}</span>
+    <${FieldLabel}>${title}<//>
+    <textarea class="input textarea" rows=${Math.max(2, maxLines)} placeholder=${placeholder} value=${value} maxlength=${maxLength} onInput=${limit}></textarea>
+    <span class="field__foot">
+      ${help && html`<span class="field__help">${help}</span>`}
+      <span class="field__count" aria-label=${`${maxLength}자 중 ${n}자`}><b>${n}</b><i>/</i>${maxLength}<small>(띄어쓰기 포함)</small></span>
+    </span>
   </label>`;
 }
 
@@ -267,7 +310,7 @@ export function Collapsible({ title, sub, open, onToggle, children }) {
         <strong>${title}</strong>
         <small>${open ? '선택 · 태그로 표시돼요' : sub}</small>
       </span>
-      <span class="collapse__toggle">${open ? '접기' : '펼치기'}<${Icon} name=${open ? 'chevron-up' : 'chevron-down'} size=${16} /></span>
+      <span class="collapse__toggle">${open ? '접기' : '펼치기'}<${Icon} name=${open ? 'chevron-up' : 'chevron-down'} size=${18} stroke=${1.4} /></span>
     </button>
     ${open && html`<div class="collapse__body">${children}</div>`}
   </section>`;
@@ -297,7 +340,7 @@ export function PhotoField({ title = '사진', photos, onChange, max = 3 }) {
     onChange([...photos, ...added]);
   };
   return html`<div class="field">
-    <span class="field__label">${title}</span>
+    <${FieldLabel}>${title}<//>
     <div class="photo-row">
       ${photos.map((p, i) => html`<span class="photo-thumb" key=${i}>
         <img src=${typeof p === 'string' ? p : p.dataUrl} alt="" />

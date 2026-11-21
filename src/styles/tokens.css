@@ -54,9 +54,12 @@
   --fs-display: 26px;  --lh-display: 1.3;  /* 화면 제목 */
   --fs-button: 18px;   /* 버튼 글자 — 피그마 Button 컴포넌트 기준 (5단계의 예외) */
   --lh: 1.5;
+  --fw-light: 300;     /* 안내 글자·플레이스홀더·토스트 (피그마 Light) */
   --fw-regular: 400;
   --fw-medium: 500;
+  --fw-semibold: 600;  /* 칩 선택·입력 제목·보조 버튼 */
   --fw-bold: 700;
+  --fw-extrabold: 800; /* 장소 상세 제목 */
 
   /* 간격·모양 */
   --page-x: 20px;      /* 좌우 여백 */

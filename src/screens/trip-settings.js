@@ -1,6 +1,6 @@
 // 03-4 홈 › 여행 설정 (전체 화면 팝업) — 멤버 누구나 고칠 수 있어요
 import { html, useState } from '../vendor/preact-htm.js';
-import { Button, Icon, Modal, TextField , FormError } from '../ui/components.js';
+import { Button, Icon, Modal, TextField, FormError, FieldLabel } from '../ui/components.js';
 import { closeOverlay } from '../overlay.js';
 import { getState, saveRow, uploadPhoto, refresh } from '../store.js';
 import { go } from '../router.js';
@@ -74,7 +74,7 @@ export function TripSettings() {
       <${TextField} title="여행 이름" value=${title} maxLength="30" onInput=${(e) => setTitle(e.currentTarget.value)} />
       <${TextField} title="목적지" value=${destination} maxLength="30" onInput=${(e) => setDestination(e.currentTarget.value)} />
       <div class="field">
-        <span class="field__label" id="set-date">날짜</span>
+        <${FieldLabel} id="set-date">날짜<//>
         <div class="field-pair" role="group" aria-labelledby="set-date">
           <${DateRangeField} label="여행 날짜" start=${startDate} end=${endDate} onChange=${(a, b) => { setStartDate(a); setEndDate(b); }} />
         </div>
@@ -89,7 +89,7 @@ export function TripSettings() {
         </p>
       </div>
       <div class="field">
-        <span class="field__label">대표 이미지</span>
+        <${FieldLabel}>대표 이미지<//>
         <label class="photo-pick">
           ${cover || trip.coverImage
             ? html`<img src=${cover ? cover.dataUrl : trip.coverImage} alt="대표 이미지" />`

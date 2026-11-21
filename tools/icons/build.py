@@ -17,8 +17,14 @@ MAP = {  # 앱에서 쓰는 이름 → Solar 이름(선: -linear)
   'user': 'user', 'user-plus': 'user-plus', 'share': 'export', 'share-2': 'share', 'map': 'map', 'hash': 'hashtag',
   'clipboard-list': 'clipboard-list', 'list-checks': 'checklist', 'grip-vertical': 'reorder', 'search': 'magnifier',
   'file-text': 'document-text', 'arrow-up-down': 'sort-vertical', 'lock': 'lock', 'square-plus': 'add-square',
+  'phone': 'phone', 'memo': 'clipboard-text',
 }
 TAB_FILLED = ['house', 'ticket', 'calendar-days', 'map-pin', 'users']  # 하단 탭 선택 상태(채움: -bold)
+
+# 채운(Bold) 작은 아이콘: 입력 제목 왼쪽(회색), 장소 상세 정보 줄(초록). 앱 이름 = Solar 이름
+BOLD = ['widget', 'airplane', 'map-point', 'calendar', 'clock-circle', 'cup-hot', 'hashtag', 'check-circle',
+  'user', 'user-circle', 'shop', 'buildings', 'armchair', 'clipboard-text', 'pen', 'gallery', 'map', 'bus',
+  'users-group-rounded', 'wallet', 'ruler', 'bed', 'ticket', 'phone', 'car', 'tag', 'global', 'checklist']
 
 icons = json.load(open(sys.argv[1]))['icons']
 def body(name, line=True):
@@ -33,6 +39,8 @@ def obj(pairs):
 out = ("// Solar 아이콘 (480 Design, CC BY 4.0 — https://www.figma.com/community/file/1166831539721848736). tools/icons/build.py 로 만든 파일 — 직접 고치지 말고 거기서 바꾸기.\n"
        f"export const ICONS = {obj((k, body(v + '-linear')) for k, v in MAP.items())};\n\n"
        "// 하단 탭 선택 상태(채운 아이콘)\n"
-       f"export const FILLED = {obj((k, body(MAP[k] + '-bold', False)) for k in TAB_FILLED)};\n")
+       f"export const FILLED = {obj((k, body(MAP[k] + '-bold', False)) for k in TAB_FILLED)};\n\n"
+       "// 채운 작은 아이콘 (Icon bold) — 입력 제목, 장소 정보 줄\n"
+       f"export const BOLD = {obj((k, body(k + '-bold', False)) for k in BOLD)};\n")
 open('src/ui/icons.js', 'w').write(out)
 print('ok', len(MAP))

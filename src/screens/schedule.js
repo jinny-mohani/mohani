@@ -3,8 +3,7 @@ import { html, useRef, useState } from '../vendor/preact-htm.js';
 import {
   Button, ChipField, ChipGroup, Empty, Icon, Modal, Sheet, StatusLabel, TextArea, TextField,
   FormError,
-  Fab,
-} from '../ui/components.js';
+  Fab, FieldLabel } from '../ui/components.js';
 import { go, replace } from '../router.js';
 import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
 import { getState, refresh, myName } from '../store.js';
@@ -251,12 +250,12 @@ export function ScheduleForm({ day, row, placeId }) {
         options=${Array.from({ length: days }, (_, i) => ({ value: i + 1, label: 'Day ' + (i + 1) }))}
         help=${formatDay(dayDate(data.trip, f.day))} />
       <div class="field">
-        <span class="field__label">시간 (선택)</span>
+        <${FieldLabel}>시간 (선택)<//>
         <${TimeField} label="시간" value=${f.time} onChange=${set('time')} placeholder="시간 고르기" />
         <span class="field__help">비워 두면 순서 번호로 보여요</span>
       </div>
       <div class="field">
-        <span class="field__label">장소</span>
+        <${FieldLabel}>장소<//>
         ${place
           ? html`<div class="place-pick">
               <span class="place-pick__img">${firstPhoto(place) ? html`<img src=${sized(firstPhoto(place), 200)} alt="" />` : html`<${Icon} name="image" size=${18} />`}</span>
