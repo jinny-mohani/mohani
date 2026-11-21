@@ -448,6 +448,12 @@ button.status::after { content: ''; position: absolute; inset: -8px; } /* 터치
 /* 시간 고르기 */
 .time-preview { text-align: center; font-size: var(--fs-display); line-height: var(--lh-display); font-weight: var(--fw-bold); margin: 4px 0 12px; }
 .time-cols { display: flex; gap: 8px; }
+.period-tabs { display: flex; gap: var(--gap-s); margin-bottom: var(--gap-m); }
+.period-tab { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-m); text-align: left; }
+.period-tab small { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--color-text-weak); }
+.period-tab b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-semibold); }
+.period-tab--on { border: 2px solid var(--color-point); padding: 9px 13px; }
+.period-times { flex: none; height: 220px; margin-top: var(--gap-m); }
 .hours-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--gap-s); }
 .hours-col__label { text-align: center; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-semibold); color: var(--color-text-sub); }
 .hours-col .time-col { flex: none; }

@@ -196,6 +196,72 @@ export function HoursField({ label = '운영시간', open, close, onChange, plac
     onClick=${() => openOverlay(html`<${HoursSheet} title=${label} open=${open} close=${close} labels=${labels} onPick=${onChange} />`)} />`;
 }
 
+/* ───── 예약 시간 고르기: 시작 ~ 끝 날짜·시간을 한 팝업에서 (07-3, 11.22) ─────
+ * 날짜는 여행 기간의 Day 칩만 (달력 없음), 시간은 30분 단위.
+ * 시작 시간을 누르면 '끝'으로 넘어가고, 끝 시간을 누르면 바로 저장·닫힘 → 탭 4번 안팎 */
+export function PeriodSheet({ title = '날짜 시간', trip, start, end, onPick, labels = ['시작', '끝'] }) {
+  const days = trip && trip.startDate ? tripDays(trip) : 0;
+  const dayList = Array.from({ length: days }, (_, i) => dayDate(trip, i + 1));
+  const [tab, setTab] = useState(0);
+  const [v, setV] = useState([{ ...start }, { ...end }]); // [{date,time},{date,time}]
+  const cur = v[tab];
+  const set = (i, patch) => setV((x) => x.map((o, k) => (k === i ? { ...o, ...patch } : o)));
+  const extra = [v[0].date, v[1].date].filter((d) => d && !dayList.includes(d)); // 여행 기간 밖 예전 값
+  const dates = [...dayList, ...extra.filter((d, i, a) => a.indexOf(d) === i)];
+  const times = cur.time && !HALF_HOURS.includes(cur.time) ? [...HALF_HOURS, cur.time].sort() : HALF_HOURS;
+  const done = (x) => { onPick(x[0], x[1]); closeOverlay(); };
+  const pickTime = (t) => {
+    const next = v.map((o, k) => (k === tab ? { ...o, time: t } : o));
+    if (tab === 0) {
+      if (!next[0].date && dates[0]) next[0].date = dates[0];
+      if (!next[1].date) next[1].date = next[0].date; // 끝 날짜는 시작과 같은 날로 미리
+      setV(next); setTab(1);
+    } else {
+      if (!next[1].date) next[1].date = next[0].date;
+      done(next);
+    }
+  };
+  const label = (o) => (o.date ? formatDay(o.date) : '') + (o.time ? ' ' + timeText(o.time) : '');
+  const centerOn = (el) => {
+    if (!el || el.dataset.tab === String(tab)) return;
+    el.dataset.tab = String(tab);
+    requestAnimationFrame(() => {
+      const on = el.querySelector('[aria-pressed="true"]') || el.querySelector('[data-v="09:00"]');
+      if (on) el.scrollTop = on.offsetTop - el.offsetTop - el.clientHeight / 2 + on.clientHeight / 2;
+    });
+  };
+  return html`<${Sheet} title=${title} footer=${html`<div class="modal__foot--split">
+      <${Button} variant="secondary" onClick=${() => done([{ date: '', time: '' }, { date: '', time: '' }])}>지우기<//>
+      <${Button} disabled=${!v[0].date} onClick=${() => done(v)}>선택 완료<//>
+    </div>`}>
+    <div class="period-tabs" role="tablist">
+      ${labels.map((l, i) => html`<button role="tab" aria-selected=${tab === i} class=${'period-tab' + (tab === i ? ' period-tab--on' : '')} onClick=${() => setTab(i)}>
+        <small>${l}${i === 1 ? ' (선택)' : ''}</small><b>${label(v[i]) || '고르기'}</b></button>`)}
+    </div>
+    ${dates.length > 0 && html`<div class="date-days">
+      ${dates.map((d) => {
+        const n = dayList.indexOf(d);
+        return html`<button class="chip" key=${d} aria-pressed=${cur.date === d ? 'true' : 'false'} onClick=${() => set(tab, { date: d })}>
+          ${n >= 0 ? html`Day ${n + 1} ` : ''}<small>${formatDay(d)}</small></button>`;
+      })}
+    </div>`}
+    <div class="time-col period-times" role="listbox" aria-label=${labels[tab] + ' 시간'} ref=${centerOn}>
+      ${times.map((t) => html`<button role="option" key=${t} data-v=${t} aria-selected=${t === cur.time} aria-pressed=${t === cur.time ? 'true' : 'false'}
+        class="time-opt" onClick=${() => pickTime(t)}>${timeText(t)}</button>`)}
+    </div>
+    <p class="field__help" style="margin-top:8px">하루짜리면 시작만 고르고 '선택 완료'를 눌러요</p>
+  <//>`;
+}
+/** 시작 ~ 끝 칸 하나: 누르면 PeriodSheet */
+export function PeriodField({ label = '날짜 시간', trip, start, end, onChange, placeholder = '시작 – 끝 고르기' }) {
+  const txt = (o) => [o.date ? formatDay(o.date) : '', o.time ? timeText(o.time) : ''].filter(Boolean).join(' ');
+  const a = txt(start), b = txt(end);
+  const sameDay = start.date && end.date === start.date;
+  const value = a ? a + (b ? ' – ' + (sameDay && end.time ? timeText(end.time) : b) : '') : '';
+  return html`<${SelectField} label=${label} value=${value} placeholder=${placeholder}
+    onClick=${() => openOverlay(html`<${PeriodSheet} title=${label} trip=${trip} start=${start} end=${end} onPick=${onChange} />`)} />`;
+}
+
 /* ───── 기간 고르기 (시작 → 끝을 한 달력에서 연속으로) ───── */
 export function DateRangeSheet({ title = '날짜 선택', start, end, onPick, labels = ['출발', '도착'] }) {
   const base = parseDate(start) || new Date();

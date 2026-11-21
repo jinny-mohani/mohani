@@ -11,7 +11,7 @@ import { activeMembers } from '../members.js';
 import { toast } from '../ui/toast.js';
 import { OTHER_KINDS, SEATS, STATUSES, TERMINALS, photoList, parseFlight } from '../reservation-util.js';
 import { AIRPORTS, AIRLINES, airlineCode } from '../airports.js';
-import { SelectField, OptionSheet, DateField, TimeField, DateRangeField } from '../ui/pickers.js';
+import { SelectField, OptionSheet, DateField, TimeField, DateRangeField, PeriodField } from '../ui/pickers.js';
 
 function initial(type, row) {
   const r = row || {};
@@ -109,14 +109,6 @@ function validate(type, f) {
 }
 
 /** 날짜 + 시간 한 쌍 */
-function DateTime({ label, date, time, onDate, onTime, min }) {
-  const trip = getState().data.trip;
-  return html`<div class="field-pair">
-    <${DateField} label=${label + ' 날짜'} value=${date} onChange=${onDate} trip=${trip} min=${min} placeholder=${label} />
-    <span style="flex:0 0 132px;display:flex"><${TimeField} label=${label + ' 시간'} value=${time} onChange=${onTime} placeholder="시간" /></span>
-  </div>`;
-}
-
 export function ReservationForm({ type, row }) {
   const isEdit = !!(row && row.id);
   const data = getState().data;
@@ -246,9 +238,9 @@ export function ReservationForm({ type, row }) {
       <${TextField} title="예약명" placeholder="예) 렌터카 (4인승 SUV)" value=${f.title} onInput=${set('title')} />
       <div class="field">
         <${FieldLabel}>날짜 시간<//>
-        <${DateTime} label="시작" date=${f.startDate} time=${f.startTime} onDate=${set('startDate')} onTime=${set('startTime')} />
-        <${DateTime} label="종료" date=${f.endDate} time=${f.endTime} onDate=${set('endDate')} onTime=${set('endTime')} min=${f.startDate} />
-        <span class="field__help">투어처럼 하루짜리면 시작만 입력해도 돼요</span>
+        <${PeriodField} trip=${data.trip} start=${{ date: f.startDate, time: f.startTime }} end=${{ date: f.endDate, time: f.endTime }}
+          onChange=${(a, b) => setF((x) => ({ ...x, startDate: a.date, startTime: a.time, endDate: b.date, endTime: b.time }))} />
+        <span class="field__help">시작 → 끝 순서로 고르면 한 번에 끝나요 · 하루짜리면 시작만</span>
       </div>
       <${TextField} title="장소" placeholder="구글 지도 링크 또는 주소" value=${f.address || f.mapUrl} onInput=${set('address')} />
       ${bookingNo}${status}${assignee}${photos}

@@ -187,6 +187,10 @@ const data = {
   await page.click('.chips >> text=기타'); await page.click('[aria-label="예약 추가"]'); await page.waitForSelector('.modal');
   await page.click('.modal >> text=직접 입력'); await page.waitForTimeout(100); await shot('07-3-1-other-custom');
   console.log('custom chips:', await page.$$eval('.modal .chips >> nth=0', () => 0).catch(() => ''), await page.$$eval('.modal [role=radiogroup] >> nth=0', (g) => g.map((x) => x.textContent)));
+  await page.click('[aria-label="날짜 시간"]'); await page.waitForSelector('.period-tabs'); await shot('07-3-2-period');
+  await page.click('.date-days >> text=Day 2'); await page.click('.period-times >> text=오전 10시 30분'); await page.waitForTimeout(150); await shot('07-3-3-period-end');
+  await page.click('.period-times >> text=오후 4시'); await page.waitForTimeout(250);
+  console.log('period picked:', await page.textContent('[aria-label="날짜 시간"]'), '| closed:', !(await page.$('.period-tabs')));
   await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
   await page.click('.tabbar >> text=일정'); await page.waitForSelector('.timeline'); await shot('08-schedule');
   console.log('timeline:', JSON.stringify(await page.$$eval('.tl', (r) => r.map((x) => x.textContent.replace(/\s+/g, ' ').trim().slice(0, 24)))));
