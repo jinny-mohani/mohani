@@ -58,7 +58,7 @@
   font-size: var(--fs-button); line-height: 1.5; font-weight: var(--fw-semibold);
 }
 .btn--primary { background: var(--color-point); color: var(--color-on-point); font-weight: var(--fw-bold); }
-.btn--secondary { background: var(--color-point-weak); color: var(--color-point-strong); }
+.btn--secondary { background: var(--color-point-weak); color: var(--color-point); } /* 피그마 Button 보조: 글자 #10A66B (11.21 사용자 결정) */
 .btn:disabled { background: var(--color-surface); color: var(--color-disabled); font-weight: var(--fw-semibold); }
 .btn:active:not(:disabled) { opacity: 0.85; }
 /* 삭제처럼 작게 한 줄로 */
@@ -100,7 +100,7 @@
 .field__foot .field__help { flex: 1; margin-top: 0; }
 /* 글자 수 (피그마 07-1 메모): 쓴 글자 초록 · 빗금 연회색 · 최대 회색 */
 .field__count { display: inline-flex; align-items: baseline; gap: 2px; margin-left: auto; font-size: var(--fs-caption); line-height: 16px; color: var(--color-text-weak); white-space: nowrap; }
-.field__count b { font-weight: var(--fw-regular); color: var(--color-point-strong); }
+.field__count b { font-weight: var(--fw-regular); color: var(--color-point); }
 .field__count i { font-style: normal; font-size: 10px; color: var(--grey-400); }
 .field__count small { margin-left: 4px; font-size: var(--fs-caption); font-weight: var(--fw-light); }
 .field__help { margin-top: 6px; font-size: 13px; line-height: 19px; font-weight: var(--fw-light); color: var(--color-text-weak); }

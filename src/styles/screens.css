@@ -548,7 +548,7 @@
 .place-detail__sub { font-size: 15px; line-height: 20px; color: var(--grey-700); }
 /* 버튼 줄: 지도 · 주소 복사 · 공유 · 전화 (연초록 원) + 일정등록 (초록 알약) */
 .place-detail__acts { display: flex; align-items: center; gap: 14px; }
-.round-btn--point { margin: 0; background: rgba(16, 166, 107, 0.16); color: var(--color-point-strong); }
+.round-btn--point { margin: 0; background: rgba(16, 166, 107, 0.16); color: var(--color-point); }
 .pill-point { height: 44px; padding: 0 19px; margin-left: auto; border-radius: 22px; background: var(--color-point); color: var(--color-on-point); font-size: var(--fs-small); line-height: 21px; font-weight: var(--fw-semibold); white-space: nowrap; }
 /* 메모: 연초록 테두리 */
 .pd-memo { display: flex; gap: 10px; padding: 10px 12px; border: 1px solid rgba(16, 166, 107, 0.5); border-radius: var(--radius-m); font-size: var(--fs-small); line-height: 22px; color: var(--grey-800); white-space: pre-line; }
@@ -559,7 +559,7 @@
 .pd-info li > .icon { flex-shrink: 0; margin-top: 3px; color: var(--color-point); }
 .pd-info li > span { display: flex; flex-direction: column; min-width: 0; }
 .pd-info__line { display: flex; align-items: center; gap: 3px; }
-.pd-info__line b { font-weight: var(--fw-regular); color: var(--color-point-strong); }
+.pd-info__line b { font-weight: var(--fw-regular); color: var(--color-point); }
 .pd-info__line i { width: 3px; height: 3px; margin: 0 2px; border-radius: 50%; background: #d9d9d9; }
 .pd-info__tel { color: var(--color-text); }
 

@@ -38,7 +38,7 @@
   --color-point: #10a66b;                /* 포인트 색 (Nov 18): 주요 버튼·추가 버튼 */
   --color-point-weak: rgba(16, 166, 107, 0.12); /* 보조 버튼 바탕 */
   --color-on-point: var(--white);
-  --color-point-strong: #077a4d;         /* 연두 바탕 위 초록 글자 (보조 버튼, 대비 4.7:1) */
+  --color-point-strong: #077a4d;         /* 진한 초록 글자 (13-1 강조 문장). 보조 버튼은 11.21부터 #10A66B */
   --color-on-primary: var(--white);      /* 그 위 글자 */
   --color-dim: rgba(0, 0, 0, 0.4);       /* 팝업 뒤 어둡게 */
   --color-outside: var(--grey-200);      /* PC에서 앱 바깥 */
