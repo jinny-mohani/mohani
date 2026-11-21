@@ -169,12 +169,12 @@ const data = {
   console.log('flight saved:', JSON.stringify({ title: saved.row.title, from: saved.row.fromAirport, dir: saved.row.direction, assignee: saved.row.assignee }));
   console.log('modal closed:', !(await page.$('.modal')));
   // 상세 → 상태 바꾸기 → 수정(충돌) → 삭제/되돌리기
-  await page.goto(B + '?t=CODE#/reservations/r_2'); await page.waitForSelector('.detail'); await shot('05-4-stay-detail');
+  await page.goto(B + '?t=CODE#/reservations/r_2'); await page.waitForSelector('.place-detail'); await shot('05-4-stay-detail');
   await page.goto(B + '?t=CODE#/reservations/r_1'); await page.waitForSelector('.detail'); await shot('05-5-flight-detail');
-  await page.goto(B + '?t=CODE#/reservations/r_3'); await page.waitForSelector('.detail'); await shot('05-6-other-detail');
-  await page.click('.detail__labels .status'); await page.waitForSelector('.sheet'); await page.click('.sheet >> text=예약 완료'); await page.waitForTimeout(400);
+  await page.goto(B + '?t=CODE#/reservations/r_3'); await page.waitForSelector('.place-detail'); await shot('05-6-other-detail');
+  await page.click('.place-detail__sub .status'); await page.waitForSelector('.sheet'); await page.click('.sheet >> text=예약 완료'); await page.waitForTimeout(400);
   console.log('status saved:', JSON.stringify(posts.filter((p) => p.action === 'save').pop().row));
-  await page.goto(B + '?t=CODE#/reservations/r_2'); await page.waitForSelector('.detail');
+  await page.goto(B + '?t=CODE#/reservations/r_2'); await page.waitForSelector('.place-detail');
   await page.click('[aria-label="더 보기"]'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('07-2-stay-edit');
   await page.click('.modal >> text=저장하기'); await page.waitForSelector('.conflict'); await shot('12-conflict');
   await page.click('text=내 글로 바꾸기'); await page.waitForTimeout(500);

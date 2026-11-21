@@ -1,7 +1,7 @@
 // 09 장소 목록(전체: 카테고리별 가로 스와이프) · 09-2 카테고리 탭(2열) · 10 장소 상세 · 09-1 장소 등록/수정
-import { html, useState, useEffect, useRef } from '../vendor/preact-htm.js';
+import { html, useState } from '../vendor/preact-htm.js';
 import {
-  Avatar, Button, ChipField, ChipGroup, Empty, Icon, Modal, PhotoField, Sheet, TextArea, TextField,
+  Button, ChipField, ChipGroup, Empty, Icon, Modal, PhotoField, Sheet, TextArea, TextField,
   FormError,
   Fab, FieldLabel } from '../ui/components.js';
 import { go, replace, back } from '../router.js';
@@ -10,10 +10,10 @@ import { getState, uploadPhoto } from '../store.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import { activeMembers } from '../members.js';
 import { photoList, firstPhoto, sized } from '../reservation-util.js';
-import { copyText } from '../share.js';
+import { copyText, shareInfo } from '../share.js';
 import { syncText } from '../date.js';
 import { toast } from '../ui/toast.js';
-import { PhotoViewer } from '../ui/viewer.js';
+import { HeroDetail, InfoRows } from '../ui/hero-detail.js';
 import { HoursField } from '../ui/pickers.js';
 
 export const CATEGORIES = ['음식점', '즐길거리', '쇼핑', '디저트'];
@@ -98,77 +98,32 @@ export function PlaceDetail({ data, id }) {
     </ul>
   <//>`);
 
-  const share = async () => {
-    const text = [p.name, p.subtitle, p.address, p.mapUrl].filter(Boolean).join('\n');
-    if (navigator.share) {
-      try { await navigator.share({ title: p.name, text }); } catch (e) { /* 취소 */ }
-    } else copyText(text, '장소 정보를 복사했어요');
-  };
+  const share = () => shareInfo(p.name, [p.subtitle, p.address, p.mapUrl], '장소 정보를 복사했어요');
   const tel = String(p.phone || '').replace(/[^\d+]/g, '');
-  const view = (i) => openOverlay(html`<${PhotoViewer} photos=${photos} index=${i} />`);
-
-  // 스크롤: 본문이 위로 올라오고 사진은 천천히(0.3배) 올라감. 본문이 위에 닿으면 윗줄을 흰 바탕으로
-  const heroRef = useRef(null);
-  const [solid, setSolid] = useState(false);
-  useEffect(() => {
-    const box = document.getElementById('app');
-    if (!box) return undefined;
-    const onScroll = () => {
-      const y = box.scrollTop;
-      if (heroRef.current) heroRef.current.style.transform = `translateY(${Math.min(y, 400) * 0.7}px)`; // 스크롤의 30%만 올라감
-      setSolid(y > 300);
-    };
-    onScroll();
-    box.addEventListener('scroll', onScroll, { passive: true });
-    return () => box.removeEventListener('scroll', onScroll);
-  }, []);
-
   const hoursLine = (label, value) => value && html`<span class="pd-info__line"><b>${label}</b><i aria-hidden="true"></i>${value}</span>`;
   const hasHours = p.hours || (p.breakTime && p.breakTime !== '없음') || p.waiting;
 
-  return html`<main class="screen screen--sub place-detail">
-    <div class=${'place-detail__bar' + (solid ? ' place-detail__bar--solid' : '')}>
-      <button class="glass-btn glass-btn--left" aria-label="뒤로" onClick=${() => back('/places')}><span><${Icon} name="glass-back" size=${24} stroke=${2} /></span></button>
-      ${solid && html`<strong class="place-detail__bartitle">${p.name}</strong>`}
-      <button class="glass-btn glass-btn--right" aria-label="더 보기" onClick=${more}><span><${Icon} name="glass-more" size=${24} stroke=${2} /></span></button>
+  return html`<${HeroDetail} title=${p.name} photos=${photos} author=${author} onBack=${() => back('/places')} onMore=${more}>
+    <div class="place-detail__head">
+      <h1 class="place-detail__title">${p.name}</h1>
+      ${p.subtitle && html`<p class="place-detail__sub">${p.subtitle}</p>`}
     </div>
-    <div class="place-detail__hero" ref=${heroRef}>
-      ${photos[0]
-        ? html`<button class="place-detail__heroimg" aria-label="사진 크게 보기" onClick=${() => view(0)}><img src=${sized(photos[0], 1000)} alt="" /></button>`
-        : html`<span class="place-detail__ph"><${Icon} name="image" size=${32} /></span>`}
+    <div class="place-detail__acts">
+      ${p.mapUrl && html`<a class="round-btn round-btn--point" href=${p.mapUrl} target="_blank" rel="noopener" aria-label="구글 지도에서 보기"><${Icon} name="map" size=${20} /></a>`}
+      ${p.address && html`<button class="round-btn round-btn--point" aria-label="주소 복사" onClick=${() => copyText(p.address, '주소를 복사했어요')}><${Icon} name="copy" size=${20} /></button>`}
+      <button class="round-btn round-btn--point" aria-label="공유" onClick=${share}><${Icon} name="share-2" size=${20} /></button>
+      ${tel && html`<a class="round-btn round-btn--point" href=${'tel:' + tel} aria-label=${'전화 걸기 ' + p.phone}><${Icon} name="phone" size=${20} /></a>`}
+      <button class="pill-point" onClick=${addToSchedule}>일정등록</button>
     </div>
-    <div class="place-detail__sheet">
-      <div class="place-detail__float">
-        ${author ? html`<span class="place-detail__author" title=${author.name + '님이 등록'}><${Avatar} member=${author} size=${56} /></span>` : html`<span></span>`}
-        ${photos.length > 0 && html`<div class="place-detail__thumbs">
-          ${photos.slice(0, 3).map((src, i) => html`<button aria-label=${'사진 ' + (i + 1) + ' 크게 보기'} onClick=${() => view(i)}><img src=${sized(src, 200)} alt="" loading="lazy" /></button>`)}
-        </div>`}
-      </div>
-      <div class="place-detail__head">
-        <h1 class="place-detail__title">${p.name}</h1>
-        ${p.subtitle && html`<p class="place-detail__sub">${p.subtitle}</p>`}
-      </div>
-      <div class="place-detail__acts">
-        ${p.mapUrl && html`<a class="round-btn round-btn--point" href=${p.mapUrl} target="_blank" rel="noopener" aria-label="구글 지도에서 보기"><${Icon} name="map" size=${20} /></a>`}
-        ${p.address && html`<button class="round-btn round-btn--point" aria-label="주소 복사" onClick=${() => copyText(p.address, '주소를 복사했어요')}><${Icon} name="copy" size=${20} /></button>`}
-        <button class="round-btn round-btn--point" aria-label="공유" onClick=${share}><${Icon} name="share-2" size=${20} /></button>
-        ${tel && html`<a class="round-btn round-btn--point" href=${'tel:' + tel} aria-label=${'전화 걸기 ' + p.phone}><${Icon} name="phone" size=${20} /></a>`}
-        <button class="pill-point" onClick=${addToSchedule}>일정등록</button>
-      </div>
-      ${p.memo && html`<p class="pd-memo"><${Icon} name="memo" size=${16} /><span>${p.memo}</span></p>`}
-      <ul class="pd-info">
-        ${hasHours && html`<li><${Icon} name="shop" size=${16} bold /><span>
-          ${hoursLine('영업', p.hours)}
-          ${p.breakTime && p.breakTime !== '없음' && hoursLine('브레이크', p.breakTime)}
-          ${hoursLine('웨이팅', p.waiting)}
-        </span></li>`}
-        ${p.phone && html`<li><${Icon} name="phone" size=${16} bold /><span><a class="pd-info__tel" href=${'tel:' + tel}>${p.phone}</a></span></li>`}
-        ${p.address && html`<li><${Icon} name="map" size=${16} bold /><span>${p.address}</span></li>`}
-        ${p.parking && html`<li><${Icon} name="car" size=${16} bold /><span>${p.parking}</span></li>`}
-      </ul>
-      ${p.updatedBy && html`<p class="detail__edited">마지막 수정 · ${p.updatedBy}${p.updatedAt ? ' · ' + syncText(Date.parse(p.updatedAt)) : ''}</p>`}
-    </div>
-  </main>`;
+    ${p.memo && html`<p class="pd-memo"><${Icon} name="memo" size=${16} /><span>${p.memo}</span></p>`}
+    <${InfoRows} rows=${[
+      { icon: 'shop', content: hasHours && html`${hoursLine('영업', p.hours)}${p.breakTime && p.breakTime !== '없음' && hoursLine('브레이크', p.breakTime)}${hoursLine('웨이팅', p.waiting)}` },
+      { icon: 'phone', content: p.phone && html`<a class="pd-info__tel" href=${'tel:' + tel}>${p.phone}</a>` },
+      { icon: 'map', content: p.address },
+      { icon: 'car', content: p.parking },
+    ]} />
+    ${p.updatedBy && html`<p class="detail__edited">마지막 수정 · ${p.updatedBy}${p.updatedAt ? ' · ' + syncText(Date.parse(p.updatedAt)) : ''}</p>`}
+  <//>`;
 }
 
 function splitRange(s) {

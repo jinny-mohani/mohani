@@ -50,3 +50,11 @@ export async function shareInvite(trip, code) {
   }
   copyText(url);
 }
+
+/** 휴대폰 공유 창(없으면 복사). lines: 제목 아래 붙일 줄들 */
+export async function shareInfo(title, lines, copied = '정보를 복사했어요') {
+  const text = [title, ...lines].filter(Boolean).join('\n');
+  if (navigator.share) {
+    try { await navigator.share({ title, text }); } catch (e) { /* 취소 */ }
+  } else copyText(text, copied);
+}

@@ -3,9 +3,9 @@ import { html } from '../vendor/preact-htm.js';
 import { Button, ChipGroup, Fab, Empty, Icon, Row, Sheet, StatusLabel, SubHeader } from '../ui/components.js';
 import { go, replace, back } from '../router.js';
 import { openOverlay, replaceOverlay, closeOverlay } from '../overlay.js';
-import { formatDay, rangeText, nightsBetween, durationText, formatTime, syncText } from '../date.js';
-import { memberName } from '../members.js';
-import { copyText } from '../share.js';
+import { formatDay, rangeText, nightsBetween, durationText, formatTime, syncText, datePart } from '../date.js';
+import { memberName, activeMembers } from '../members.js';
+import { copyText, shareInfo } from '../share.js';
 import { toast } from '../ui/toast.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import {
@@ -14,6 +14,7 @@ import {
 } from '../reservation-util.js';
 import { ReservationForm } from './reservation-form.js';
 import { openPhotos } from '../ui/viewer.js';
+import { HeroDetail, InfoRows } from '../ui/hero-detail.js';
 
 const openForm = (type, row) => openOverlay(html`<${ReservationForm} type=${type} row=${row} />`);
 
@@ -230,6 +231,45 @@ export function ReservationDetail({ data, id }) {
       ? [r.vendor && '예약처 ' + r.vendor, r.cost && '비용 ' + r.cost, r.roomType && '객실 ' + r.roomType, r.roomSize && '방 ' + r.roomSize]
       : [r.vendor && '예약처 ' + r.vendor, r.cost && '비용 ' + r.cost, r.people && '인원 ' + r.people];
   const tagList = tags.filter(Boolean);
+
+  // 숙소·기타는 장소 상세와 같은 사진 틀로 (11.22: 일정에서 장소·예약을 오갈 때 화면이 같도록)
+  if (r.type !== '항공권') {
+    const author = activeMembers(data).find((m) => m.name === r.updatedBy);
+    const kind = r.type === '기타' ? r.subType || '기타 예약' : r.type;
+    const addToSchedule = async () => {
+      const { ScheduleForm } = await import('./schedule.js');
+      const day = Math.max(1, (nightsBetween(data.trip.startDate, datePart(r.startAt)) || 0) + 1);
+      openOverlay(html`<${ScheduleForm} day=${r.startAt ? day : 1} placeId=${r.id} />`);
+    };
+    const share = () => shareInfo(r.title, [kind, r.startAt && rangeText(r.startAt, r.endAt), r.address, r.mapUrl], '예약 정보를 복사했어요');
+    return html`<${HeroDetail} title=${r.title} photos=${photos} author=${author} placeholder=${r.type === '숙소' ? 'bed-double' : OTHER_ICON[r.subType] || 'ticket'}
+        onBack=${() => back('/reservations?type=' + r.type)} onMore=${more}>
+      <div class="place-detail__head">
+        <h1 class="place-detail__title">${r.title}</h1>
+        <p class="place-detail__sub place-detail__sub--row">${kind}<${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} /></p>
+      </div>
+      <div class="place-detail__acts">
+        ${r.mapUrl && html`<a class="round-btn round-btn--point" href=${r.mapUrl} target="_blank" rel="noopener" aria-label="구글 지도에서 보기"><${Icon} name="map" size=${20} /></a>`}
+        ${r.address && html`<button class="round-btn round-btn--point" aria-label="주소 복사" onClick=${() => copyText(r.address, '주소를 복사했어요')}><${Icon} name="copy" size=${20} /></button>`}
+        <button class="round-btn round-btn--point" aria-label="공유" onClick=${share}><${Icon} name="share-2" size=${20} /></button>
+        <button class="pill-point" onClick=${addToSchedule}>일정등록</button>
+      </div>
+      ${r.memo && html`<p class="pd-memo"><${Icon} name="memo" size=${16} /><span>${r.memo}</span></p>`}
+      <${InfoRows} rows=${[
+        { icon: 'calendar', content: r.startAt && rangeText(r.startAt, r.endAt) + (r.type === '숙소' && nights ? ` · ${nights}박` : '') },
+        { icon: 'map', content: r.address || (r.mapUrl && '지도에서 보기') },
+        { icon: 'hashtag', content: html`${r.bookingNo
+          ? html`<button class="pd-info__copy" onClick=${() => copyText(r.bookingNo, '예약번호를 복사했어요')}><span class="pd-info__line"><b>예약번호</b><i aria-hidden="true"></i>${r.bookingNo}</span><${Icon} name="copy" size=${14} /></button>`
+          : html`<span class="muted">예약번호 아직 없음</span>`}` },
+        { icon: 'user', content: who && html`<span class="pd-info__line"><b>담당</b><i aria-hidden="true"></i>${who}</span>` },
+        { icon: 'shop', content: r.vendor && html`<span class="pd-info__line"><b>예약처</b><i aria-hidden="true"></i>${r.vendor}</span>` },
+        { icon: 'wallet', content: r.cost && html`<span class="pd-info__line"><b>비용</b><i aria-hidden="true"></i>${r.cost}</span>` },
+        { icon: 'bed', content: (r.roomType || r.roomSize) && html`<span class="pd-info__line"><b>객실</b><i aria-hidden="true"></i>${[r.roomType, r.roomSize].filter(Boolean).join(' · ')}</span>` },
+        { icon: 'users-group-rounded', content: r.people && html`<span class="pd-info__line"><b>인원</b><i aria-hidden="true"></i>${r.people}</span>` },
+      ]} />
+      ${r.updatedBy && html`<p class="detail__edited">마지막 수정 · ${r.updatedBy}${r.updatedAt ? ' · ' + syncText(Date.parse(r.updatedAt)) : ''}</p>`}
+    <//>`;
+  }
 
   return html`<main class="screen screen--sub detail">
     <${SubHeader} title=${title} fallback=${'/reservations?type=' + r.type}>
