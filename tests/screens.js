@@ -28,7 +28,7 @@ const data = {
     { id: 'c_7', tripId: 't_1', title: '유심 사기', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 7, ...base, deleted: true, deletedBy: '친구1', deletedAt: '2026-11-15T10:00:00.000Z' },
   ],
   places: [
-    { id: 'p_1', tripId: 't_1', category: '음식점', name: '이치란 라멘 도톤보리', hours: '10:00 – 22:00', breakTime: '15:00 – 17:00', waiting: '있음', address: '오사카 주오구 도톤보리 7-18, 2층', mapUrl: 'https://maps.app.goo.gl/y', memo: '웨이팅 있음, 오픈 시간에 맞춰 가기', photos: 'images/flight/departure.jpg,images/flight/return.jpg', order: 1, ...base },
+    { id: 'p_1', tripId: 't_1', category: '음식점', name: '이치란 라멘 도톤보리', hours: '10:00 – 22:00', breakTime: '15:00 – 17:00', waiting: '있음', address: '오사카 주오구 도톤보리 7-18, 2층', mapUrl: 'https://maps.app.goo.gl/y', memo: '웨이팅 있음, 오픈 시간에 맞춰 가기', subtitle: '一蘭 道頓堀店', phone: '06-6212-1805', parking: '근처 유료 주차장 이용', photos: 'images/flight/departure.jpg,images/flight/return.jpg', order: 1, ...base },
     { id: 'p_3', tripId: 't_1', category: '음식점', name: '쿠시카츠 다루마', hours: '11:00 – 22:30', memo: '소스 두 번 찍기 금지', order: 3, ...base },
     { id: 'p_4', tripId: 't_1', category: '디저트', name: '릭로 아저씨 치즈케이크', hours: '09:00 – 20:00', order: 4, ...base },
     { id: 'p_2', tripId: 't_1', category: '즐길거리', name: '오사카성', order: 2, ...base, deleted: true, deletedBy: '지니', deletedAt: '2026-11-14T10:00:00.000Z' },
@@ -204,7 +204,9 @@ const data = {
   await page.click('.tabbar >> text=장소'); await page.waitForTimeout(300); await shot('09-places');
   await page.click('.place-group__head >> nth=0'); await page.waitForTimeout(300); await shot('09-2-category');
   await page.click('.place-card__open >> nth=0'); await page.waitForSelector('.place-detail'); await shot('10-place-detail');
-  await page.click('.place-detail__photos button >> nth=1'); await page.waitForSelector('.viewer'); await shot('10-viewer'); console.log('viewer:', await page.textContent('.viewer__count')); await page.click('.viewer__close'); await page.waitForTimeout(200); await page.click('[aria-label="더 보기"]'); await shot('10-menu'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
+  await page.evaluate(() => { document.getElementById('app').scrollTop = 220; }); await page.waitForTimeout(250); await shot('10-place-detail-scroll');
+  await page.evaluate(() => { document.getElementById('app').scrollTop = 0; }); await page.waitForTimeout(150);
+  await page.click('.place-detail__thumbs button >> nth=1'); await page.waitForSelector('.viewer'); await shot('10-viewer'); console.log('viewer:', await page.textContent('.viewer__count')); await page.click('.viewer__close'); await page.waitForTimeout(200); await page.click('[aria-label="더 보기"]'); await shot('10-menu'); await page.click('.sheet >> text=수정'); await page.waitForSelector('.modal'); await shot('09-1-place-form');
   await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
   // 사진 있는 장소 등록: 저장 누르면 바로 닫히고, 사진은 뒤에서 올라가요
   await page.goto(B + '?t=CODE#/places'); await page.waitForSelector('.chips');

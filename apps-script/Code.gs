@@ -78,6 +78,7 @@ const TABLES = {
       ['photos', '사진URL'], ['mapUrl', '지도링크'], ['address', '정확한 주소'],
       ['hours', '운영시간'], ['breakTime', '브레이크타임'], ['waiting', '웨이팅'],
       ['memo', '메모'], ['order', '순서'],
+      ['subtitle', '보조제목'], ['phone', '전화번호'], ['parking', '주차정보'], // 11.21 추가 (setup이 칸을 만듦)
     ],
   },
   schedule: {

@@ -1,5 +1,5 @@
 // 09 장소 목록(전체: 카테고리별 가로 스와이프) · 09-2 카테고리 탭(2열) · 10 장소 상세 · 09-1 장소 등록/수정
-import { html, useState } from '../vendor/preact-htm.js';
+import { html, useState, useEffect, useRef } from '../vendor/preact-htm.js';
 import {
   Avatar, Button, ChipField, ChipGroup, Empty, Icon, Modal, PhotoField, Sheet, TextArea, TextField,
   FormError,
@@ -98,32 +98,74 @@ export function PlaceDetail({ data, id }) {
     </ul>
   <//>`);
 
+  const share = async () => {
+    const text = [p.name, p.subtitle, p.address, p.mapUrl].filter(Boolean).join('\n');
+    if (navigator.share) {
+      try { await navigator.share({ title: p.name, text }); } catch (e) { /* 취소 */ }
+    } else copyText(text, '장소 정보를 복사했어요');
+  };
+  const tel = String(p.phone || '').replace(/[^\d+]/g, '');
+  const view = (i) => openOverlay(html`<${PhotoViewer} photos=${photos} index=${i} />`);
+
+  // 스크롤: 본문이 위로 올라오고 사진은 천천히(0.3배) 올라감. 본문이 위에 닿으면 윗줄을 흰 바탕으로
+  const heroRef = useRef(null);
+  const [solid, setSolid] = useState(false);
+  useEffect(() => {
+    const box = document.getElementById('app');
+    if (!box) return undefined;
+    const onScroll = () => {
+      const y = box.scrollTop;
+      if (heroRef.current) heroRef.current.style.transform = `translateY(${Math.min(y, 400) * 0.7}px)`; // 스크롤의 30%만 올라감
+      setSolid(y > 300);
+    };
+    onScroll();
+    box.addEventListener('scroll', onScroll, { passive: true });
+    return () => box.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const hoursLine = (label, value) => value && html`<span class="pd-info__line"><b>${label}</b><i aria-hidden="true"></i>${value}</span>`;
+  const hasHours = p.hours || (p.breakTime && p.breakTime !== '없음') || p.waiting;
+
   return html`<main class="screen screen--sub place-detail">
-    <div class="place-detail__hero">
+    <div class=${'place-detail__bar' + (solid ? ' place-detail__bar--solid' : '')}>
+      <button class="glass-btn glass-btn--left" aria-label="뒤로" onClick=${() => back('/places')}><span><${Icon} name="chevron-left" size=${24} stroke=${2} /></span></button>
+      ${solid && html`<strong class="place-detail__bartitle">${p.name}</strong>`}
+      <button class="glass-btn glass-btn--right" aria-label="더 보기" onClick=${more}><span><${Icon} name="ellipsis" size=${24} stroke=${2} /></span></button>
+    </div>
+    <div class="place-detail__hero" ref=${heroRef}>
       ${photos[0]
-        ? html`<button class="place-detail__heroimg" aria-label="사진 크게 보기" onClick=${() => openOverlay(html`<${PhotoViewer} photos=${photos} index=${0} />`)}><img src=${sized(photos[0], 1000)} alt="" /></button>`
+        ? html`<button class="place-detail__heroimg" aria-label="사진 크게 보기" onClick=${() => view(0)}><img src=${sized(photos[0], 1000)} alt="" /></button>`
         : html`<span class="place-detail__ph"><${Icon} name="image" size=${32} /></span>`}
-      <button class="round-float round-float--left" aria-label="뒤로" onClick=${() => back('/places')}><${Icon} name="chevron-left" /></button>
-      <button class="round-float round-float--right" aria-label="더 보기" onClick=${more}><${Icon} name="ellipsis" /></button>
     </div>
     <div class="place-detail__sheet">
-      ${author && html`<span class="place-detail__author" title=${author.name + '님이 등록'}><${Avatar} member=${author} size=${56} /></span>`}
-      <h1 class="place-detail__title">${p.name}${p.category && html`<span class="kind-chip">${p.category}</span>`}</h1>
-      ${(p.address || p.mapUrl) && html`<div class="place-detail__addr">
-        <${Icon} name="map-pin" size=${18} /><span>${p.address || '주소 미입력'}</span>
-        ${p.mapUrl && html`<a class="round-btn" href=${p.mapUrl} target="_blank" rel="noopener" aria-label="구글 지도에서 보기" title="구글 지도에서 보기"><${Icon} name="map" size=${20} /></a>`}
-        ${p.address && html`<button class="round-btn" aria-label="주소 복사" title="주소 복사" onClick=${() => copyText(p.address, '주소를 복사했어요')}><${Icon} name="copy" size=${20} /></button>`}
-      </div>`}
-      <div class="info-cells">
-        <span><small>운영시간</small>${p.hours || '-'}</span>
-        <span><small>브레이크타임</small>${p.breakTime || '-'}</span>
-        <span><small>웨이팅</small>${p.waiting || '-'}</span>
+      <div class="place-detail__float">
+        ${author ? html`<span class="place-detail__author" title=${author.name + '님이 등록'}><${Avatar} member=${author} size=${56} /></span>` : html`<span></span>`}
+        ${photos.length > 0 && html`<div class="place-detail__thumbs">
+          ${photos.slice(0, 3).map((src, i) => html`<button aria-label=${'사진 ' + (i + 1) + ' 크게 보기'} onClick=${() => view(i)}><img src=${sized(src, 200)} alt="" loading="lazy" /></button>`)}
+        </div>`}
       </div>
-      ${p.memo && html`<p class="memo-box">${p.memo}</p>`}
-      ${photos.length > 0 && html`<section class="place-detail__photos">
-        <h2>사진 <small>${photos.length}</small></h2>
-        <div>${photos.map((src, i) => html`<button aria-label=${'사진 ' + (i + 1) + ' 크게 보기'} onClick=${() => openOverlay(html`<${PhotoViewer} photos=${photos} index=${i} />`)}><img src=${sized(src, 400)} alt="" loading="lazy" /></button>`)}</div>
-      </section>`}
+      <div class="place-detail__head">
+        <h1 class="place-detail__title">${p.name}</h1>
+        ${p.subtitle && html`<p class="place-detail__sub">${p.subtitle}</p>`}
+      </div>
+      <div class="place-detail__acts">
+        ${p.mapUrl && html`<a class="round-btn round-btn--point" href=${p.mapUrl} target="_blank" rel="noopener" aria-label="구글 지도에서 보기"><${Icon} name="map" size=${20} /></a>`}
+        ${p.address && html`<button class="round-btn round-btn--point" aria-label="주소 복사" onClick=${() => copyText(p.address, '주소를 복사했어요')}><${Icon} name="copy" size=${20} /></button>`}
+        <button class="round-btn round-btn--point" aria-label="공유" onClick=${share}><${Icon} name="share-2" size=${20} /></button>
+        ${tel && html`<a class="round-btn round-btn--point" href=${'tel:' + tel} aria-label=${'전화 걸기 ' + p.phone}><${Icon} name="phone" size=${20} /></a>`}
+        <button class="pill-point" onClick=${addToSchedule}>일정등록</button>
+      </div>
+      ${p.memo && html`<p class="pd-memo"><${Icon} name="memo" size=${16} /><span>${p.memo}</span></p>`}
+      <ul class="pd-info">
+        ${hasHours && html`<li><${Icon} name="shop" size=${16} bold /><span>
+          ${hoursLine('영업', p.hours)}
+          ${p.breakTime && p.breakTime !== '없음' && hoursLine('브레이크', p.breakTime)}
+          ${hoursLine('웨이팅', p.waiting)}
+        </span></li>`}
+        ${p.phone && html`<li><${Icon} name="phone" size=${16} bold /><span><a class="pd-info__tel" href=${'tel:' + tel}>${p.phone}</a></span></li>`}
+        ${p.address && html`<li><${Icon} name="map" size=${16} bold /><span>${p.address}</span></li>`}
+        ${p.parking && html`<li><${Icon} name="car" size=${16} bold /><span>${p.parking}</span></li>`}
+      </ul>
       ${p.updatedBy && html`<p class="detail__edited">마지막 수정 · ${p.updatedBy}${p.updatedAt ? ' · ' + syncText(Date.parse(p.updatedAt)) : ''}</p>`}
     </div>
   </main>`;
@@ -151,6 +193,9 @@ export function PlaceForm({ row, category }) {
     breakStart: bs, breakEnd: be,
     waiting: r.waiting || '',
     memo: r.memo || '',
+    subtitle: r.subtitle || '',
+    phone: r.phone || '',
+    parking: r.parking || '',
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -170,6 +215,9 @@ export function PlaceForm({ row, category }) {
         breakTime: f.hasBreak === false ? '없음' : f.hasBreak ? (r.breakTime && r.breakTime !== '없음' ? r.breakTime : '있음') : '',
         waiting: f.waiting,
         memo: f.memo.trim(),
+        subtitle: f.subtitle.trim(),
+        phone: f.phone.trim(),
+        parking: f.parking.trim(),
       };
       if (isEdit) out.id = row.id;
       saveLater('places', out, isEdit ? row.updatedAt : undefined, f.photos);
@@ -201,6 +249,8 @@ export function PlaceForm({ row, category }) {
     <div class="form">
       <${ChipField} title="카테고리" options=${CATEGORIES} value=${f.category} onChange=${set('category')} />
       <${TextField} title="장소 이름" placeholder="예) 자매국수" value=${f.name} maxLength="40" onInput=${set('name')} />
+      <${TextField} title="보조 제목 (선택)" placeholder="예) 현지어 이름, 지점명" value=${f.subtitle} maxLength="60" onInput=${set('subtitle')}
+        help="장소 이름 아래 작게 보여요" />
       <div>
         <${PhotoField} photos=${f.photos} onChange=${set('photos')} max=${3} />
         <span class="field__help" style="display:block;margin-top:8px">최대 3장 · 가로 6:5 비율로 보여요</span>
@@ -209,6 +259,8 @@ export function PlaceForm({ row, category }) {
         help="구글 지도 앱 → 공유 → 링크 복사" />
       <${TextField} title="정확한 주소" placeholder="예) 제주시 탑동로 00, 1층" value=${f.address} onInput=${set('address')}
         help="건물 이름, 층, 근처 랜드마크까지 적으면 찾기 쉬워요" />
+      <${TextField} title="전화번호 (선택)" type="tel" inputmode="tel" placeholder="예) 03-1234-5678" value=${f.phone} maxLength="30" onInput=${set('phone')}
+        help="장소 상세에서 누르면 바로 전화를 걸 수 있어요" />
       <div class="field">
         <${FieldLabel}>운영시간<//>
         ${timePair('open', 'close', '여는 시간', '닫는 시간')}
@@ -223,6 +275,7 @@ export function PlaceForm({ row, category }) {
       </div>
       <${ChipField} title="웨이팅" value=${f.waiting} onChange=${set('waiting')}
         options=${['있음', '없음'].map((v) => ({ value: v, label: v, toggle: true }))} help="선택" />
+      <${TextField} title="주차 정보 (선택)" placeholder="예) 건물 지하 주차장, 1시간 무료" value=${f.parking} maxLength="80" onInput=${set('parking')} />
       <${TextArea} title="메모" placeholder=${'예) 웨이팅 있음\n오픈 시간에 맞춰 가기'} value=${f.memo} onInput=${set('memo')} />
       <${FormError} error=${error} />
     </div>

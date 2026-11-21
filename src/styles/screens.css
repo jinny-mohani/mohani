@@ -499,36 +499,69 @@
 .place-card__map { position: absolute; right: 2px; bottom: 2px; display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit); color: var(--white); }
 
 /* ───── 10 장소 상세 ───── */
-.place-detail { padding-bottom: calc(40px + var(--safe-bottom)); }
+/* ───── 10 장소 상세 (피그마 11.21 수정본) ───── */
+.place-detail { padding-bottom: calc(40px + var(--safe-bottom)); background: var(--color-bg); }
+/* 위쪽 버튼 줄: 스크롤해도 제자리. 본문이 위에 닿으면 흰 바탕 + 장소 이름 */
+.place-detail__bar {
+  position: sticky; top: 0; z-index: 5; height: 0;
+}
+.place-detail__bar::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: calc(60px + var(--safe-top));
+  background: var(--color-bg); box-shadow: 0 1px 0 var(--color-divider); opacity: 0; transition: opacity var(--dur) var(--ease);
+}
+.place-detail__bar--solid::before { opacity: 1; }
+.place-detail__bartitle {
+  position: absolute; left: 64px; right: 64px; top: calc(18px + var(--safe-top)); text-align: center;
+  font-size: var(--fs-body); line-height: 24px; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* 반투명 흰 원 + 뒤 사진 흐림 (32px 원, 누르는 영역 44px) */
+.glass-btn { position: absolute; top: calc(12px + var(--safe-top)); display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit); color: var(--white); }
+.glass-btn > span {
+  display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+.glass-btn--left { left: 16px; }
+.glass-btn--right { right: 16px; }
+.place-detail__bar--solid .glass-btn { color: var(--color-text); }
+.place-detail__bar--solid .glass-btn > span { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* 사진: 화면 위에 고정된 듯 천천히 올라감 (JS가 translateY), 위쪽은 어두운 그라데이션으로 버튼이 잘 보이게 */
+.place-detail__hero { position: relative; height: 360px; background: var(--color-divider); overflow: hidden; will-change: transform; }
+.place-detail__hero::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 88px; background: linear-gradient(rgba(34, 34, 34, 0.6), rgba(34, 34, 34, 0)); pointer-events: none; }
 .place-detail__heroimg { display: block; width: 100%; height: 100%; }
-.place-detail__photos button { display: block; padding: 0; }
-.place-detail__hero { position: relative; height: 300px; background: var(--color-divider); }
 .place-detail__hero img { width: 100%; height: 100%; object-fit: cover; }
 .place-detail__ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--color-placeholder); }
-.round-float {
-  position: absolute; top: calc(12px + var(--safe-top)); display: flex; align-items: center; justify-content: center;
-  width: var(--hit); height: var(--hit); border-radius: 50%; background: var(--color-bg); box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+/* 본문 흰 박스: 사진 위로 24px 겹침, 위 모서리 30, 위로 은은한 그림자 */
+.place-detail__sheet {
+  position: relative; z-index: 2; margin-top: -24px; min-height: calc(100dvh - 120px);
+  display: flex; flex-direction: column; gap: 30px; padding: 36px var(--page-x) 30px;
+  border-radius: 30px 30px 0 0; background: var(--color-bg); box-shadow: 0 -10px 20px rgba(34, 34, 34, 0.12);
 }
-.round-float--left { left: 16px; }
-.round-float--right { right: 16px; }
-.place-detail__sheet { position: relative; margin-top: -24px; padding: 24px var(--page-x) 0; border-radius: 24px 24px 0 0; background: var(--color-bg); }
-.place-detail__author { position: absolute; right: 20px; top: -36px; display: flex; padding: 4px; border-radius: 50%; background: var(--color-bg); }
-.place-detail__title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-right: 64px; font-size: var(--fs-display); line-height: var(--lh-display); font-weight: var(--fw-bold); }
-.place-detail__title .kind-chip { font-size: var(--fs-small); line-height: var(--lh-small); padding: 2px 10px; }
-.place-detail__addr { display: flex; align-items: flex-start; gap: 8px; margin-top: 8px; font-weight: var(--fw-medium); }
-.place-detail__addr > span { flex: 1; min-width: 0; padding-top: 2px; }
-.place-detail__addr .round-btn { margin-top: -8px; }
-.place-detail__addr .icon { flex-shrink: 0; margin-top: 3px; }
-.place-detail__acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding: 12px; border-radius: 16px; background: var(--color-surface-weak); }
-.place-detail__acts .pill-btn { flex: 1; justify-content: center; min-height: 44px; padding: 0 10px; font-size: var(--fs-small); line-height: var(--lh-small); white-space: nowrap; }
-.info-cells { display: flex; margin-top: 16px; padding: 12px 0; border-radius: 16px; background: var(--color-surface-weak); }
-.info-cells span { flex: 1; display: flex; flex-direction: column; align-items: center; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-bold); text-align: center; }
-.info-cells small { font-size: var(--fs-caption); line-height: var(--lh-caption); font-weight: var(--fw-regular); color: var(--color-text-weak); }
-.place-detail__photos { margin-top: 20px; }
-.place-detail__photos h2 { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-bold); margin-bottom: 8px; }
-.place-detail__photos h2 small { color: var(--color-text-weak); font-weight: var(--fw-regular); }
-.place-detail__photos div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.place-detail__photos img { width: 100%; aspect-ratio: 6 / 5; object-fit: cover; border-radius: var(--radius-m); }
+/* 프로필(왼쪽)과 사진 3장(오른쪽)이 박스 위 모서리에 걸침 */
+.place-detail__float { position: absolute; left: var(--page-x); right: var(--page-x); top: -44px; display: flex; align-items: flex-end; justify-content: space-between; height: 64px; }
+.place-detail__author { display: flex; padding: 4px; border-radius: 50%; background: var(--color-bg); box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.18); }
+.place-detail__thumbs { display: flex; gap: 5px; }
+.place-detail__thumbs button { display: block; width: 40px; height: 36px; padding: 0; border: 1.2px solid var(--white); border-radius: 6px; overflow: hidden; background: var(--color-bg); position: relative; }
+.place-detail__thumbs button::before { content: ''; position: absolute; inset: -4px; } /* 누르는 영역 넓히기 */
+.place-detail__thumbs img { width: 100%; height: 100%; object-fit: cover; }
+.place-detail__head { display: flex; flex-direction: column; gap: 6px; }
+.place-detail__title { font-size: 24px; line-height: 30px; font-weight: var(--fw-extrabold); word-break: keep-all; }
+.place-detail__sub { font-size: 15px; line-height: 20px; color: var(--grey-700); }
+/* 버튼 줄: 지도 · 주소 복사 · 공유 · 전화 (연초록 원) + 일정등록 (초록 알약) */
+.place-detail__acts { display: flex; align-items: center; gap: 14px; }
+.round-btn--point { margin: 0; background: rgba(16, 166, 107, 0.16); color: var(--color-point-strong); }
+.pill-point { height: 44px; padding: 0 19px; margin-left: auto; border-radius: 22px; background: var(--color-point); color: var(--color-on-point); font-size: var(--fs-small); line-height: 21px; font-weight: var(--fw-semibold); white-space: nowrap; }
+/* 메모: 연초록 테두리 */
+.pd-memo { display: flex; gap: 10px; padding: 10px 12px; border: 1px solid rgba(16, 166, 107, 0.5); border-radius: var(--radius-m); font-size: var(--fs-small); line-height: 22px; color: var(--grey-800); white-space: pre-line; }
+.pd-memo .icon { flex-shrink: 0; margin-top: 3px; color: var(--color-point); }
+/* 정보 줄 (피그마 '장소 설명'): 초록 채운 아이콘 16 + 글자 16 */
+.pd-info { display: flex; flex-direction: column; gap: 12px; }
+.pd-info li { display: flex; gap: 8px; font-size: var(--fs-body); line-height: 22px; color: var(--grey-800); word-break: break-all; }
+.pd-info li > .icon { flex-shrink: 0; margin-top: 3px; color: var(--color-point); }
+.pd-info li > span { display: flex; flex-direction: column; min-width: 0; }
+.pd-info__line { display: flex; align-items: center; gap: 3px; }
+.pd-info__line b { font-weight: var(--fw-regular); color: var(--color-point-strong); }
+.pd-info__line i { width: 3px; height: 3px; margin: 0 2px; border-radius: 50%; background: #d9d9d9; }
+.pd-info__tel { color: var(--color-text); }
 
 /* ───── 11 친구들 ───── */
 .friends-title { display: flex; align-items: center; justify-content: space-between; }
