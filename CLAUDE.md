@@ -28,6 +28,11 @@
 - 점검: `apps-script/test/run.js`(시트 API), `tests/screens.js`(화면, Playwright)
 - 피그마 이미지 주소(figma.com/api/mcp/asset)는 이 클라우드 환경에서 막혀 있음 → 아이콘은 npm(@iconify-json/solar)에서 가져옴
 
+## 2차 목표: 앱마켓 출시 (나중에)
+- 자세한 내용은 `docs/기획안.md` '2차 작업: 앱마켓 출시'. 지금은 1차(다듬기) 중
+- 작업하다가 출시에 영향을 주는 선택이 나오면 **"앱스토어에 올리려면 이 방향이 맞아요"** 하고 사용자에게 먼저 추천한다
+  - 예: 새 개인정보 수집, 데이터 저장 방식, 주소·도메인, 외부 서비스 추가, 아이콘·이름, 데이터 삭제 기능, 오프라인 동작
+
 ## 연결 정보
 - Apps Script 웹 앱 URL (v1): https://script.google.com/macros/s/AKfycbzXVqNMwsIEPAPvVAfIsIbdZeNuDtKjWHRUc85ob7zmmnaBBdsLGDBKW__JrUGqjUIaAA/exec
   - 앱 코드에 들어가 공개돼도 됨 (초대코드 없이는 여행 데이터를 읽을 수 없음)
