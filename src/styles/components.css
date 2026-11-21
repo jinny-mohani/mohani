@@ -108,6 +108,7 @@
   width: 100%; height: var(--control-h); padding: 0 16px;
   border: 1px solid var(--color-border); border-radius: var(--radius-m);
   background: var(--color-bg); font-size: var(--fs-body); line-height: var(--lh-body);
+  color: var(--grey-900); font-weight: var(--fw-regular); /* 입력 후: grey-900 · Regular */
 }
 .input::placeholder { color: var(--grey-500); font-weight: var(--fw-light); } /* 피그마 Input: 예시 글자 Light #9E9E9E */
 .input:focus { outline: none; border-color: var(--color-point); } /* 선택·입력 중 테두리는 포인트 색 (흰 바탕 대비 3.1:1, 테두리 기준 3:1 충족) */
@@ -277,7 +278,7 @@
 .field-pair .input { flex: 1; min-width: 0; }
 .field-pair__dash { color: var(--color-text-weak); }
 .input[type='date'] { -webkit-appearance: none; appearance: none; text-align: left; }
-.input[type='date']:invalid, .input--empty { color: var(--color-text-weak); }
+.input[type='date']:invalid, .input--empty { color: var(--grey-500); font-weight: var(--fw-light); } /* 입력 전: grey-500 · Light */
 .form { display: flex; flex-direction: column; gap: var(--gap-2xl); } /* 피그마 30 → 4px 단위 32 */
 .form__error { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text); font-weight: var(--fw-medium); }
 .lead { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); margin-top: -4px; }
@@ -396,8 +397,8 @@ button.status::after { content: ''; position: absolute; inset: -8px; } /* 터치
 /* 고르기 칸 */
 .select { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; color: var(--color-text); }
 .select span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.select.input--empty { color: var(--color-text-weak); font-weight: var(--fw-light); }
-.select .icon { flex-shrink: 0; color: var(--color-text-weak); }
+.select.input--empty { color: var(--grey-500); font-weight: var(--fw-light); }
+.select .icon { flex-shrink: 0; color: var(--grey-800); } /* 피그마 ico/chevron-down #424242 */
 .opt-list { margin-top: 8px; }
 .opt { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; text-align: left; border-bottom: 1px solid var(--color-divider); }
 .opt span { flex: 1; }

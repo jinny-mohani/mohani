@@ -310,7 +310,7 @@ export function Collapsible({ title, sub, open, onToggle, children }) {
         <strong>${title}</strong>
         <small>${open ? '선택 · 태그로 표시돼요' : sub}</small>
       </span>
-      <span class="collapse__toggle">${open ? '접기' : '펼치기'}<${Icon} name=${open ? 'chevron-up' : 'chevron-down'} size=${18} stroke=${1.4} /></span>
+      <span class="collapse__toggle">${open ? '접기' : '펼치기'}<${Icon} name=${open ? 'select-up' : 'select-down'} size=${18} stroke=${1.87} /></span>
     </button>
     ${open && html`<div class="collapse__body">${children}</div>`}
   </section>`;

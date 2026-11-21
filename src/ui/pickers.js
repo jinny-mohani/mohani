@@ -7,7 +7,7 @@ import { formatDay, parseDate, tripDays, dayDate } from '../date.js';
 /** 입력칸처럼 생긴 고르기 버튼 */
 export function SelectField({ label, value, placeholder, onClick }) {
   return html`<button type="button" class=${'input select' + (value ? '' : ' input--empty')} aria-label=${label} onClick=${onClick}>
-    <span>${value || placeholder}</span><${Icon} name="chevron-down" size=${18} />
+    <span>${value || placeholder}</span><${Icon} name="select-down" size=${18} stroke=${1.87} />
   </button>`;
 }
 

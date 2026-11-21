@@ -26,6 +26,12 @@ BOLD = ['widget', 'airplane', 'map-point', 'calendar', 'clock-circle', 'cup-hot'
   'user', 'user-circle', 'shop', 'buildings', 'armchair', 'clipboard-text', 'pen', 'gallery', 'map', 'bus',
   'users-group-rounded', 'wallet', 'ruler', 'bed', 'ticket', 'phone', 'car', 'tag', 'global', 'checklist']
 
+# 피그마에서 직접 그린 아이콘 (Solar 아님): 입력칸·접기의 작은 화살표 ico/chevron-down·up (18px 기준 10.5×5.5, 선 1.4)
+CUSTOM = {
+  'select-down': '<path d="M5 8.33L12 15.67L19 8.33"/>',
+  'select-up': '<path d="M5 15.67L12 8.33L19 15.67"/>',
+}
+
 icons = json.load(open(sys.argv[1]))['icons']
 def body(name, line=True):
   b = icons[name]['body']
@@ -37,7 +43,7 @@ def obj(pairs):
   return '{\n' + ''.join(f"  '{k}': '{v}',\n" for k, v in pairs) + '}'
 
 out = ("// Solar 아이콘 (480 Design, CC BY 4.0 — https://www.figma.com/community/file/1166831539721848736). tools/icons/build.py 로 만든 파일 — 직접 고치지 말고 거기서 바꾸기.\n"
-       f"export const ICONS = {obj((k, body(v + '-linear')) for k, v in MAP.items())};\n\n"
+       f"export const ICONS = {obj([(k, body(v + '-linear')) for k, v in MAP.items()] + list(CUSTOM.items()))};\n\n"
        "// 하단 탭 선택 상태(채운 아이콘)\n"
        f"export const FILLED = {obj((k, body(MAP[k] + '-bold', False)) for k in TAB_FILLED)};\n\n"
        "// 채운 작은 아이콘 (Icon bold) — 입력 제목, 장소 정보 줄\n"
