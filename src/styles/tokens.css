@@ -36,9 +36,9 @@
   --color-on-inverse: var(--white);
   --color-primary: var(--grey-900);      /* 선택 상태 바탕: 칩·탭·체크박스·달력 (피그마 Chip) */
   --color-point: #10a66b;                /* 포인트 색 (Nov 18): 주요 버튼·추가 버튼 */
-  --color-point-weak: rgba(16, 166, 107, 0.12); /* 보조 버튼 바탕 */
+  --color-point-weak: rgba(16, 166, 107, 0.12); /* 연한 바탕 ①: 보조 버튼 */
+  --color-point-tint: rgba(16, 166, 107, 0.2);  /* 연한 바탕 ②: 초록 아이콘 원 (장소 상세 버튼, 13-1 체크) */
   --color-on-point: var(--white);
-  --color-point-strong: #077a4d;         /* 진한 초록 글자 (13-1 강조 문장). 보조 버튼은 11.21부터 #10A66B */
   --color-on-primary: var(--white);      /* 그 위 글자 */
   --color-dim: rgba(0, 0, 0, 0.4);       /* 팝업 뒤 어둡게 */
   --color-outside: var(--grey-200);      /* PC에서 앱 바깥 */
@@ -47,12 +47,14 @@
   /* 글자 */
   --font: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;
   /* 타이포 5단계 (Nov 18 결정) — 크기 · 줄 간격 짝으로 써요. 굵기는 Regular/Medium/Bold 세 가지 */
+  /* 글자 6단계 (11.21 정리): 12 · 13 · 14 · 16 · 20 · 24 */
   --fs-caption: 12px;  --lh-caption: 1.4;  /* 캡션: 탭바 이름, 라벨, 작은 표시 */
-  --fs-small: 14px;    --lh-small: 1.5;    /* 보조: 설명, 날짜·담당, 칩, 입력칸 제목 */
+  --fs-helper: 13px;   --lh-helper: 1.5;   /* 보조 안내: 입력칸 도움말, 접기, 멤버 이름, 글자 링크 */
+  --fs-small: 14px;    --lh-small: 1.5;    /* 보조: 설명, 날짜·담당, 칩 */
   --fs-body: 16px;     --lh-body: 1.5;     /* 본문: 목록 항목 이름, 입력값 */
   --fs-heading: 20px;  --lh-heading: 1.4;  /* 소제목: 섹션·팝업·카드 제목 */
-  --fs-display: 26px;  --lh-display: 1.3;  /* 화면 제목 */
-  --fs-button: 18px;   /* 버튼 글자 — 피그마 Button 컴포넌트 기준 (5단계의 예외) */
+  --fs-display: 24px;  --lh-display: 1.3;  /* 큰 제목: 화면 제목, 장소 상세·13-1 제목 */
+  --fs-button: 18px;   /* 버튼 글자 — 피그마 Button 컴포넌트 기준 (6단계의 예외) */
   --lh: 1.5;
   --fw-light: 300;     /* 안내 글자·플레이스홀더·토스트 (피그마 Light) */
   --fw-regular: 400;

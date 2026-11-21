@@ -51,7 +51,7 @@
 .home-members__name {
   max-width: 76px; padding: 5px 18px; border-radius: 18px;
   background: var(--color-primary); color: var(--color-on-primary);
-  font-size: 13px; font-weight: var(--fw-medium); line-height: 20px;
+  font-size: var(--fs-helper); font-weight: var(--fw-medium); line-height: 20px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .character { position: relative; display: flex; align-items: flex-end; justify-content: center; width: 72px; }
@@ -544,11 +544,11 @@
 .place-detail__thumbs button::before { content: ''; position: absolute; inset: -4px; } /* 누르는 영역 넓히기 */
 .place-detail__thumbs img { width: 100%; height: 100%; object-fit: cover; }
 .place-detail__head { display: flex; flex-direction: column; gap: 6px; }
-.place-detail__title { font-size: 24px; line-height: 30px; font-weight: var(--fw-extrabold); word-break: keep-all; }
-.place-detail__sub { font-size: 15px; line-height: 20px; color: var(--grey-700); }
+.place-detail__title { font-size: var(--fs-display); line-height: 30px; font-weight: var(--fw-extrabold); word-break: keep-all; }
+.place-detail__sub { font-size: var(--fs-body); line-height: 22px; color: var(--grey-700); }
 /* 버튼 줄: 지도 · 주소 복사 · 공유 · 전화 (연초록 원) + 일정등록 (초록 알약) */
 .place-detail__acts { display: flex; align-items: center; gap: 14px; }
-.round-btn--point { margin: 0; background: rgba(16, 166, 107, 0.16); color: var(--color-point); }
+.round-btn--point { margin: 0; background: var(--color-point-tint); color: var(--color-point); }
 .pill-point { height: 44px; padding: 0 19px; margin-left: auto; border-radius: 22px; background: var(--color-point); color: var(--color-on-point); font-size: var(--fs-small); line-height: 21px; font-weight: var(--fw-semibold); white-space: nowrap; }
 /* 메모: 연초록 테두리 */
 .pd-memo { display: flex; gap: 10px; padding: 10px 12px; border: 1px solid rgba(16, 166, 107, 0.5); border-radius: var(--radius-m); font-size: var(--fs-small); line-height: 22px; color: var(--grey-800); white-space: pre-line; }
@@ -642,9 +642,9 @@
 
 /* 13-1 초대 링크 공유 (피그마 Nov 20) */
 .done-hero { gap: 0; margin-top: 42px; }
-.done-hero__icon { margin-bottom: 64px; background: rgba(16, 166, 107, 0.2); color: var(--color-point); }
-.done-hero h1 { font-size: 24px; line-height: 1.4; }
+.done-hero__icon { margin-bottom: 64px; background: var(--color-point-tint); color: var(--color-point); }
+.done-hero h1 { font-size: var(--fs-display); line-height: 1.4; }
 .done-hero h1 + p { margin-top: 20px; }
-.done-hero p em { font-style: normal; color: var(--color-point-strong); }
+.done-hero p em { font-style: normal; color: var(--color-point); }
 .done-hero .done-hero__sub { margin-top: 6px; }
-.done-later { font-size: 13px; font-weight: var(--fw-regular); color: var(--grey-600); text-decoration: underline; }
+.done-later { font-size: var(--fs-helper); font-weight: var(--fw-regular); color: var(--grey-600); text-decoration: underline; }
