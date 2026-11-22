@@ -348,13 +348,13 @@
 .check-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: var(--hit); text-align: left; }
 .checkbox {
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  width: 24px; height: 24px; border-radius: var(--radius-s);
+  width: 20px; height: 20px; border-radius: 5px; /* 11.22: 24 → 20 */
   border: 1.5px solid var(--color-border-strong); background: var(--color-bg); color: var(--color-on-primary);
 }
 /* 완료 체크: 회색 칸 + 흰 체크 (피그마 CheckRow, 11.22) — 다 한 일은 눈에 덜 띄게 */
 .check-row[aria-checked='true'] .checkbox { border-color: var(--grey-400); background: var(--grey-400); }
-.check-row__label { flex: 1; min-width: 0; font-size: var(--fs-body); line-height: var(--lh-body); }
-.check-row[aria-checked='true'] .check-row__label { text-decoration: line-through; color: var(--grey-500); }
+.check-row__label { flex: 1; min-width: 0; font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-medium); } /* 체크 전 Medium */
+.check-row[aria-checked='true'] .check-row__label { text-decoration: line-through; color: var(--grey-500); font-weight: var(--fw-regular); } /* 체크 후 Regular 그대로 */
 .check-row__meta { flex-shrink: 0; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--grey-700); }
 
 /* ───── 태그 (짐 꾸리기 등) ───── */

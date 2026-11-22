@@ -101,7 +101,7 @@ export function Checklist({ data, me, query }) {
             const who = isPersonal(c) || c.assignee === '각자' ? '' : memberName(data, c.assignee); // 각자·개인 할 일은 이름 없이
             return html`<div class="cl-row" key=${c.id}>
               <button class="cl-row__check" role="checkbox" aria-checked=${d ? 'true' : 'false'} aria-label=${c.title + (d ? ' 완료 취소' : ' 완료')} onClick=${() => toggle(c)}>
-                <span class="checkbox" aria-hidden="true">${d && html`<${Icon} name="check" size=${16} stroke=${2.5} />`}</span>
+                <span class="checkbox" aria-hidden="true">${d && html`<${Icon} name="check" size=${14} stroke=${2.5} />`}</span>
               </button>
               <button class=${'cl-row__body' + (d ? ' cl-row__body--done' : '')} onClick=${() => edit(c)}>
                 <span class="cl-row__title">${c.title}
