@@ -4,7 +4,7 @@ import { Button, Icon, Modal, TextField, FormError, FieldLabel } from '../ui/com
 import { closeOverlay } from '../overlay.js';
 import { getState, saveRow, uploadPhoto, refresh } from '../store.js';
 import { go } from '../router.js';
-import { formatDay, nightsLabel, tripDays } from '../date.js';
+import { tripDays } from '../date.js';
 import { resizeImage } from '../image.js';
 import { inviteUrl, copyText } from '../share.js';
 import { toast } from '../ui/toast.js';
@@ -78,15 +78,10 @@ export function TripSettings() {
         <div class="field-pair" role="group" aria-labelledby="set-date">
           <${DateRangeField} label="여행 날짜" start=${startDate} end=${endDate} onChange=${(a, b) => { setStartDate(a); setEndDate(b); }} />
         </div>
-        <p class="info-box">
+        ${/* 11.22: 평소 설명은 지우고, 날짜를 줄여 일정이 옮겨질 때만 알려줘요 */ days < oldDays && html`<p class="info-box">
           <${Icon} name="info" size=${16} />
-          <span>
-            ${nightsLabel(preview)} · Day 1 ~ Day ${days}${startDate ? ` (${formatDay(startDate)} 출발)` : ''}<br />
-            ${days < oldDays
-              ? html`<strong>Day ${days + 1}~${oldDays}의 일정은 Day ${days}로 옮겨져요</strong>`
-              : '날짜를 줄이면 빠진 Day의 일정은 마지막 Day로 옮겨져요'}
-          </span>
-        </p>
+          <span><strong>Day ${days + 1}~${oldDays}의 일정은 Day ${days}로 옮겨져요</strong></span>
+        </p>`}
       </div>
       <div class="field">
         <${FieldLabel}>대표 이미지<//>

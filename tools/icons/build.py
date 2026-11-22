@@ -14,7 +14,7 @@ MAP = {  # 앱에서 쓰는 이름 → Solar 이름(선: -linear)
   'circle-check': 'check-circle', 'circle-pause': 'pause-circle', 'pause': 'pause', 'circle-alert': 'danger-circle',
   'info': 'info-circle', 'link': 'link', 'copy': 'copy', 'external-link': 'square-share-line', 'pencil': 'pen',
   'trash': 'trash-bin-minimalistic', 'trash-2': 'trash-bin-minimalistic', 'undo-2': 'undo-left-round', 'clock': 'clock-circle',
-  'user': 'user', 'user-plus': 'user-plus', 'share': 'export', 'share-2': 'share', 'map': 'map', 'hash': 'hashtag',
+  'user': 'user', 'share': 'export', 'share-2': 'share', 'map': 'map', 'hash': 'hashtag',
   'clipboard-list': 'clipboard-list', 'list-checks': 'checklist', 'grip-vertical': 'reorder', 'search': 'magnifier',
   'file-text': 'document-text', 'arrow-up-down': 'sort-vertical', 'lock': 'lock', 'square-plus': 'add-square',
   'phone': 'phone', 'memo': 'clipboard-text',
@@ -31,6 +31,8 @@ BOLD = ['widget', 'airplane', 'map-point', 'calendar', 'clock-circle', 'cup-hot'
 CUSTOM = {
   'select-down': '<path d="M5 8.33L12 15.67L19 8.33"/>',
   'select-up': '<path d="M5 15.67L12 8.33L19 15.67"/>',
+  # 친구들 멤버 추가 (피그마 ico / user-plus 8255:3471): 머리 원 + 몸 타원 + 오른쪽 위 +
+  'user-plus': '<circle cx="9.34" cy="6.3" r="4.12"/><ellipse cx="9.34" cy="18.27" rx="8.25" ry="4.64"/><path d="M16.37 10.26H21.61M18.99 7.64V12.88"/>',
   'select-right': '<path d="M8.33 5L15.67 12L8.33 19"/>',  # 홈 각 항목 제목 오른쪽 › (11.22: ico/chevron-Up 회전)
   # 장소 상세 위쪽 흐림 버튼 (피그마 8210:11473): 뒤로 화살표 7×14, 점 3개 — 선 2
   'glass-back': '<path d="M15.5 19L8.5 12L15.5 5"/>',

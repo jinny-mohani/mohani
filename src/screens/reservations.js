@@ -10,7 +10,7 @@ import { toast } from '../ui/toast.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import {
   TYPES, TYPE_ICON, STATUSES, OTHER_ICON,
-  parseAirport, parseFlight, firstPhoto, flightBg, photoList, summary, sortReservations, sized,
+  parseAirport, parseFlight, withSqm, firstPhoto, flightBg, photoList, summary, sortReservations, sized,
 } from '../reservation-util.js';
 import { ReservationForm } from './reservation-form.js';
 import { openPhotos } from '../ui/viewer.js';
@@ -79,7 +79,7 @@ function FlightCard({ r }) {
 function StayCard({ r }) {
   const photo = firstPhoto(r);
   const nights = nightsBetween(r.startAt, r.endAt);
-  const tags = [r.roomType, r.roomSize, r.checkInTime || formatTime(r.startAt) ? '체크인 ' + (r.checkInTime || formatTime(r.startAt)) : ''].filter(Boolean);
+  const tags = [r.roomType, withSqm(r.roomSize), r.checkInTime || formatTime(r.startAt) ? '체크인 ' + (r.checkInTime || formatTime(r.startAt)) : ''].filter(Boolean);
   return html`<div class="res-item">
     <button class="photo-card photo-card--dark" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
       ${photo ? html`<img src=${sized(photo, 800)} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name="bed-double" size=${40} /></span>`}
@@ -224,7 +224,7 @@ export function ReservationDetail({ data, id }) {
   const tags = r.type === '항공권'
     ? [r.vendor && '예약처 · ' + r.vendor, r.fromTerminal && '터미널 · ' + r.fromTerminal]
     : r.type === '숙소'
-      ? [r.vendor && '예약처 ' + r.vendor, r.cost && '비용 ' + r.cost, r.roomType && '객실 ' + r.roomType, r.roomSize && '방 ' + r.roomSize]
+      ? [r.vendor && '예약처 ' + r.vendor, r.cost && '비용 ' + r.cost, r.roomType && '객실 ' + r.roomType, r.roomSize && '방 ' + withSqm(r.roomSize)]
       : [r.vendor && '예약처 ' + r.vendor, r.cost && '비용 ' + r.cost, r.people && '인원 ' + r.people];
   const tagList = tags.filter(Boolean);
 
@@ -260,7 +260,7 @@ export function ReservationDetail({ data, id }) {
         { icon: 'user', content: who && html`<span class="pd-info__line"><b>담당</b><i aria-hidden="true"></i>${who}</span>` },
         { icon: 'shop', content: r.vendor && html`<span class="pd-info__line"><b>예약처</b><i aria-hidden="true"></i>${r.vendor}</span>` },
         { icon: 'wallet', content: r.cost && html`<span class="pd-info__line"><b>비용</b><i aria-hidden="true"></i>${r.cost}</span>` },
-        { icon: 'bed', content: (r.roomType || r.roomSize) && html`<span class="pd-info__line"><b>객실</b><i aria-hidden="true"></i>${[r.roomType, r.roomSize].filter(Boolean).join(' · ')}</span>` },
+        { icon: 'bed', content: (r.roomType || r.roomSize) && html`<span class="pd-info__line"><b>객실</b><i aria-hidden="true"></i>${[r.roomType, withSqm(r.roomSize)].filter(Boolean).join(' · ')}</span>` },
         { icon: 'users-group-rounded', content: r.people && html`<span class="pd-info__line"><b>인원</b><i aria-hidden="true"></i>${r.people}</span>` },
       ]} />
       ${r.updatedBy && html`<p class="detail__edited">마지막 수정 · ${r.updatedBy}${r.updatedAt ? ' · ' + syncText(Date.parse(r.updatedAt)) : ''}</p>`}

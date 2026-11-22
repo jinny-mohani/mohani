@@ -9,7 +9,7 @@ import { back } from '../router.js';
 import { datePart, timePart, joinDateTime } from '../date.js';
 import { activeMembers } from '../members.js';
 import { toast } from '../ui/toast.js';
-import { OTHER_KINDS, SEATS, STATUSES, TERMINALS, photoList, parseFlight } from '../reservation-util.js';
+import { OTHER_KINDS, SEATS, STATUSES, TERMINALS, photoList, parseFlight, withSqm } from '../reservation-util.js';
 import { AIRPORTS, AIRLINES, airlineCode } from '../airports.js';
 import { SelectField, OptionSheet, DateField, TimeField, DateRangeField, PeriodField } from '../ui/pickers.js';
 
@@ -38,7 +38,7 @@ function initial(type, row) {
     address: r.address || '',
     cost: r.cost || '',
     roomType: r.roomType || '',
-    roomSize: r.roomSize || '',
+    roomSize: withSqm(r.roomSize),
     subType: r.subType || (type === '기타' ? '렌터카' : ''),
     people: r.people || '',
     photos: photoList(r), // 문자열(이미 올린 주소) 또는 { dataUrl } (새로 고른 사진)
@@ -109,9 +109,6 @@ function validate(type, f) {
 }
 
 /** 날짜 + 시간 한 쌍 */
-
-/** 방 크기: 숫자만 적으면 뒤에 ㎡를 붙여요 (32 → 32㎡) */
-const withSqm = (v) => { const t = String(v || '').trim(); return /^\d+(\.\d+)?$/.test(t) ? t + '㎡' : t; };
 export function ReservationForm({ type, row }) {
   const isEdit = !!(row && row.id);
   const data = getState().data;

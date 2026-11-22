@@ -184,7 +184,7 @@
 .modal--cal .modal__body { padding: 0; }
 .modal--cal .modal__foot { border-top: 1px solid var(--color-divider); padding-top: 12px; padding-bottom: calc(var(--gap-m) + var(--safe-bottom)); }
 .rcal__sum {
-  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
+  position: sticky; top: 0; z-index: 4; display: flex; align-items: center; justify-content: center; gap: 6px;
   min-height: 54px; padding: 16px var(--page-x); background: var(--color-bg);
   border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider);
   font-size: var(--fs-button); line-height: 20px;
@@ -193,7 +193,7 @@
 .rcal__dash { font-weight: var(--fw-medium); }
 .rcal__hint { font-size: var(--fs-body); color: var(--color-text-weak); }
 .rcal__week {
-  position: sticky; top: 54px; z-index: 1; display: grid; grid-template-columns: repeat(7, 1fr);
+  position: sticky; top: 54px; z-index: 3; display: grid; grid-template-columns: repeat(7, 1fr);
   padding: 6px var(--page-x); background: var(--color-bg); box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
   text-align: center; font-size: var(--fs-small); line-height: 28px; color: var(--grey-800);
 }
@@ -351,7 +351,8 @@
   width: 24px; height: 24px; border-radius: var(--radius-s);
   border: 1.5px solid var(--color-border-strong); background: var(--color-bg); color: var(--color-on-primary);
 }
-.check-row[aria-checked='true'] .checkbox { border-color: var(--color-primary); background: var(--color-primary); }
+/* 완료 체크: 회색 칸 + 흰 체크 (피그마 CheckRow, 11.22) — 다 한 일은 눈에 덜 띄게 */
+.check-row[aria-checked='true'] .checkbox { border-color: var(--grey-400); background: var(--grey-400); }
 .check-row__label { flex: 1; min-width: 0; font-size: var(--fs-body); line-height: var(--lh-body); }
 .check-row[aria-checked='true'] .check-row__label { text-decoration: line-through; color: var(--grey-500); }
 .check-row__meta { flex-shrink: 0; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--grey-700); }

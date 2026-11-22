@@ -291,11 +291,14 @@ export function DateRangeSheet({ title = '날짜 선택', start, end, onPick, la
     else if (v < s) { setS(v); }
     else { setE(v); }
   };
+  const nights = s && e ? Math.round((parseDate(e) - parseDate(s)) / 86400000) : null;
+  const spaced = (v) => formatDay(v).replace('.', '. '); // 피그마: '11. 24 (화)'
   return html`<${Modal} title=${title} className="modal--cal"
-    footer=${html`<${Button} disabled=${!s || !e} onClick=${() => { onPick(s, e); closeOverlay(); }}>선택 완료<//>`}>
+    footer=${html`<${Button} disabled=${!s || !e} onClick=${() => { onPick(s, e); closeOverlay(); }}>
+      선택 완료${nights != null ? ` (${nights ? nights + '박' : '당일'})` : ''}<//>`}>
     <div class="rcal__sum" aria-live="polite">
       <span class="rcal__sumicon"><${Icon} name="calendar" size=${20} bold /></span>
-      ${s ? html`<b>${formatDay(s)}</b><span class="rcal__dash">-</span>${e && html`<b>${formatDay(e)}</b>`}`
+      ${s ? html`<b>${spaced(s)}</b><span class="rcal__dash">-</span>${e && html`<b>${spaced(e)}</b>`}`
         : html`<span class="rcal__hint">${labels[0]} 날짜를 골라 주세요</span>`}
     </div>
     <div class="rcal__week" aria-hidden="true">${WEEK.map((w) => html`<span>${w}</span>`)}</div>

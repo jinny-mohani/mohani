@@ -59,7 +59,6 @@ export function ChecklistSheet({ row, group }) {
 /** 03-3 체크 리스트 전체 */
 export function Checklist({ data, me, query }) {
   const all = data.checklist.filter((c) => !c.deleted);
-  const done = all.filter((c) => isDone(c, me)).length;
 
   // 홈에서 묶음을 눌러 들어오면 그 묶음으로 스크롤
   useEffect(() => {
@@ -75,18 +74,19 @@ export function Checklist({ data, me, query }) {
   return html`<main class="screen screen--sub">
     <${SubHeader} title="체크 리스트" fallback="/home" />
     <${Fab} sub=${true} label="체크 리스트 추가" onClick=${() => openOverlay(html`<${ChecklistSheet} />`)} />
-    <div class="page">
-      <p class="muted" style="font-size:var(--fs-small)">${all.length}개 중 ${done}개 완료 · 이름을 누르면 수정해요</p>
+    <div class="page cl-page">
       ${GROUPS.map((g, gi) => {
         const items = byGroup(all, g);
         return html`<section class="cl-group" id=${'group-' + gi} key=${g}>
           <div class="cl-group__head">
             <h2>${g}</h2>
-            <span>${items.filter((c) => isDone(c, me)).length} / ${items.length}</span>
+            <span class="cl-count" aria-label=${`${items.length}개 중 ${items.filter((c) => isDone(c, me)).length}개 완료`}>
+              <b>${items.filter((c) => isDone(c, me)).length}</b><i>/</i>${items.length}</span>
           </div>
+          <div class="cl-card">
           ${items.map((c) => {
             const d = isDone(c, me);
-            const who = c.assignee === '각자' ? '각자' : memberName(data, c.assignee);
+            const who = c.assignee === '각자' ? '' : memberName(data, c.assignee); // 각자 할 일은 이름 없이 (11.22)
             return html`<div class="cl-row" key=${c.id}>
               <button class="cl-row__check" role="checkbox" aria-checked=${d ? 'true' : 'false'} aria-label=${c.title + (d ? ' 완료 취소' : ' 완료')} onClick=${() => toggle(c)}>
                 <span class="checkbox" aria-hidden="true">${d && html`<${Icon} name="check" size=${16} stroke=${2.5} />`}</span>
@@ -101,6 +101,7 @@ export function Checklist({ data, me, query }) {
             </div>`;
           })}
           ${!items.length && html`<button class="cl-empty" onClick=${() => openOverlay(html`<${ChecklistSheet} group=${g} />`)}>+ ${g} 추가</button>`}
+          </div>
         </section>`;
       })}
     </div>

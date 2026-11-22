@@ -67,3 +67,6 @@ export function sortReservations(list) {
 export function sized(url, width) {
   return /drive\.google\.com\/thumbnail/.test(url || '') ? url.replace(/sz=w\d+/, 'sz=w' + width) : url;
 }
+
+/** 방 크기: 숫자만 적혀 있으면 뒤에 ㎡를 붙여요 (32 → 32㎡, 예전에 적은 값도) */
+export const withSqm = (v) => { const t = String(v || '').trim(); return /^\d+(\.\d+)?$/.test(t) ? t + '㎡' : t; };

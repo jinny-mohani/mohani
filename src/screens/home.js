@@ -51,7 +51,7 @@ export function Home({ data, me }) {
   const toggle = (item) =>
     toggleDone(item, !isDone(item, me)).catch(() =>
       toast('연결이 불안정해 저장하지 못했어요', { action: '다시 시도', duration: 6000, onAction: () => toggle(item) }));
-  const assignee = (c) => (c.assignee === '각자' ? '각자' : memberName(data, c.assignee));
+  const assignee = (c) => (c.assignee === '각자' ? '' : memberName(data, c.assignee)); // 각자 할 일은 이름 없이 (11.22)
 
   return html`<main class="screen screen--tint home">
     <section class="home-hero" aria-label="여행 정보">
