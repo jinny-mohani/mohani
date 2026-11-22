@@ -6,12 +6,8 @@ import { getState, toggleDone, failed } from '../store.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import { activeMembers, memberName } from '../members.js';
 import { GROUPS, byGroup, isDone } from '../checklist.js';
-import { formatDay } from '../date.js';
 import { toast } from '../ui/toast.js';
 
-function dueText(d) {
-  return d ? formatDay(d).replace(/ \(.\)$/, '') + '까지' : '';
-}
 
 /** 03-6 추가 · 03-6-1 수정 (같은 시트) */
 export function ChecklistSheet({ row, group }) {
@@ -96,7 +92,7 @@ export function Checklist({ data, me, query }) {
                   ${failed[c.id] && html`<span class="save-fail" onClick=${(e) => { e.stopPropagation(); retry(c); }}>
                     <${Icon} name="circle-alert" size=${14} />저장 안 됨 · <u>다시 시도</u></span>`}
                 </span>
-                <span class="cl-row__meta">${who}${c.dueDate ? html`<br /><small>${dueText(c.dueDate)}</small>` : ''}</span>
+                ${who && html`<span class="cl-row__meta">${who}</span>`}
               </button>
             </div>`;
           })}
