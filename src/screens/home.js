@@ -6,7 +6,7 @@ import { openOverlay } from '../overlay.js';
 import { toggleDone } from '../store.js';
 import { ddayText, formatDay, nightsLabel } from '../date.js';
 import { activeMembers, memberName, profileSrc } from '../members.js';
-import { GROUPS, byGroup, homePick, isDone } from '../checklist.js';
+import { COMMON, MY_PACK, MY_TODO, LABEL, byGroup, homePick, isDone, isPersonal, visibleItems } from '../checklist.js';
 import { toast } from '../ui/toast.js';
 import { TripSettings } from './trip-settings.js';
 import { sized } from '../reservation-util.js';
@@ -44,14 +44,14 @@ export function Home({ data, me }) {
   const { trip } = data;
   const members = activeMembers(data);
   const reservations = data.reservations.filter((r) => !r.deleted);
-  const all = data.checklist.filter((c) => !c.deleted);
+  const all = visibleItems(data.checklist.filter((c) => !c.deleted), me); // 개인 항목은 쓴 사람만
   const left = all.filter((c) => !isDone(c, me)).length;
   const places = data.places.filter((p) => !p.deleted).sort((x, y) => (Number(x.order) || 0) - (Number(y.order) || 0));
 
   const toggle = (item) =>
     toggleDone(item, !isDone(item, me)).catch(() =>
       toast('연결이 불안정해 저장하지 못했어요', { action: '다시 시도', duration: 6000, onAction: () => toggle(item) }));
-  const assignee = (c) => (c.assignee === '각자' ? '' : memberName(data, c.assignee)); // 각자 할 일은 이름 없이 (11.22)
+  const assignee = (c) => (isPersonal(c) || c.assignee === '각자' ? '' : memberName(data, c.assignee)); // 각자·개인 할 일은 이름 없이 (11.22)
 
   return html`<main class="screen screen--tint home">
     <section class="home-hero" aria-label="여행 정보">
@@ -112,18 +112,19 @@ export function Home({ data, me }) {
           <${Icon} name="select-right" size=${18} stroke=${1.4} label="전체 보기" />
         </button>
         <div class="check-cards">
-          ${GROUPS.map((group, gi) => {
+          ${[COMMON, MY_PACK, MY_TODO].map((group) => {
             const items = byGroup(all, group);
             const done = items.filter((c) => isDone(c, me)).length;
-            const open = () => go('/home/checklist?group=' + gi);
+            const mine = group !== COMMON;
+            const open = () => go(mine ? '/home/checklist?tab=mine&group=' + group.replace(/ /g, '') : '/home/checklist');
             return html`<div class="check-card">
-              <button class="check-card__head" onClick=${open} aria-label=${group + ' ' + done + '개 완료, 전체 ' + items.length + '개'}>
-                <h3>${group}</h3>
+              <button class="check-card__head" onClick=${open} aria-label=${LABEL[group] + ' ' + done + '개 완료, 전체 ' + items.length + '개'}>
+                <h3>${LABEL[group]}${mine && html`<${Icon} name="lock" size=${14} label="나만 보기" />`}</h3>
                 <span class="check-card__count" aria-hidden="true">${done}<i>/</i>${items.length}</span>
               </button>
               ${!items.length && html`<button class="check-card__empty" onClick=${() => openOverlay(html`<${ChecklistSheet} group=${group} />`)}>
                 <span class="checkbox" aria-hidden="true"></span>할 일을 추가해 보세요</button>`}
-              ${gi === 0
+              ${group !== MY_PACK
                 ? items.length > 0 && html`<div class="check-card__rows">${homePick(items, me, 3).map(
                     (c) => html`<${CheckRow} key=${c.id} checked=${isDone(c, me)} label=${c.title} meta=${assignee(c)} onToggle=${() => toggle(c)} />`
                   )}</div>`

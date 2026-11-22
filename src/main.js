@@ -28,7 +28,7 @@ function Screen({ route, data, me }) {
     return id ? html`<${PlaceDetail} data=${data} id=${id} />` : html`<${Places} data=${data} query=${query} />`;
   }
   if (tab === 'friends') return html`<${Friends} data=${data} me=${me} />`;
-  if (tab === 'home' && id === 'deleted') return html`<${DeletedList} data=${data} />`;
+  if (tab === 'home' && id === 'deleted') return html`<${DeletedList} data=${data} me=${me} />`;
   if (tab === 'home' && id === 'checklist') return html`<${Checklist} data=${data} me=${me} query=${query} />`;
   if (tab === 'home' && id) {
     return html`<main class="screen screen--sub">

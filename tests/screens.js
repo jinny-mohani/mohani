@@ -25,6 +25,9 @@ const data = {
     { id: 'c_4', tripId: 't_1', title: '환전하기', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 4, ...base },
     { id: 'c_5', tripId: 't_1', title: '카메라', group: '짐 꾸리기', assignee: 'm_1', doneBy: 'm_1', order: 5, ...base },
     { id: 'c_6', tripId: 't_1', title: '보조 배터리', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 6, ...base },
+    { id: 'c_8', tripId: 't_1', title: '원피스 3벌', group: '개인 짐', assignee: 'm_1', doneBy: '', order: 8, ...base },
+    { id: 'c_9', tripId: 't_1', title: '고데기', group: '개인 짐', assignee: 'm_2', doneBy: '', order: 9, ...base },
+    { id: 'c_10', tripId: 't_1', title: '유심 사기', group: '개인 할 일', assignee: 'm_2', doneBy: '', order: 10, ...base },
     { id: 'c_7', tripId: 't_1', title: '유심 사기', group: '짐 꾸리기', assignee: '각자', doneBy: '', order: 7, ...base, deleted: true, deletedBy: '친구1', deletedAt: '2026-11-15T10:00:00.000Z' },
   ],
   places: [
@@ -252,6 +255,13 @@ const data = {
   await page.click('[aria-label="닫기"]'); await page.waitForTimeout(200);
   await page.click('.cl-row__body >> nth=1'); await page.waitForSelector('.sheet'); await shot('03-6-1-checklist-edit');
   await page.click('.sheet >> text=삭제'); await page.waitForTimeout(400); await shot('03-3-1-undo');
+  // 11.22 개인 탭: 내가 쓴 개인 항목만
+  await page.goto(B + '?t=CODE#/home/checklist?tab=mine'); await page.waitForSelector('.cl-note'); await shot('03-3-2-mine');
+  console.log('mine tab:', await page.$$eval('.cl-row__title', (r) => r.map((x) => x.textContent.trim())));
+  await page.click('[aria-label="체크 리스트 추가"]'); await page.waitForSelector('.sheet'); await shot('03-6-2-mine-add');
+  await page.fill('.sheet input[maxlength="40"]', '선크림'); await page.click('.sheet >> text=저장하기'); await page.waitForTimeout(500);
+  console.log('mine saved:', JSON.stringify(posts.filter((p) => p.action === 'save' && p.table === 'checklist').pop().row));
+  await page.goto(B + '?t=CODE#/home'); await page.waitForSelector('.check-cards'); await page.evaluate(() => document.querySelector('.check-cards').scrollIntoView()); await shot('03-home-checklist');
   await page.evaluate(() => { sessionStorage.setItem('showGuide', '1'); localStorage.removeItem('hg.installGuide'); });
   await page.goto(B + '?t=CODE#/home'); await page.reload(); await page.waitForTimeout(1500); await shot('S-2-install');
   console.log('install guide:', !!(await page.$('.guide-steps')));

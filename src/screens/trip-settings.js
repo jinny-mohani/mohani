@@ -5,6 +5,7 @@ import { closeOverlay } from '../overlay.js';
 import { getState, saveRow, uploadPhoto, refresh } from '../store.js';
 import { go } from '../router.js';
 import { tripDays } from '../date.js';
+import { isPersonal } from '../checklist.js';
 import { resizeImage } from '../image.js';
 import { inviteUrl, copyText } from '../share.js';
 import { toast } from '../ui/toast.js';
@@ -22,7 +23,7 @@ export function TripSettings() {
   const [error, setError] = useState('');
 
   const deletedCount = ['reservations', 'checklist', 'places', 'schedule', 'members']
-    .reduce((n, t) => n + data[t].filter((r) => r.deleted).length, 0);
+    .reduce((n, t) => n + data[t].filter((r) => r.deleted && !(t === 'checklist' && isPersonal(r) && r.assignee !== getState().me)).length, 0);
   const preview = { startDate, endDate };
   const days = tripDays(preview);
   const oldDays = tripDays(trip);

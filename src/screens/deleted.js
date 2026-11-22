@@ -5,6 +5,7 @@ import { restoreRow } from '../store.js';
 import { toast } from '../ui/toast.js';
 import { syncText } from '../date.js';
 import { josa } from '../members.js';
+import { isPersonal } from '../checklist.js';
 
 const KINDS = [
   { table: 'checklist', label: '체크 리스트', icon: 'list-checks', name: (r) => r.title },
@@ -17,9 +18,10 @@ const KINDS = [
   { table: 'members', label: '멤버', icon: 'user', name: (r) => r.name },
 ];
 
-export function DeletedList({ data }) {
+export function DeletedList({ data, me }) {
   const items = KINDS.flatMap((k) =>
-    data[k.table].filter((r) => r.deleted).map((r) => ({ kind: k, row: r }))
+    data[k.table].filter((r) => r.deleted && !(k.table === 'checklist' && isPersonal(r) && r.assignee !== me)) // 남의 개인 항목은 안 보여요
+      .map((r) => ({ kind: k, row: r }))
   ).sort((a, b) => String(b.row.deletedAt).localeCompare(String(a.row.deletedAt)));
 
   const restore = (kind, row) =>
