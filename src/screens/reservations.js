@@ -1,6 +1,6 @@
 // 05 예약 목록(전체) · 05-1 항공권 · 05-2 숙소 · 05-3 기타 · 05-4~6 상세 · 07-0 종류 선택
 import { html } from '../vendor/preact-htm.js';
-import { Button, ChipGroup, Fab, Empty, Icon, Row, Sheet, StatusLabel, SubHeader } from '../ui/components.js';
+import { Button, Choice, ChipGroup, Fab, Empty, Icon, Sheet, StatusLabel, SubHeader } from '../ui/components.js';
 import { go, replace, back } from '../router.js';
 import { openOverlay, replaceOverlay, closeOverlay } from '../overlay.js';
 import { formatDay, rangeText, nightsBetween, durationText, formatTime, syncText, datePart } from '../date.js';
@@ -9,7 +9,7 @@ import { copyText, shareInfo } from '../share.js';
 import { toast } from '../ui/toast.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import {
-  TYPES, TYPE_ICON, STATUSES, STATUS_ICON, OTHER_ICON,
+  TYPES, TYPE_ICON, STATUSES, OTHER_ICON,
   parseAirport, parseFlight, firstPhoto, flightBg, photoList, summary, sortReservations, sized,
 } from '../reservation-util.js';
 import { ReservationForm } from './reservation-form.js';
@@ -18,19 +18,18 @@ import { HeroDetail, InfoRows } from '../ui/hero-detail.js';
 
 const openForm = (type, row) => openOverlay(html`<${ReservationForm} type=${type} row=${row} />`);
 
+const STATUS_BOLD = { '예약 전': 'clock-circle', '예약 완료': 'check-circle', 보류: 'pause-circle' }; // 고르기 팝업용 채운 아이콘
+
 /** StatusLabel을 누르면 상태 선택 메뉴 (피그마 컴포넌트 설명) */
 function pickStatus(r) {
   openOverlay(html`<${Sheet} title="예약 상태">
-    <ul>
+    <ul class="choice-list">
       ${STATUSES.map((s) => html`<li key=${s}>
-        <button class="menu-row" aria-pressed=${r.status === s ? 'true' : 'false'}
+        <${Choice} icon=${STATUS_BOLD[s]} label=${s} pressed=${r.status === s} chevron=${false}
           onClick=${() => closeOverlay(() => {
             if (r.status === s) return;
             saveLater('reservations', { id: r.id, status: s }, r.updatedAt);
-          })}>
-          <${Icon} name=${STATUS_ICON[s]} size=${20} /><span>${s}</span>
-          ${r.status === s && html`<${Icon} name="check" size=${20} stroke=${2} />`}
-        </button>
+          })} />
       </li>`)}
     </ul>
   <//>`);
@@ -185,13 +184,11 @@ export function Reservations({ data, query }) {
 
 /** 07-0 종류 선택 (바텀시트) */
 function TypeSheet() {
-  const subs = { 항공권: '가는 편 · 오는 편', 숙소: '체크인 · 체크아웃', 기타: '렌터카 · 투어 · 체험 · 입장권' };
-  const icons = { 항공권: 'plane', 숙소: 'bed-double', 기타: 'ticket' };
+  const icons = { 항공권: 'airplane', 숙소: 'bed', 기타: 'ticket' };
   return html`<${Sheet} title="어떤 예약을 추가할까요?">
-    <ul>
+    <ul class="choice-list">
       ${TYPES.map((t) => html`<li key=${t}>
-        <${Row} icon=${icons[t]} title=${t} sub=${subs[t]}
-          onClick=${() => replaceOverlay(html`<${ReservationForm} type=${t} />`)} />
+        <${Choice} icon=${icons[t]} label=${t} onClick=${() => replaceOverlay(html`<${ReservationForm} type=${t} />`)} />
       </li>`)}
     </ul>
   <//>`;
@@ -215,13 +212,12 @@ export function ReservationDetail({ data, id }) {
   const who = memberName(data, r.assignee);
 
   const more = () => openOverlay(html`<${Sheet} title=${r.title}>
-    <ul>
-      <li><button class="menu-row" onClick=${() => replaceOverlay(html`<${ReservationForm} type=${r.type} row=${r} />`)}>
-        <${Icon} name="pencil" size=${20} /><span>수정</span></button></li>
-      <li><button class="menu-row" onClick=${() => closeOverlay(() => {
+    <ul class="choice-list">
+      <li><${Choice} icon="pen" label="수정" onClick=${() => replaceOverlay(html`<${ReservationForm} type=${r.type} row=${r} />`)} /></li>
+      <li><${Choice} icon="trash-bin-minimalistic" label="삭제" danger chevron=${false} onClick=${() => closeOverlay(() => {
         deleteWithUndo('reservations', r.id, r.title).catch(() => toast('삭제하지 못했어요 · 다시 시도해 주세요'));
         back('/reservations?type=' + r.type);
-      })}><${Icon} name="trash-2" size=${20} /><span>삭제</span></button></li>
+      })} /></li>
     </ul>
   <//>`);
 

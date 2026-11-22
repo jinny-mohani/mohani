@@ -83,7 +83,7 @@ function toRow(type, f) {
       mapUrl: f.mapUrl.trim(),
       address: f.address.trim(),
       roomType: f.roomType.trim(),
-      roomSize: f.roomSize.trim(),
+      roomSize: withSqm(f.roomSize),
     };
   }
   // 기타: 장소 칸에 지도 링크를 넣으면 지도링크로, 아니면 주소로
@@ -109,6 +109,9 @@ function validate(type, f) {
 }
 
 /** 날짜 + 시간 한 쌍 */
+
+/** 방 크기: 숫자만 적으면 뒤에 ㎡를 붙여요 (32 → 32㎡) */
+const withSqm = (v) => { const t = String(v || '').trim(); return /^\d+(\.\d+)?$/.test(t) ? t + '㎡' : t; };
 export function ReservationForm({ type, row }) {
   const isEdit = !!(row && row.id);
   const data = getState().data;
@@ -213,7 +216,8 @@ export function ReservationForm({ type, row }) {
       <${Collapsible} title="추가 정보" sub="예약처 · 비용 · 객실 · 메모" open=${more} onToggle=${() => setMore(!more)}>
         ${vendor}${cost}
         <${TextField} title="객실 형태" placeholder="예) 오션뷰 디럭스 2인실" value=${f.roomType} onInput=${set('roomType')} />
-        <${TextField} title="방 크기" placeholder="예) 32㎡" value=${f.roomSize} onInput=${set('roomSize')} />
+        <${TextField} title="방 크기" placeholder="예) 32㎡" inputMode="decimal" value=${f.roomSize} onInput=${set('roomSize')}
+          onBlur=${() => setF((x) => ({ ...x, roomSize: withSqm(x.roomSize) }))} />
         ${memo}
       <//>`;
   } else {
@@ -240,7 +244,6 @@ export function ReservationForm({ type, row }) {
         <${FieldLabel}>날짜 시간<//>
         <${PeriodField} trip=${data.trip} start=${{ date: f.startDate, time: f.startTime }} end=${{ date: f.endDate, time: f.endTime }}
           onChange=${(a, b) => setF((x) => ({ ...x, startDate: a.date, startTime: a.time, endDate: b.date, endTime: b.time }))} />
-        <span class="field__help">시작 → 끝 순서로 고르면 한 번에 끝나요 · 하루짜리면 시작만</span>
       </div>
       <${TextField} title="장소" placeholder="구글 지도 링크 또는 주소" value=${f.address || f.mapUrl} onInput=${set('address')} />
       ${bookingNo}${status}${assignee}${photos}

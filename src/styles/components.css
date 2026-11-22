@@ -123,6 +123,24 @@
   width: 44px; height: 44px; border-radius: var(--radius-m);
   background: var(--color-surface);
 }
+/* 고르기 팝업의 줄 (피그마 07 예약 종류 선택, 11.22): 테두리 카드 + 연한 초록 아이콘 칸 + › */
+.choice-list { display: flex; flex-direction: column; gap: 10px; }
+.choice {
+  display: flex; align-items: center; gap: 14px; width: 100%; min-height: 70px;
+  padding: 12px 16px; border: 1px solid var(--color-border); border-radius: 14px;
+  background: var(--color-bg); text-align: left;
+  font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-medium); color: var(--grey-900);
+}
+.choice:active { background: var(--color-bg-tint); }
+.choice > span:not(.choice__icon) { flex: 1; min-width: 0; }
+.choice__icon {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: var(--radius-m);
+  background: var(--color-point-weak); color: var(--color-point);
+}
+.choice--danger .choice__icon { background: var(--color-surface); color: var(--grey-700); }
+.choice[aria-pressed='true'] { border-color: var(--color-point); font-weight: var(--fw-bold); }
+.choice > .icon:last-child { color: var(--grey-900); flex-shrink: 0; }
 .row__body { flex: 1; min-width: 0; }
 .row__title { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-medium); }
 .row__sub { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); }
@@ -160,6 +178,39 @@
   height: var(--header-h); padding-top: var(--safe-top); flex-shrink: 0; box-sizing: content-box;
 }
 .modal__head h1 { font-size: var(--fs-heading); line-height: var(--lh-heading); font-weight: var(--fw-bold); }
+
+/* 체크인 · 체크아웃 (피그마 11.22): 제목 Bold 18, 날짜 줄·요일 줄은 위에 붙고 달은 위아래로 스크롤 */
+.modal--cal .modal__head h1 { font-size: var(--fs-title); line-height: var(--lh-title); }
+.modal--cal .modal__body { padding: 0; }
+.modal--cal .modal__foot { border-top: 1px solid var(--color-divider); padding-top: 12px; padding-bottom: calc(var(--gap-m) + var(--safe-bottom)); }
+.rcal__sum {
+  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 54px; padding: 16px var(--page-x); background: var(--color-bg);
+  border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider);
+  font-size: var(--fs-button); line-height: 20px;
+}
+.rcal__sumicon { display: flex; color: var(--color-point); margin-right: 4px; }
+.rcal__dash { font-weight: var(--fw-medium); }
+.rcal__hint { font-size: var(--fs-body); color: var(--color-text-weak); }
+.rcal__week {
+  position: sticky; top: 54px; z-index: 1; display: grid; grid-template-columns: repeat(7, 1fr);
+  padding: 6px var(--page-x); background: var(--color-bg); box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+  text-align: center; font-size: var(--fs-small); line-height: 28px; color: var(--grey-800);
+}
+.rcal__list { padding: 0 var(--page-x); }
+.rcal__month { padding: 18px 0 12px; }
+.rcal__month + .rcal__month { border-top: 1px solid var(--color-divider); }
+.rcal__month h2 { padding-bottom: 8px; font-size: var(--fs-body); line-height: 20px; font-weight: var(--fw-bold); }
+.rcal__grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 2px; }
+.rcal__d { position: relative; display: flex; align-items: center; justify-content: center; height: 44px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--grey-900); }
+.rcal__n { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 22px; }
+.rcal__today { position: absolute; z-index: 1; left: 0; right: 0; top: 29px; font-size: var(--fs-caption); line-height: 14px; font-weight: var(--fw-medium); color: var(--color-point); }
+/* 고른 기간: 연한 초록 띠 (시작·끝은 반쪽만) */
+.rcal__d--band { background: var(--color-point-weak); }
+.rcal__d--from { background: linear-gradient(90deg, transparent 50%, var(--color-point-weak) 50%); }
+.rcal__d--to { background: linear-gradient(90deg, var(--color-point-weak) 50%, transparent 50%); }
+.rcal__d--on .rcal__n { background: var(--color-point); color: #fff; font-weight: var(--fw-semibold); }
+.rcal__d--on .rcal__today { display: none; }
 .modal__head .icon-btn { position: absolute; right: 8px; bottom: 6px; }
 .modal__body { flex: 1; overflow-y: auto; padding: var(--gap-s) var(--page-x) var(--gap-xl); }
 .modal__foot {
@@ -174,18 +225,14 @@
   max-width: var(--app-max); margin: 0 auto; max-height: 88dvh;
   display: flex; flex-direction: column;
   background: var(--color-bg);
-  border-radius: 20px 20px 0 0;
+  border-radius: 24px 24px 0 0;
   animation: slide-up var(--dur) var(--ease);
 }
-.sheet__top { flex-shrink: 0; padding: 0 var(--page-x); touch-action: none; }
-.sheet__handle { display: block; width: 100%; height: 24px; position: relative; }
-.sheet__handle::after {
-  content: ''; position: absolute; left: 50%; top: 10px; transform: translateX(-50%);
-  width: 40px; height: 4px; border-radius: 2px; background: var(--color-border);
-}
-.sheet__head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 var(--gap-m); }
-.sheet__head h2 { font-size: var(--fs-heading); line-height: var(--lh-heading); font-weight: var(--fw-bold); }
-.sheet__head .icon-btn { margin-right: -12px; }
+/* 피그마 SheetHeader (11.22): 손잡이 없이 위 여백 24 · 제목 왼쪽 SemiBold 18 · ✕ 오른쪽. 제목 줄을 아래로 끌어도 닫혀요 */
+.sheet__top { flex-shrink: 0; padding: 24px var(--page-x) 0; touch-action: none; }
+.sheet__head { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-m); min-height: 44px; margin-bottom: 12px; }
+.sheet__head h2 { font-size: var(--fs-title); line-height: var(--lh-title); font-weight: var(--fw-semibold); }
+.sheet__head .icon-btn { margin-right: -10px; flex-shrink: 0; }
 .sheet__body {
   flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   padding: 4px var(--page-x) calc(var(--gap-xl) + var(--safe-bottom));

@@ -91,7 +91,7 @@ export function Home({ data, me }) {
       <section class="home-section">
         <button class="home-section__head" onClick=${() => go('/reservations')}>
           <h2>예약정보</h2>
-          <${Icon} name="chevron-right" size=${20} label="전체 보기" />
+          <${Icon} name="select-right" size=${18} stroke=${1.4} label="전체 보기" />
         </button>
         <div class="res-cards">
           ${RES_TYPES.map(({ type, icon }) => {
@@ -109,7 +109,7 @@ export function Home({ data, me }) {
       <section class="home-section">
         <button class="home-section__head" onClick=${() => go('/home/checklist')}>
           <h2>체크 리스트</h2>
-          <${Icon} name="chevron-right" size=${20} label="전체 보기" />
+          <${Icon} name="select-right" size=${18} stroke=${1.4} label="전체 보기" />
         </button>
         <div class="check-cards">
           ${GROUPS.map((group, gi) => {
@@ -144,13 +144,13 @@ export function Home({ data, me }) {
       ${places.length
         ? placeGroups(places).map(({ c, list }) => html`<section class="home-section" key=${c}>
             <button class="home-section__head" onClick=${() => go('/places?category=' + encodeURIComponent(c))}>
-              <h2>${c}</h2><${Icon} name="chevron-right" size=${20} label=${c + ' 전체 보기'} />
+              <h2>${c}</h2><${Icon} name="select-right" size=${18} stroke=${1.4} label=${c + ' 전체 보기'} />
             </button>
             <div class="place-row">${list.slice(0, 5).map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>
           </section>`)
         : html`<section class="home-section">
             <button class="home-section__head" onClick=${() => go('/places')}>
-              <h2>장소</h2><${Icon} name="chevron-right" size=${20} label="전체 보기" />
+              <h2>장소</h2><${Icon} name="select-right" size=${18} stroke=${1.4} label="전체 보기" />
             </button>
             <button class="check-card check-card__empty" style="width:100%" onClick=${() => openOverlay(html`<${PlaceForm} />`)}>+ 가고 싶은 장소를 등록해 보세요</button>
           </section>`}

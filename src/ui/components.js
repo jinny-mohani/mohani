@@ -133,8 +133,8 @@ export function TextField({ title, help, ...input }) {
 }
 
 /** 전체 화면 팝업 (작성·수정): ✕ 오른쪽 위, 저장 버튼 아래 고정 */
-export function Modal({ title, children, footer }) {
-  return html`<div class="modal" role="dialog" aria-modal="true" aria-label=${title}>
+export function Modal({ title, children, footer, className = '' }) {
+  return html`<div class=${'modal ' + className} role="dialog" aria-modal="true" aria-label=${title}>
     <header class="modal__head">
       <h1>${title}</h1>
       <button class="icon-btn" aria-label="닫기" onClick=${() => closeOverlay()}>
@@ -159,7 +159,6 @@ export function Sheet({ title, children, footer, label }) {
     <div class="dim" onClick=${() => closeOverlay()}></div>
     <section class="sheet" role="dialog" aria-modal="true" aria-label=${label || title}>
       <div class="sheet__top" onTouchStart=${onTouchStart} onTouchEnd=${onTouchEnd}>
-        <span class="sheet__handle" aria-hidden="true"></span>
         <div class="sheet__head">
           <h2>${title}</h2>
           <button class="icon-btn" aria-label="닫기" onClick=${() => closeOverlay()}>
@@ -182,6 +181,15 @@ export function Row({ icon, title, sub, onClick, chevron = true }) {
       ${sub && html`<span class="row__sub" style="display:block">${sub}</span>`}
     </span>
     ${chevron && html`<${Icon} name="chevron-right" size=${20} />`}
+  </button>`;
+}
+
+/** 고르기 팝업 한 줄 (피그마 07 예약 종류 선택): 연한 초록 아이콘 칸 + 이름 + ›(또는 ✓) */
+export function Choice({ icon, label, onClick, pressed, danger, chevron = true }) {
+  return html`<button class=${'choice' + (danger ? ' choice--danger' : '')} aria-pressed=${pressed == null ? null : String(pressed)} onClick=${onClick}>
+    <span class="choice__icon"><${Icon} name=${icon} size=${24} bold /></span>
+    <span>${label}</span>
+    ${pressed ? html`<${Icon} name="check" size=${20} stroke=${2} />` : chevron && html`<${Icon} name="chevron-right" size=${20} stroke=${1.25} />`}
   </button>`;
 }
 
@@ -348,10 +356,14 @@ export function PhotoField({ title = '사진', photos, onChange, max = 3 }) {
           <${Icon} name="x" size=${14} stroke=${2} />
         </button>
       </span>`)}
-      ${photos.length < max && html`<label class="photo-pick">
-        <${Icon} name="image-plus" /><span>사진 추가</span>
-        <input type="file" accept="image/*" multiple onChange=${add} aria-label="사진 추가" />
-      </label>`}
+      ${/* 빈칸도 3개까지 미리 보여줘요 (11.22): 첫 칸은 '대표 사진', 나머지는 '추가' */
+        Array.from({ length: Math.max(0, max - photos.length) }, (_, k) => {
+          const label = photos.length + k === 0 ? '대표 사진' : '추가';
+          return html`<label class="photo-pick" key=${'pick' + k}>
+            <${Icon} name="image-plus" /><span>${label}</span>
+            <input type="file" accept="image/*" multiple onChange=${add} aria-label=${label === '추가' ? '사진 추가' : '대표 사진 추가'} />
+          </label>`;
+        })}
     </div>
   </div>`;
 }

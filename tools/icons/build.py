@@ -24,12 +24,14 @@ TAB_FILLED = ['house', 'ticket', 'calendar-days', 'map-pin', 'users']  # 하단 
 # 채운(Bold) 작은 아이콘: 입력 제목 왼쪽(회색), 장소 상세 정보 줄(초록). 앱 이름 = Solar 이름
 BOLD = ['widget', 'airplane', 'map-point', 'calendar', 'clock-circle', 'cup-hot', 'hashtag', 'check-circle',
   'user', 'user-circle', 'shop', 'buildings', 'armchair', 'clipboard-text', 'pen', 'gallery', 'map', 'bus',
-  'users-group-rounded', 'wallet', 'ruler', 'bed', 'ticket', 'phone', 'car', 'tag', 'global', 'checklist']
+  'users-group-rounded', 'wallet', 'ruler', 'bed', 'ticket', 'phone', 'car', 'tag', 'global', 'checklist',
+  'trash-bin-minimalistic', 'pause-circle']  # 11.22: 고르기 팝업 아이콘 칸
 
 # 피그마에서 직접 그린 아이콘 (Solar 아님): 입력칸·접기의 작은 화살표 ico/chevron-down·up (18px 기준 10.5×5.5, 선 1.4)
 CUSTOM = {
   'select-down': '<path d="M5 8.33L12 15.67L19 8.33"/>',
   'select-up': '<path d="M5 15.67L12 8.33L19 15.67"/>',
+  'select-right': '<path d="M8.33 5L15.67 12L8.33 19"/>',  # 홈 각 항목 제목 오른쪽 › (11.22: ico/chevron-Up 회전)
   # 장소 상세 위쪽 흐림 버튼 (피그마 8210:11473): 뒤로 화살표 7×14, 점 3개 — 선 2
   'glass-back': '<path d="M15.5 19L8.5 12L15.5 5"/>',
   'glass-more': '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',

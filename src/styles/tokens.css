@@ -55,6 +55,7 @@
   --fs-heading: 20px;  --lh-heading: 28px;  /* 소제목: 섹션·팝업·카드 제목 */
   --fs-display: 24px;  --lh-display: 32px;  /* 큰 제목: 화면 제목, 장소 상세·13-1 제목 */
   --fs-button: 18px;   /* 버튼 글자 — 피그마 Button 컴포넌트 기준 (6단계의 예외) */
+  --fs-title: 18px;    --lh-title: 28px;    /* 팝업 제목 — 피그마 SheetHeader·체크인 화면 (11.22, 버튼과 같은 예외) */
   --lh: 1.5;
   --fw-light: 300;     /* 안내 글자·플레이스홀더·토스트 (피그마 Light) */
   --fw-regular: 400;

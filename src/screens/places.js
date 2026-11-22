@@ -3,7 +3,7 @@ import { html, useState } from '../vendor/preact-htm.js';
 import {
   Button, ChipField, ChipGroup, Empty, Icon, Modal, PhotoField, Sheet, TextArea, TextField,
   FormError,
-  Fab, FieldLabel } from '../ui/components.js';
+  Fab, FieldLabel, Choice } from '../ui/components.js';
 import { go, replace, back } from '../router.js';
 import { openOverlay, closeOverlay, replaceOverlay } from '../overlay.js';
 import { getState, uploadPhoto } from '../store.js';
@@ -88,13 +88,13 @@ export function PlaceDetail({ data, id }) {
     openOverlay(html`<${ScheduleForm} day=${1} placeId=${p.id} />`);
   };
   const more = () => openOverlay(html`<${Sheet} title=${p.name}>
-    <ul>
-      <li><button class="menu-row" onClick=${() => closeOverlay(addToSchedule)}><${Icon} name="calendar-days" size=${20} /><span>일정에 추가</span></button></li>
-      <li><button class="menu-row" onClick=${() => replaceOverlay(html`<${PlaceForm} row=${p} />`)}><${Icon} name="pencil" size=${20} /><span>수정</span></button></li>
-      <li><button class="menu-row" onClick=${() => closeOverlay(() => {
+    <ul class="choice-list">
+      <li><${Choice} icon="calendar" label="일정에 추가" onClick=${() => closeOverlay(addToSchedule)} /></li>
+      <li><${Choice} icon="pen" label="수정" onClick=${() => replaceOverlay(html`<${PlaceForm} row=${p} />`)} /></li>
+      <li><${Choice} icon="trash-bin-minimalistic" label="삭제" danger chevron=${false} onClick=${() => closeOverlay(() => {
         deleteWithUndo('places', p.id, p.name).catch(() => toast('삭제하지 못했어요'));
         back('/places');
-      })}><${Icon} name="trash-2" size=${20} /><span>삭제</span></button></li>
+      })} /></li>
     </ul>
   <//>`);
 

@@ -103,10 +103,13 @@ const data = {
     await page.click(`.cal__d >> text="${day}"`); await page.click('.sheet__foot >> text=선택 완료'); await page.waitForTimeout(150);
   };
   // 기간 달력: 시작·끝을 차례로
+  // (11.22 전체 화면 달력: 이미 고른 날이 있는 달, 없으면 첫 달에서 고름)
   const pickRange = async (label, d1, d2) => {
-    await page.click(`[aria-label="${label}"]`); await page.waitForSelector('.cal');
-    await page.click(`.cal__d >> text="${d1}"`); await page.click(`.cal__d >> text="${d2}"`);
-    await page.click('.sheet__foot >> text=선택 완료'); await page.waitForTimeout(150);
+    await page.click(`[aria-label="${label}"]`); await page.waitForSelector('.rcal__list');
+    const month = async () => ((await page.$('.rcal__month:has(.rcal__d--on)')) ? '.rcal__month:has(.rcal__d--on)' : '.rcal__month >> nth=0');
+    await page.click(`${await month()} >> .rcal__n >> text="${d1}"`);
+    await page.click(`${await month()} >> .rcal__n >> text="${d2}"`);
+    await page.click('.modal--cal .modal__foot >> text=선택 완료'); await page.waitForTimeout(150);
   };
   const shot = async (n) => {
     await page.waitForTimeout(400);

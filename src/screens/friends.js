@@ -15,18 +15,19 @@ function FriendRow({ m, isMe }) {
   const rel = [m.isOwner && '개설자', m.relation && m.relation !== '개설자' && m.relation].filter(Boolean).join(' · ');
   // 친구를 누르면 03-8 프로필 팝업 (소개 전체), 나는 내 프로필 수정
   const open = () => openOverlay(isMe ? html`<${ProfileEdit} />` : html`<${FriendProfile} member=${m} />`);
+  // 피그마 11.22 '친구글-목록': 흰 카드 · 큰 프로필(80) 옆에 이름·소개, 아래에 긴 소개
   return html`<li class="friend">
     <button class="friend__open" aria-label=${isMe ? '내 프로필 수정' : m.name + ' 프로필 보기'} onClick=${open}></button>
-    <${Avatar} member=${m} size=${56} />
-    <div class="friend__body">
-      <div class="friend__name">
-        <b>${m.name}</b>${isMe && html`<span class="me-label">나</span>`}
-        ${isMe && html`<button class="icon-btn friend__edit" aria-label="내 프로필 수정" onClick=${() => openOverlay(html`<${ProfileEdit} />`)}>
-          <${Icon} name="pencil" size=${20} /></button>`}
+    <div class="friend__top">
+      <${Avatar} member=${m} size=${80} />
+      <div class="friend__body">
+        <div class="friend__name"><b>${m.name}</b>${isMe && html`<span class="me-label">나</span>`}</div>
+        ${rel && html`<p class="friend__rel">${rel}</p>`}
       </div>
-      ${rel && html`<p class="friend__rel">${rel}</p>`}
-      ${m.intro && html`<div class="friend__intro"><p class="clamp-2">${m.intro}</p></div>`}
     </div>
+    ${m.intro && html`<p class="friend__intro clamp-2">${m.intro}</p>`}
+    ${isMe && html`<button class="icon-btn friend__edit" aria-label="내 프로필 수정" onClick=${() => openOverlay(html`<${ProfileEdit} />`)}>
+      <${Icon} name="pencil" size=${16} /></button>`}
   </li>`;
 }
 
@@ -47,7 +48,7 @@ export function Friends({ data, me }) {
       </span>
     </header>
     <div class="page">
-      <p class="muted" style="font-size:var(--fs-small);margin-top:-12px">${members.length}명이 함께 가요</p>
+      <p class="friends-count">${members.length}명이 함께 가요</p>
       <ul class="friends">${sorted.map((m) => html`<${FriendRow} key=${m.id} m=${m} isMe=${m.id === me} />`)}</ul>
     </div>
   </main>`;

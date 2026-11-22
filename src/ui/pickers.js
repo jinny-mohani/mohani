@@ -1,6 +1,6 @@
 // 목록에서 고르기 · 날짜 고르기 (07-1 피드백: 글자 입력 대신 고르기)
-import { html, useState } from '../vendor/preact-htm.js';
-import { Button, ChipGroup, Icon, Sheet } from './components.js';
+import { html, useState, useEffect, useRef } from '../vendor/preact-htm.js';
+import { Button, ChipGroup, Icon, Modal, Sheet } from './components.js';
 import { openOverlay, closeOverlay } from '../overlay.js';
 import { formatDay, parseDate, tripDays, dayDate } from '../date.js';
 
@@ -262,45 +262,63 @@ export function PeriodField({ label = '날짜 시간', trip, start, end, onChang
     onClick=${() => openOverlay(html`<${PeriodSheet} title=${label} trip=${trip} start=${start} end=${end} onPick=${onChange} />`)} />`;
 }
 
-/* ───── 기간 고르기 (시작 → 끝을 한 달력에서 연속으로) ───── */
+/* ───── 기간 고르기 (11.22 피그마 '체크인 · 체크아웃': 전체 화면, 달을 위아래로 이어서 스크롤) ───── */
+const monthsBetween = (a, b) => (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth();
+
 export function DateRangeSheet({ title = '날짜 선택', start, end, onPick, labels = ['출발', '도착'] }) {
-  const base = parseDate(start) || new Date();
-  const [month, setMonth] = useState(new Date(base.getFullYear(), base.getMonth(), 1));
   const [s, setS] = useState(start || '');
   const [e, setE] = useState(end || '');
-  const first = month.getDay();
-  const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  const cells = [...Array(first).fill(null), ...Array.from({ length: count }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1))];
-  const move = (d) => setMonth(new Date(month.getFullYear(), month.getMonth() + d, 1));
+  const today = ymd(new Date());
+  // 보여줄 달: (시작일·오늘 중 이른 달) ~ 그 뒤 12달
+  const [months] = useState(() => {
+    const t = new Date();
+    const st = parseDate(start);
+    const from = st && st < t ? new Date(st.getFullYear(), st.getMonth(), 1) : new Date(t.getFullYear(), t.getMonth(), 1);
+    return Array.from({ length: 13 }, (_, i) => new Date(from.getFullYear(), from.getMonth() + i, 1));
+  });
+  const listRef = useRef(null);
+  // 처음 열면 고른 시작일이 있는 달로 스크롤
+  useEffect(() => {
+    const st = parseDate(start);
+    if (!st || !listRef.current) return;
+    const el = listRef.current.querySelector(`[data-m="${monthsBetween(months[0], st)}"]`);
+    const box = listRef.current.closest('.modal__body');
+    if (el && box) box.scrollTop = el.offsetTop - listRef.current.offsetTop;
+  }, []);
   // 처음 누르면 시작, 두 번째로 누르면 끝. 다 고른 뒤 다시 누르면 새로 시작
   const tap = (v) => {
     if (!s || (s && e)) { setS(v); setE(''); }
     else if (v < s) { setS(v); }
     else { setE(v); }
   };
-  const nights = s && e ? Math.round((parseDate(e) - parseDate(s)) / 86400000) : 0;
-  const summary = s && e ? `${formatDay(s)} – ${formatDay(e)} · ${nights ? nights + '박 ' + (nights + 1) + '일' : '당일'}`
-    : s ? `${formatDay(s)} ${labels[0]} · ${labels[1]}일을 골라 주세요` : `${labels[0]}일을 골라 주세요`;
-  return html`<${Sheet} title=${title} footer=${html`<${Button} disabled=${!s || !e} onClick=${() => { onPick(s, e); closeOverlay(); }}>선택 완료<//>`}>
-    <p class="range-summary" aria-live="polite">${summary}</p>
-    <div class="cal">
-      <div class="cal__head">
-        <button class="icon-btn" aria-label="이전 달" onClick=${() => move(-1)}><${Icon} name="chevron-left" /></button>
-        <b>${month.getFullYear()}년 ${month.getMonth() + 1}월</b>
-        <button class="icon-btn" aria-label="다음 달" onClick=${() => move(1)}><${Icon} name="chevron-right" /></button>
-      </div>
-      <div class="cal__grid" role="grid">
-        ${WEEK.map((w) => html`<span class="cal__w">${w}</span>`)}
-        ${cells.map((d, i) => {
-          if (!d) return html`<span key=${'e' + i}></span>`;
-          const v = ymd(d);
-          const edge = v === s || v === e;
-          const inRange = s && e && v > s && v < e;
-          return html`<button key=${v}
-            class=${'cal__d' + (inRange ? ' cal__d--trip' : '') + (edge ? ' cal__d--on' : '') + (v === ymd(new Date()) ? ' cal__d--today' : '')}
-            aria-pressed=${edge ? 'true' : 'false'} aria-label=${formatDay(v)} onClick=${() => tap(v)}>${d.getDate()}</button>`;
-        })}
-      </div>
+  return html`<${Modal} title=${title} className="modal--cal"
+    footer=${html`<${Button} disabled=${!s || !e} onClick=${() => { onPick(s, e); closeOverlay(); }}>선택 완료<//>`}>
+    <div class="rcal__sum" aria-live="polite">
+      <span class="rcal__sumicon"><${Icon} name="calendar" size=${20} bold /></span>
+      ${s ? html`<b>${formatDay(s)}</b><span class="rcal__dash">-</span>${e && html`<b>${formatDay(e)}</b>`}`
+        : html`<span class="rcal__hint">${labels[0]} 날짜를 골라 주세요</span>`}
+    </div>
+    <div class="rcal__week" aria-hidden="true">${WEEK.map((w) => html`<span>${w}</span>`)}</div>
+    <div class="rcal__list" ref=${listRef}>
+      ${months.map((m, mi) => {
+        const count = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+        const cells = [...Array(m.getDay()).fill(null), ...Array.from({ length: count }, (_, i) => new Date(m.getFullYear(), m.getMonth(), i + 1))];
+        return html`<section class="rcal__month" data-m=${mi} key=${mi}>
+          <h2>${m.getFullYear()}년 ${m.getMonth() + 1}월</h2>
+          <div class="rcal__grid" role="grid">
+            ${cells.map((d, i) => {
+              if (!d) return html`<span key=${'e' + i}></span>`;
+              const v = ymd(d);
+              const edge = v === s || v === e;
+              const band = s && e && s !== e && v >= s && v <= e;
+              const cls = 'rcal__d' + (band ? ' rcal__d--band' : '') + (band && v === s ? ' rcal__d--from' : '') + (band && v === e ? ' rcal__d--to' : '') + (edge ? ' rcal__d--on' : '');
+              return html`<button key=${v} class=${cls} aria-pressed=${edge ? 'true' : 'false'}
+                aria-label=${formatDay(v) + (v === today ? ' 오늘' : '')} onClick=${() => tap(v)}>
+                <span class="rcal__n">${d.getDate()}</span>${v === today && html`<small class="rcal__today">오늘</small>`}</button>`;
+            })}
+          </div>
+        </section>`;
+      })}
     </div>
   <//>`;
 }
