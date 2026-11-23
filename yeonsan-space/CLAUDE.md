@@ -24,7 +24,7 @@
 - `prototype/` 시안과 시제품. `*.src.html`이 원본, `tools/build_prototype.py`로 글꼴을 넣어 `*.html`을 만든다.
 - `tools/` 빌드 스크립트.
 
-## 픽셀 규칙 (요약, 자세한 내용은 docs/game-design.md 7절)
+## 픽셀 규칙 (요약, 자세한 내용은 docs/game-design.md 6절)
 - 논리 해상도: 휴대폰 세로 180×(가변), 태블릿 가로 (가변)×240. 정수배 확대만.
 - 글꼴: Galmuri11 12px (SIL OFL 1.1)
 - 기획안(공유용): https://claude.ai/artifact/L4bUuf2qSPjRNueDuY9Ud3
