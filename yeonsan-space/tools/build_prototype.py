@@ -3,7 +3,8 @@
 사용법:
   pip install fonttools brotli
   npm pack galmuri@2.40.3 && tar xzf galmuri-2.40.3.tgz   # package/dist/ 에 글꼴이 생김
-  python3 yeonsan-space/tools/build_prototype.py <galmuri dist 폴더>
+  python3 yeonsan-space/tools/build_prototype.py <galmuri dist 폴더> [페이지 이름]
+  페이지 이름 기본값: style-candidates (예: characters)
 
 입력:  yeonsan-space/prototype/style-candidates.src.html  (/*FONT_R*/, /*FONT_B*/ 자리표시)
 출력:  yeonsan-space/prototype/style-candidates.html
@@ -17,8 +18,9 @@ from fontTools import subset
 from fontTools.ttLib import TTFont
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SRC = ROOT / "prototype" / "style-candidates.src.html"
-OUT = ROOT / "prototype" / "style-candidates.html"
+PAGE = sys.argv[2] if len(sys.argv) > 2 else "style-candidates"
+SRC = ROOT / "prototype" / f"{PAGE}.src.html"
+OUT = ROOT / "prototype" / f"{PAGE}.html"
 
 
 def subset_b64(font_path: pathlib.Path, text: str) -> str:

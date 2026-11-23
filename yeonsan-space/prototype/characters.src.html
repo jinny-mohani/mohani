@@ -1,0 +1,277 @@
+<title>달토끼와 꼬마봇 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<style>
+/* Galmuri © 2019–2025 Lee Minseo (quiple@quiple.dev), SIL Open Font License 1.1 — 시안용 부분 글꼴 */
+@font-face { font-family: "PixelKR"; font-weight: 400; src: url(data:font/woff2;base64,/*FONT_R*/) format("woff2"); }
+@font-face { font-family: "PixelKR"; font-weight: 700; src: url(data:font/woff2;base64,/*FONT_B*/) format("woff2"); }
+
+/* 레이아웃: 머리말 → 달토끼 색 후보 3줄(표정 4개씩) → 꼬마봇 → 실제 게임 크기 → 고를 것 */
+:root {
+  --void: #0a0c1f; --deck: #131838; --rail: #262d5c; --ink: #eceeff; --dim: #a3abd9; --amber: #ffb547; --mint: #74e8bd;
+  --pixel: "PixelKR", "IBM Plex Sans KR", ui-monospace, monospace;
+  --body: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+html { background: var(--void); }
+body {
+  background: var(--void); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 48px; }
+h1, h2, h3, .px { font-family: var(--pixel); font-weight: 700; text-wrap: balance; }
+h1 { font-size: clamp(28px, 6vw, 44px); line-height: 1.15; margin: 0; }
+h2 { font-size: 22px; margin: 0 0 6px; }
+h3 { font-size: 15px; margin: 0; }
+p { margin: 0; }
+.eyebrow { font-family: var(--pixel); font-size: 12px; color: var(--amber); letter-spacing: .08em; }
+.lead { color: var(--dim); max-width: 62ch; font-size: 16px; }
+header { padding-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+.sub { color: var(--dim); margin-bottom: 16px; }
+.row { background: var(--deck); border: 1px solid var(--rail); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.row-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; justify-content: space-between; }
+.row-head .px { color: var(--amber); }
+.swatches { display: flex; }
+.swatches span { width: 18px; height: 18px; }
+.poses { display: flex; flex-wrap: wrap; gap: 12px; }
+.pose { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.pose canvas { image-rendering: pixelated; image-rendering: crisp-edges; background: #0b0f2a; max-width: 100%; }
+.pose span { font-size: 12px; color: var(--dim); font-family: var(--pixel); font-weight: 400; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.scene { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 24px; align-items: center; }
+.scene canvas { image-rendering: pixelated; image-rendering: crisp-edges; border: 2px solid var(--rail); max-width: 100%; }
+.scene ul { margin: 0; padding-left: 18px; color: var(--dim); }
+.scene li + li { margin-top: 6px; }
+.ask { display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0; list-style: none; }
+.ask li { background: var(--deck); border-left: 4px solid var(--amber); padding: 12px 16px; }
+footer { color: var(--dim); font-size: 12px; border-top: 1px solid var(--rail); padding-top: 16px; }
+@media (max-width: 760px) { .scene { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">연산 우주여행 · 2단계 · 캐릭터 시안</span>
+    <h1>달토끼와 꼬마봇</h1>
+    <p class="lead">머리와 몸이 하나로 이어진 둥근 몸, 짧고 가는 팔다리, 긴 귀 두 개. 배에는 보름달 무늬를 넣었어요. 모두 가로 26 × 세로 32 픽셀로 그린 뒤 6배로 키워서 보여 줍니다. 깜빡이고 숨 쉬는 움직임도 들어 있어요.</p>
+  </header>
+
+  <section>
+    <h2>달토끼 · 색 후보 3가지</h2>
+    <p class="sub">표정 4가지: 기본, 정답(만세), 오답(귀 처짐, 땀), 우주 헬멧</p>
+    <div class="stack" id="rabbits"></div>
+  </section>
+
+  <section>
+    <h2>꼬마봇 · 힌트 담당</h2>
+    <p class="sub">얼굴이 화면이라 표정과 힌트 그림을 바로 바꿔 보여 줍니다. 다리 대신 작은 분사구로 떠다녀요.</p>
+    <div class="row"><div class="poses" id="bots"></div></div>
+  </section>
+
+  <section>
+    <h2>실제 게임 크기</h2>
+    <p class="sub">D안 장면에 넣었을 때의 크기예요. 휴대폰에서는 이 정도(2배)로 보입니다.</p>
+    <div class="scene">
+      <canvas id="scene" width="180" height="150" aria-label="달토끼가 우주선 옆에 서 있고 꼬마봇이 힌트를 보여 주는 장면"></canvas>
+      <ul>
+        <li>오답이면 꼬마봇이 얼굴 화면에 힌트 그림을 띄워요. 4 × 2라면 4개씩 2줄이에요.</li>
+        <li>실제 크기에서도 긴 귀 덕분에 토끼로 보이는지 확인해 보세요.</li>
+        <li>달토끼가 D안 로켓보다 커요. 비행 화면에서는 로켓 창문 안에 작게 앉히고, 큰 달토끼는 메인·결과·꾸미기 화면에 쓰는 걸 제안해요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>골라 주세요</h2>
+    <ol class="ask">
+      <li><strong>색:</strong> A 달빛 흰색, B 크림 노랑, C 연보라 중 어떤 게 좋은가요? 섞어도 돼요. 예: A 몸 + C 귀 안쪽</li>
+      <li><strong>귀 길이:</strong> 지금 길이가 좋은가요, 더 길거나 짧은 게 좋은가요?</li>
+      <li><strong>배 무늬:</strong> 보름달 무늬가 좋은가요, 여우 인형처럼 흰 동그라미가 좋은가요?</li>
+      <li><strong>이름:</strong> 달토끼와 꼬마봇의 이름이 있으면 알려 주세요.</li>
+    </ol>
+  </section>
+
+  <footer>시안용 그림입니다. 픽셀 글꼴: 갈무리(Galmuri) © Lee Minseo, SIL Open Font License 1.1.</footer>
+</div>
+
+<script>
+"use strict";
+const BODY = new Set(["b", "s", "h"]);
+const grid = (w, h) => Array.from({ length: h }, () => Array(w).fill(null));
+function put(g, x, y, k) { if (g[y] && x >= 0 && x < g[0].length) g[y][x] = k; }
+function circle(g, cx, cy, r, k) { for (let y = 0; y < g.length; y++) for (let x = 0; x < g[0].length; x++) if ((x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= r * r) g[y][x] = k; }
+function ellipse(g, cx, cy, rx, ry, k) { for (let y = 0; y < g.length; y++) for (let x = 0; x < g[0].length; x++) if (((x + .5 - cx) / rx) ** 2 + ((y + .5 - cy) / ry) ** 2 <= 1) g[y][x] = k; }
+function rect(g, x, y, w, h, k) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) put(g, i, j, k); }
+// 몸 가장자리 명암: 오른쪽·아래 끝은 그림자, 위쪽 끝은 밝게
+function shade(g, cx) {
+  const H = g.length, W = g[0].length, src = g.map(r => r.slice());
+  const isBody = (x, y) => src[y] && BODY.has(src[y][x]);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (src[y][x] !== "b") continue;
+    if (!isBody(x + 1, y) || !isBody(x, y + 1) || !isBody(x + 1, y + 1)) g[y][x] = "s";
+    else if (!isBody(x, y - 1) && x < cx) g[y][x] = "h";
+  }
+}
+function outline(g) {
+  const H = g.length, W = g[0].length, src = g.map(r => r.slice());
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (src[y][x] && src[y][x] !== "w") continue;
+    if (src[y][x] === "w") continue;
+    const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const v = src[y + dy] && src[y + dy][x + dx]; return v && v !== "w"; });
+    if (n) g[y][x] = "o";
+  }
+}
+function draw(ctx, g, pal, ox = 0, oy = 0, s = 1) {
+  for (let y = 0; y < g.length; y++) for (let x = 0; x < g[0].length; x++) {
+    const k = g[y][x]; if (!k || !pal[k]) continue;
+    ctx.fillStyle = pal[k]; ctx.fillRect(ox + x * s, oy + y * s, s, s);
+  }
+}
+
+/* ───── 달토끼 26×32 ───── */
+const RW = 26, RH = 32;
+function rabbit(pose, blink) {
+  const g = grid(RW, RH), cx = 13;
+  // 귀 (오답이면 오른쪽 귀가 꺾임)
+  ellipse(g, 9, 7, 2.2, 6.2, "b");
+  if (pose === "sad") { ellipse(g, 17, 9.5, 2.2, 3.8, "b"); rect(g, 18, 6, 4, 2, "b"); rect(g, 20, 5, 2, 1, "b"); }
+  else ellipse(g, 17, 7, 2.2, 6.2, "b");
+  // 몸: 둥근 머리 + 아래 몸이 하나로
+  circle(g, cx, 16, 8.6, "b"); ellipse(g, cx, 22.5, 8.2, 6.4, "b");
+  // 팔 (짧고 가늘게, 끝은 진한 색)
+  if (pose === "happy") { put(g, 4, 17, "b"); put(g, 3, 16, "b"); put(g, 3, 15, "t"); put(g, 22, 17, "b"); put(g, 23, 16, "b"); put(g, 23, 15, "t"); }
+  else { put(g, 4, 21, "b"); put(g, 3, 22, "b"); put(g, 3, 23, "t"); put(g, 22, 21, "b"); put(g, 23, 22, "b"); put(g, 23, 23, "t"); }
+  // 다리
+  rect(g, 9, 29, 3, 2, "t"); rect(g, 15, 29, 3, 2, "t");
+  shade(g, cx);
+  // 귀 안쪽
+  if (pose === "sad") { rect(g, 9, 3, 1, 8, "p"); rect(g, 17, 8, 1, 4, "p"); }
+  else { rect(g, 9, 3, 1, 8, "p"); rect(g, 17, 3, 1, 8, "p"); }
+  // 보름달 배 무늬
+  circle(g, cx, 23.5, 3.6, "m"); put(g, 12, 22, "M"); put(g, 14, 24, "M");
+  // 얼굴
+  if (pose === "happy") { put(g, 9, 16, "e"); put(g, 10, 15, "e"); put(g, 11, 16, "e"); put(g, 15, 16, "e"); put(g, 16, 15, "e"); put(g, 17, 16, "e"); put(g, 13, 19, "e"); }
+  else if (blink) { rect(g, 9, 16, 2, 1, "e"); rect(g, 16, 16, 2, 1, "e"); }
+  else if (pose === "sad") { rect(g, 10, 16, 1, 1, "e"); rect(g, 16, 16, 1, 1, "e"); put(g, 9, 14, "e"); put(g, 17, 14, "e"); }
+  else { rect(g, 10, 15, 1, 2, "e"); rect(g, 16, 15, 1, 2, "e"); put(g, 10, 15, "E"); put(g, 16, 15, "E"); }
+  put(g, 13, 17, "n");
+  rect(g, 7, 18, 2, 1, "k"); rect(g, 18, 18, 2, 1, "k");
+  outline(g);
+  if (pose === "sad") { put(g, 22, 11, "w"); put(g, 21, 12, "w"); put(g, 22, 12, "w"); put(g, 22, 13, "w"); }
+  return g;
+}
+function helmet(ctx, s, ox, oy, t) {
+  const cx = 13, cy = 16, r = 11.2;
+  for (let a = 0; a < Math.PI * 2; a += 0.02) {
+    const x = Math.floor(cx + Math.cos(a) * r), y = Math.floor(cy + Math.sin(a) * r);
+    if (y < 6 && ((x >= 6 && x <= 11) || (x >= 15 && x <= 20))) continue; // 귀가 나오는 구멍
+    ctx.fillStyle = "#bfefff"; ctx.fillRect(ox + x * s, oy + y * s, s, s);
+  }
+  ctx.fillStyle = "rgba(191,239,255,.16)";
+  for (let y = 5; y < 28; y++) for (let x = 2; x < 25; x++) if ((x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 < (r - 1) ** 2 && y > 6) ctx.fillRect(ox + x * s, oy + y * s, s, s);
+  ctx.fillStyle = "#ffffff"; for (const [x, y] of [[6, 10], [6, 11], [7, 9]]) ctx.fillRect(ox + x * s, oy + y * s, s, s);
+}
+const RABBIT_COLORS = [
+  { id: "A", name: "달빛 흰색", note: "어두운 우주에서 가장 잘 보여요", pal: { b: "#f4f1ff", h: "#ffffff", s: "#c9c3e8", o: "#3a3354", p: "#ffb3c7", m: "#ffe48a", M: "#f5c94f", t: "#8f86b5", e: "#2a2340", E: "#6d6590", n: "#ff8fb1", k: "#ffc2d4", w: "#8fd8ff" } },
+  { id: "B", name: "크림 노랑", note: "따뜻하고 인형 같은 느낌", pal: { b: "#ffe9b8", h: "#fff6dc", s: "#f0c77a", o: "#5b3a29", p: "#ff9fb0", m: "#fffaf0", M: "#f2e6c8", t: "#c98a4b", e: "#3a2418", E: "#8a5a3c", n: "#ff7f96", k: "#ffb8a8", w: "#8fd8ff" } },
+  { id: "C", name: "연보라", note: "외계 행성에서 온 느낌", pal: { b: "#cdbfff", h: "#e6deff", s: "#9b86e8", o: "#2e2466", p: "#ff9ed2", m: "#fff1a8", M: "#ffd95e", t: "#6a5acd", e: "#1d1640", E: "#5b4fa8", n: "#ff7fc0", k: "#ffb3e0", w: "#8fd8ff" } }
+];
+const POSES = [["idle", "기본"], ["happy", "정답"], ["sad", "오답"], ["helmet", "헬멧"]];
+
+/* ───── 꼬마봇 22×24 ───── */
+const BW = 22, BH = 24;
+function bot(face, t) {
+  const g = grid(BW, BH);
+  rect(g, 10, 2, 2, 3, "a");
+  rect(g, 4, 5, 14, 13, "b"); rect(g, 3, 6, 16, 11, "b");
+  put(g, 2, 11, "b"); put(g, 1, 12, "t"); put(g, 19, 11, "b"); put(g, 20, 12, "t");
+  rect(g, 8, 18, 6, 1, "b");
+  shade(g, 11);
+  rect(g, 5, 7, 12, 9, "S");
+  outline(g);
+  const c = "F";
+  if (face === "idle") { rect(g, 7, 10, 2, 2, c); rect(g, 13, 10, 2, 2, c); if (Math.floor(t * 0.7) % 4 === 3) { rect(g, 7, 10, 2, 2, "S"); rect(g, 13, 10, 2, 2, "S"); rect(g, 7, 11, 2, 1, c); rect(g, 13, 11, 2, 1, c); } }
+  else if (face === "happy") { put(g, 7, 11, c); put(g, 8, 10, c); put(g, 9, 11, c); put(g, 12, 11, c); put(g, 13, 10, c); put(g, 14, 11, c); rect(g, 9, 13, 4, 1, c); }
+  else if (face === "hint") { for (let j = 0; j < 2; j++) for (let i = 0; i < 4; i++) put(g, 6 + i * 3, 9 + j * 3, "Y"); }
+  else { rect(g, 7, 11, 2, 1, c); rect(g, 13, 11, 2, 1, c); put(g, 7, 9, c); put(g, 14, 9, c); rect(g, 9, 14, 4, 1, c); }
+  return g;
+}
+const BOT_PAL = { b: "#c9cde0", h: "#eef0fa", s: "#8d93b3", o: "#2a2552", t: "#ff4fa3", a: "#8d93b3", S: "#0b1030", F: "#3ee8ff", Y: "#ffe14d" };
+const BOT_FACES = [["idle", "기본"], ["happy", "칭찬"], ["hint", "힌트 (4개씩 2줄)"], ["worry", "걱정"]];
+
+/* ───── 화면에 붙이기 ───── */
+const S = 6, anims = [];
+function makeCanvas(w, h, label) { const c = document.createElement("canvas"); c.width = w * S; c.height = h * S; c.setAttribute("aria-label", label); return c; }
+const rabbitsEl = document.getElementById("rabbits");
+RABBIT_COLORS.forEach(col => {
+  const row = document.createElement("div"); row.className = "row";
+  row.innerHTML = `<div class="row-head"><h3><span class="px">${col.id}</span> ${col.name}</h3><span class="sub" style="margin:0">${col.note}</span><div class="swatches">${["b", "s", "o", "p", "m", "t"].map(k => `<span style="background:${col.pal[k]}"></span>`).join("")}</div></div><div class="poses"></div>`;
+  const poses = row.querySelector(".poses");
+  POSES.forEach(([pose, label]) => {
+    const wrap = document.createElement("div"); wrap.className = "pose";
+    const cv = makeCanvas(RW, RH + 2, `달토끼 ${col.name} ${label}`); wrap.appendChild(cv);
+    const sp = document.createElement("span"); sp.textContent = label; wrap.appendChild(sp); poses.appendChild(wrap);
+    const ctx = cv.getContext("2d"), seed = Math.random() * 3;
+    anims.push(t => {
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      const jump = pose === "happy" ? Math.round(Math.abs(Math.sin(t * 4)) * 2) : 0;
+      const bob = pose === "happy" ? 0 : (Math.floor(t * 1.6 + seed) % 2);
+      const blink = pose !== "happy" && pose !== "sad" && ((t + seed) % 3.2) < 0.14;
+      const g = rabbit(pose === "helmet" ? "idle" : pose, blink);
+      draw(ctx, g, col.pal, 0, (2 - jump + bob) * S, S);
+      if (pose === "helmet") helmet(ctx, S, 0, (2 + bob) * S, t);
+    });
+  });
+  rabbitsEl.appendChild(row);
+});
+const botsEl = document.getElementById("bots");
+BOT_FACES.forEach(([face, label]) => {
+  const wrap = document.createElement("div"); wrap.className = "pose";
+  const cv = makeCanvas(BW, BH + 4, `꼬마봇 ${label}`); wrap.appendChild(cv);
+  const sp = document.createElement("span"); sp.textContent = label; wrap.appendChild(sp); botsEl.appendChild(wrap);
+  const ctx = cv.getContext("2d");
+  anims.push(t => {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const hover = Math.round(Math.sin(t * 2.4) * 1.2) + 1;
+    draw(ctx, bot(face, t), BOT_PAL, 0, hover * S, S);
+    ctx.fillStyle = Math.floor(t * 2) % 2 ? "#ff4fa3" : "#ffe14d"; ctx.fillRect(10 * S, (1 + hover) * S, 2 * S, S);
+    const fl = Math.floor(t * 12) % 2; ctx.fillStyle = "#ff8a3d"; ctx.fillRect(10 * S, (19 + hover) * S, 2 * S, (1 + fl) * S);
+    ctx.fillStyle = "#ffe14d"; ctx.fillRect(10 * S, (19 + hover) * S, 2 * S, S);
+  });
+});
+
+/* 실제 크기 장면 (D안 색) */
+const sc = document.getElementById("scene"), sx = sc.getContext("2d"), SCALE = 2;
+sc.style.width = sc.width * SCALE + "px";
+const stars = Array.from({ length: 70 }, (_, i) => ({ x: (i * 73) % 180, y: (i * 37) % 150, z: (i * 13) % 10 / 10 }));
+anims.push(t => {
+  sx.fillStyle = "#120a2e"; sx.fillRect(0, 0, 180, 150);
+  for (const s of stars) { sx.fillStyle = s.z > .7 ? "#ffffff" : "#6b5aa8"; sx.fillRect(s.x, (s.y + t * 10 * s.z) % 150, 1, 1); }
+  // 바닥 (달 표면)
+  sx.fillStyle = "#3f3160"; sx.fillRect(0, 128, 180, 22); sx.fillStyle = "#6b5a92"; sx.fillRect(0, 128, 180, 1);
+  for (const [x, w] of [[20, 6], [70, 9], [140, 5]]) { sx.fillStyle = "#2d2348"; sx.fillRect(x, 134, w, 2); }
+  // 로켓 (D안)
+  const rk = ["......oo......", ".....orro.....", "....orrrro....", "....orrrro....", "...oooooooo...", "...owwwwwwo...", "...owbbbbwo...", "...obcbbcbo...", "...obbbbbbo...", "...owbbbbwo...", "...owwwwwwo...", "..oowwwwwwoo..", ".orrwwwwwwrro.", "orrrwwwwwwrrro", "orroooooooorro", "oo..oggggo..oo", "....oggggo...."];
+  const rp = { o: "#0d0820", r: "#ff4fa3", w: "#f4ecff", b: "#3ee8ff", c: "#ffffff", g: "#6b5aa8" };
+  rk.forEach((row, y) => [...row].forEach((k, x) => { if (rp[k]) { sx.fillStyle = rp[k]; sx.fillRect(118 + x, 111 + y, 1, 1); } }));
+  // 달토끼 (A 색, 헬멧)
+  const happy = Math.floor(t / 2.5) % 2 === 1;
+  const g = rabbit(happy ? "happy" : "idle", (t % 3.2) < .14);
+  const jy = happy ? Math.round(Math.abs(Math.sin(t * 4)) * 3) : 0;
+  draw(sx, g, RABBIT_COLORS[0].pal, 70, 98 - jy, 1);
+  // 꼬마봇 (힌트)
+  const hv = Math.round(Math.sin(t * 2.4) * 1.5);
+  draw(sx, bot(happy ? "happy" : "hint", t), BOT_PAL, 36, 70 + hv, 1);
+  sx.fillStyle = Math.floor(t * 2) % 2 ? "#ff4fa3" : "#ffe14d"; sx.fillRect(46, 71 + hv, 2, 1);
+  // 말풍선
+  sx.fillStyle = "#f4ecff"; sx.fillRect(8, 8, 164, 30); sx.fillStyle = "#0d0820"; sx.fillRect(8, 8, 164, 1); sx.fillRect(8, 37, 164, 1); sx.fillRect(8, 8, 1, 30); sx.fillRect(171, 8, 1, 30);
+  for (let k = 0; k < 4; k++) { sx.fillStyle = "#0d0820"; sx.fillRect(44 + k, 38 + k, 5 - k, 1); }
+  sx.fillStyle = "#2a2552"; sx.font = '700 12px "PixelKR", monospace'; sx.textBaseline = "top";
+  sx.fillText(happy ? "정답! 운석 격파!" : "4개씩 2줄이면 몇 개?", 16, 16);
+});
+
+let t0 = performance.now();
+function loop(now) { const t = (now - t0) / 1000; if (!document.hidden) for (const f of anims) f(t); requestAnimationFrame(loop); }
+(document.fonts && document.fonts.load ? document.fonts.load('700 12px "PixelKR"') : Promise.resolve()).then(() => requestAnimationFrame(loop), () => requestAnimationFrame(loop));
+</script>
