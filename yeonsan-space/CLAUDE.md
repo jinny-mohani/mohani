@@ -2,23 +2,30 @@
 
 초등 연산 학습 게임. 2023년 피그마 시안(연산게임 v2.0)을 픽셀 게임으로 다시 만드는 프로젝트.
 
+## 폴더 경계 (중요)
+- `jinny-mohani/mohani` 저장소에는 다른 앱(감정 일기 등)도 함께 있다.
+- **이 게임의 파일은 모두 `yeonsan-space/` 폴더 안에만 둔다.** 저장소 루트나 다른 폴더의 파일은 만들거나 고치지 않는다.
+- 아래 경로는 모두 `yeonsan-space/` 기준이다.
+
 ## 대화 규칙
 - 사용자와는 한국어로. 설명은 이론적 근거를 들어 간단하고 쉽게.
 - 결정한 것은 대화에만 두지 말고 `docs/`에 적고 커밋한다. 새 대화는 이 파일과 `docs/`를 읽고 시작한다.
 
 ## 진행 단계
 1. [x] 2023 시안 검토 → `docs/review-2023-figma.md`
-2. [ ] 게임 설계 + 스타일 정하기 → `docs/game-design.md`, `prototype/style-candidates.html`  ← 지금
+2. [ ] 게임 설계 + 스타일 정하기 → `docs/game-design.md`, `prototype/style-candidates.html`  ← 지금 (스타일은 D안: B 운석 장면 + A 모니터·키패드)
 3. [ ] 회색 박스 시제품 (실제 플레이 가능한 최소 게임)
 4. [ ] 본 디자인 (전체 화면, 애니메이션, 효과음)
 5. [ ] 출시 준비
 
 ## 폴더
 - `docs/` 설계 문서. 결정의 근거.
+- `docs/reference/` 운영 중인 '렛츠 연산' 분석 자료 (화면·UX, 규칙·보상).
 - `prototype/` 시안과 시제품. `*.src.html`이 원본, `tools/build_prototype.py`로 글꼴을 넣어 `*.html`을 만든다.
 - `tools/` 빌드 스크립트.
 
 ## 픽셀 규칙 (요약, 자세한 내용은 docs/game-design.md 7절)
 - 논리 해상도: 휴대폰 세로 180×(가변), 태블릿 가로 (가변)×240. 정수배 확대만.
 - 글꼴: Galmuri11 12px (SIL OFL 1.1)
+- 기획안(공유용): https://claude.ai/artifact/L4bUuf2qSPjRNueDuY9Ud3
 - 피그마 원본: 파일 키 `339g3qz4u1OQID4QaVQZq1`, 섹션 node `3405:5155`

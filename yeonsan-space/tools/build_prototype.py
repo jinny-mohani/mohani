@@ -3,10 +3,10 @@
 사용법:
   pip install fonttools brotli
   npm pack galmuri@2.40.3 && tar xzf galmuri-2.40.3.tgz   # package/dist/ 에 글꼴이 생김
-  python3 tools/build_prototype.py <galmuri dist 폴더>
+  python3 yeonsan-space/tools/build_prototype.py <galmuri dist 폴더>
 
-입력:  prototype/style-candidates.src.html  (/*FONT_R*/, /*FONT_B*/ 자리표시)
-출력:  prototype/style-candidates.html
+입력:  yeonsan-space/prototype/style-candidates.src.html  (/*FONT_R*/, /*FONT_B*/ 자리표시)
+출력:  yeonsan-space/prototype/style-candidates.html
 """
 import base64
 import io
