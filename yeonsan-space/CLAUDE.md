@@ -13,7 +13,7 @@
 
 ## 진행 단계
 1. [x] 2023 시안 검토 → `docs/review-2023-figma.md`
-2. [ ] 게임 설계 + 스타일 정하기 → `docs/game-design.md`, `prototype/style-candidates.html`  ← 지금. 설계 v0.2 완료 (대상 6~9살, D안, 문제 자체 생성). 남은 것: 주인공
+2. [ ] 게임 설계 + 스타일 정하기 → `docs/game-design.md`, `prototype/style-candidates.html`  ← 지금. 설계 v0.2 완료 (대상 6~9살, D안, 문제 자체 생성). 캐릭터: 주인공 달토끼, 조연 꼬마봇. 남은 것: 캐릭터 픽셀 시안
 3. [ ] 회색 박스 시제품 (실제 플레이 가능한 최소 게임)
 4. [ ] 본 디자인 (전체 화면, 애니메이션, 효과음)
 5. [ ] 출시 준비
