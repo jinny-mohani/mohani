@@ -37,20 +37,6 @@ export function photoList(r) {
   return String(r.photos || '').split(',').map((s) => s.trim()).filter(Boolean);
 }
 
-/** 목록 위 요약: '3건 중 2건 완료 · 1건 보류' / '2건 · 모두 예약 완료' / '1건 · 2박' */
-export function summary(list, type) {
-  const n = list.length;
-  if (!n) return '';
-  const done = list.filter((r) => r.status === '예약 완료').length;
-  const hold = list.filter((r) => r.status === '보류').length;
-  if (type === '숙소') {
-    const nights = list.reduce((s, r) => s + nightsBetween(r.startAt, r.endAt), 0);
-    return `${n}건${nights ? ' · ' + nights + '박' : ''}`;
-  }
-  if (done === n) return `${n}건 · 모두 예약 완료`;
-  return `${n}건 중 ${done}건 완료${hold ? ` · ${hold}건 보류` : ''}`;
-}
-
 /** 시간 순으로 (날짜 없는 것은 뒤로) */
 export function sortReservations(list) {
   return [...list].sort((a, b) => {

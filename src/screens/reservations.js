@@ -10,7 +10,7 @@ import { toast } from '../ui/toast.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import {
   TYPES, TYPE_ICON, STATUSES, OTHER_ICON,
-  parseAirport, parseFlight, withSqm, firstPhoto, flightBg, photoList, summary, sortReservations, sized,
+  parseAirport, parseFlight, withSqm, firstPhoto, flightBg, photoList, sortReservations, sized,
 } from '../reservation-util.js';
 import { ReservationForm } from './reservation-form.js';
 import { openPhotos } from '../ui/viewer.js';
@@ -75,47 +75,36 @@ function FlightCard({ r }) {
   </div>`;
 }
 
-/** 05-2 숙소 카드: 정사각형 사진 위에 이름·날짜·라벨 */
-function StayCard({ r }) {
+/** 05-2 숙소 · 05-3 기타 카드 (11.28 확정): 사진 한 줄(좌우 여백 20, 320:220) + 아래에 이름 · 날짜 · 태그 · 메모.
+ *  상태 라벨은 사진 오른쪽 아래, 기타 종류는 사진 왼쪽 위 */
+function PhotoItem({ r, icon, kind, date, tags }) {
   const photo = firstPhoto(r);
-  const nights = nightsBetween(r.startAt, r.endAt);
-  const tags = [r.roomType, withSqm(r.roomSize), r.checkInTime || formatTime(r.startAt) ? '체크인 ' + (r.checkInTime || formatTime(r.startAt)) : ''].filter(Boolean);
-  return html`<div class="res-item">
-    <button class="photo-card photo-card--dark" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
-      ${photo ? html`<img src=${sized(photo, 800)} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name="bed-double" size=${40} /></span>`}
-      <span class="photo-card__shade"></span>
-      <span class="photo-card__top"><${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} /></span>
-      <span class="stay-info">
-        <b>${r.title}</b>
-        <span>${[formatDay(r.startAt) && `${formatDay(r.startAt)} – ${formatDay(r.endAt)}`, nights && nights + '박'].filter(Boolean).join(' · ')}</span>
-        ${tags.length > 0 && html`<span class="stay-info__tags">${tags.map((t) => html`<span>${t}</span>`)}</span>`}
+  return html`<div class="ritem">
+    <button class="ritem__open" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
+      <span class="ritem__img">
+        ${photo ? html`<img src=${sized(photo, 800)} alt="" loading="lazy" />` : html`<${Icon} name=${icon} size=${44} stroke=${1.2} />`}
+        ${kind && html`<span class="ritem__kind">${kind}</span>`}
       </span>
+      <b class="ritem__title">${r.title}</b>
+      <span class="ritem__date">${date}</span>
+      ${tags.length > 0 && html`<span class="ritem__tags">${tags.map((t) => html`<span>${t}</span>`)}</span>`}
+      ${r.memo && html`<span class="ritem__memo"><${Icon} name="file-text" size=${16} /><span>${r.memo}</span></span>`}
     </button>
-    ${r.memo && html`<p class="res-item__memo res-item__memo--2">${r.memo}</p>`}
+    <span class="ritem__status"><${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} /></span>
   </div>`;
 }
 
-/** 05-3 기타 카드 */
+function StayCard({ r }) {
+  const nights = nightsBetween(r.startAt, r.endAt);
+  const inT = r.checkInTime || formatTime(r.startAt);
+  const date = [formatDay(r.startAt) && `${formatDay(r.startAt)} – ${formatDay(r.endAt)}`, nights && nights + '박'].filter(Boolean).join(' · ') || '날짜 미정';
+  return html`<${PhotoItem} r=${r} icon="bed-double" date=${date} tags=${[r.roomType, withSqm(r.roomSize), inT && '체크인 ' + inT].filter(Boolean)} />`;
+}
+
 function OtherCard({ data, r }) {
-  const photo = firstPhoto(r);
   const who = memberName(data, r.assignee);
-  const tags = [r.address, who && '담당 ' + who, r.bookingNo && '예약번호 ' + r.bookingNo].filter(Boolean);
-  return html`<div class="res-item">
-    <button class="photo-card photo-card--dark" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
-      ${photo ? html`<img src=${sized(photo, 800)} alt="" loading="lazy" />` : html`<span class="photo-card__empty"><${Icon} name=${OTHER_ICON[r.subType] || 'ticket'} size=${40} /></span>`}
-      <span class="photo-card__shade"></span>
-      <span class="photo-card__top">
-        <span class="status status--done">${r.subType || '기타'}</span>
-        <${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} />
-      </span>
-      <span class="stay-info">
-        <b>${r.title}</b>
-        <span>${rangeText(r.startAt, r.endAt) || '날짜 미정'}</span>
-        ${tags.length > 0 && html`<span class="stay-info__tags">${tags.map((t) => html`<span>${t}</span>`)}</span>`}
-      </span>
-    </button>
-    ${r.memo && html`<p class="res-item__memo res-item__memo--2">${r.memo}</p>`}
-  </div>`;
+  return html`<${PhotoItem} r=${r} icon=${OTHER_ICON[r.subType] || 'ticket'} kind=${r.subType || '기타'}
+    date=${rangeText(r.startAt, r.endAt) || '날짜 미정'} tags=${[r.address, who && '담당 ' + who, r.bookingNo && '예약번호 ' + r.bookingNo].filter(Boolean)} />`;
 }
 
 /** 05 전체 탭 줄 (11.28 피그마 '예약 박스'): 왼쪽 128 사진 + 상태 라벨 겹침, 오른쪽 제목 · 날짜 · 담당 */
@@ -165,7 +154,7 @@ export function Reservations({ data, query }) {
         onChange=${(v) => replace(v === '전체' ? '/reservations' : '/reservations?type=' + v)}
       />
       ${list.length
-        ? html`${filter !== '전체' && html`<p class="list-summary">${summary(list, filter)}</p>`}
+        ? html`
           ${filter === '전체'
             ? html`<div class="all-groups">${TYPES.map((t) => {
                 const rows = list.filter((r) => r.type === t);
