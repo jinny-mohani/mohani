@@ -131,13 +131,15 @@
 .tk-memo .icon { flex-shrink: 0; margin-top: 2px; color: var(--grey-500); }
 .tk__link { display: flex; align-items: center; justify-content: center; gap: 2px; min-height: 44px; margin: 0 -14px -10px; border-top: 1px solid var(--color-divider); font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-semibold); color: var(--grey-800); }
 .home-add { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 64px; border: 1px dashed var(--color-border); border-radius: var(--radius-card); font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-sub); }
-.home-etc { padding: 4px 16px; border: 1px solid var(--color-card-border); border-radius: var(--radius-card); background: var(--color-bg); box-shadow: var(--shadow-card); }
-.home-etc li + li { border-top: 1px solid var(--color-divider); }
-.home-etc__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; text-align: left; }
-.home-etc__ic { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 18px; background: var(--color-surface); color: var(--grey-800); }
-.home-etc__tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.home-etc__tx b { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.home-etc__tx small { font-size: var(--fs-helper); line-height: var(--lh-helper); color: var(--color-text-faint); }
+/* 기타 예약 (11.28 피그마): 200 폭 사진 카드를 옆으로. 사진 200×160(모서리 15) + 상태 라벨, 제목 16 Bold, 날짜 14 */
+.home-etc { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 calc(-1 * var(--page-x)); padding: 0 var(--page-x); scroll-padding: 0 var(--page-x); }
+.home-etc::-webkit-scrollbar { display: none; }
+.home-etc__card { flex: 0 0 200px; display: flex; flex-direction: column; min-width: 0; scroll-snap-align: start; text-align: left; }
+.home-etc__img { position: relative; display: flex; align-items: center; justify-content: center; height: 160px; border-radius: 15px; overflow: hidden; background: var(--color-divider); color: var(--color-placeholder); }
+.home-etc__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.home-etc__status { position: absolute; right: 2px; bottom: 2px; }
+.home-etc__title { margin-top: 10px; font-size: var(--fs-body); line-height: 22px; font-weight: var(--fw-bold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-etc__date { margin-top: 4px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--grey-700); }
 @media (prefers-reduced-motion: reduce) { .tk__extra, .tk__more .icon, .tk-dots i { transition: none; } }
 
 .check-cards { display: flex; flex-direction: column; gap: var(--gap-m); }
@@ -308,7 +310,7 @@
 /* ───── 05 예약 ───── */
 .big-title { padding: calc(20px + var(--safe-top)) var(--page-x) 20px; }
 .big-title h1 { font-size: var(--fs-display); line-height: var(--lh-display); font-weight: var(--fw-bold); }
-.list-summary { margin: 24px 0 16px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); color: var(--color-text-weak); }
+.list-summary { margin: 20px 0 16px; /* 탭 아래 24 (칩 누르는 영역 4 포함) */ font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); color: var(--color-text-weak); }
 .res-list { display: flex; flex-direction: column; }
 .res-list--all { gap: var(--gap-m); }
 .res-list--항공권, .res-list--숙소, .res-list--기타 { gap: 32px; }
@@ -405,7 +407,7 @@
 
 /* 전체 탭 한 줄 카드 */
 /* 05 전체 탭 (11.28 피그마): 종류별 제목(16 SemiBold) 아래 줄. 사진 128 + 상태 라벨 겹침, 제목 16 Bold, 날짜·담당 14 Light */
-.all-groups { display: flex; flex-direction: column; gap: 24px; }
+.all-groups { display: flex; flex-direction: column; gap: 24px; margin-top: 20px; } /* 탭 → 본문 24 (11.28, 칩 아래 누르는 영역 4 포함) */
 .all-group__head { padding: 0 0 12px 4px; font-size: var(--fs-body); line-height: 18px; font-weight: var(--fw-semibold); }
 .all-row { position: relative; }
 .all-row__main { display: flex; align-items: flex-start; gap: 17px; width: 100%; text-align: left; }
@@ -494,7 +496,7 @@
 .day-bar__act--done { color: var(--color-text); font-weight: var(--fw-bold); padding: 0 4px 0 12px; }
 .timeline { margin-top: 32px; }
 .tl { position: relative; display: flex; gap: 16px; align-items: stretch; }
-.tl__time { flex: 0 0 44px; font-size: var(--fs-small); font-weight: var(--fw-medium); color: var(--color-text-sub); line-height: 1.5; }
+.tl__time { flex: 0 0 20px; /* 11.28: 순서 번호만 → 20 */ font-size: var(--fs-small); font-weight: var(--fw-medium); color: var(--color-text-sub); line-height: 1.5; }
 .tl__rail { position: relative; flex: 0 0 10px; }
 .tl__rail i { position: absolute; top: 7px; left: 1px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); }
 .tl__rail::after { content: ''; position: absolute; top: 15px; bottom: -7px; left: 4.5px; width: 1px; background: var(--color-border); }

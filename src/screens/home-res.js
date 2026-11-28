@@ -1,5 +1,5 @@
 // 03 홈 — 항공권 · 숙소 · 기타 예약 (11.28 확정: 프로토타입 '수정파일-1123')
-// 항공권·숙소는 사진 위 흰 정보 판 카드를 옆으로 넘겨 보고, 누르면 아래로 펼쳐져요. 기타 예약은 한 줄 목록.
+// 항공권·숙소는 사진 위 흰 정보 판 카드를 옆으로 넘겨 보고, 누르면 아래로 펼쳐져요. 기타 예약은 사진 카드를 옆으로 (11.28 피그마 '홈_기타예약').
 import { html, useState } from '../vendor/preact-htm.js';
 import { Icon, StatusLabel } from '../ui/components.js';
 import { go } from '../router.js';
@@ -150,14 +150,18 @@ export function HomeReservations({ data }) {
     </section>
     ${others.length > 0 && html`<section class="home-section">
       <${Head} title="기타 예약" count=${others.length} to="/reservations?type=기타" />
-      <ul class="home-etc">
-        ${others.map((r) => html`<li key=${r.id}>
-          <button class="home-etc__row" onClick=${() => go('/reservations/' + r.id)}>
-            <span class="home-etc__ic"><${Icon} name=${OTHER_ICON[r.subType] || 'ticket'} size=${20} /></span>
-            <span class="home-etc__tx"><b>${r.title}</b><small>${rangeText(r.startAt, r.endAt) || '날짜 미정'}</small></span>
-            <${StatusLabel} status=${r.status} />
-          </button>
-        </li>`)}
-      </ul>
+      <div class="home-etc">
+        ${others.map((r) => {
+          const photo = firstPhoto(r);
+          return html`<button class="home-etc__card" key=${r.id} onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
+            <span class="home-etc__img">
+              ${photo ? html`<img src=${sized(photo, 400)} alt="" loading="lazy" />` : html`<${Icon} name=${OTHER_ICON[r.subType] || 'ticket'} size=${32} />`}
+              <span class="home-etc__status"><${StatusLabel} status=${r.status} /></span>
+            </span>
+            <b class="home-etc__title">${r.title}</b>
+            <small class="home-etc__date">${rangeText(r.startAt, r.endAt) || '날짜 미정'}</small>
+          </button>`;
+        })}
+      </div>
     </section>`}`;
 }

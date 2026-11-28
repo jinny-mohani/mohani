@@ -151,6 +151,7 @@ const data = {
     await page.click('.tk__more >> nth=0'); await page.waitForTimeout(350);
     await page.$eval('.tk-row', (el) => (el.scrollLeft = 400)); await page.waitForTimeout(400); await shot('03-2-home-ticket-swipe');
     console.log('home tickets open:', open, '| dots:', await page.$$eval('.tk-dots i', (d) => d.map((x) => x.className).join(',')));
+    await page.evaluate(() => document.querySelector('.home-etc').scrollIntoView({ block: 'center' })); await page.waitForTimeout(200); await shot('03-5-home-etc');
     await page.evaluate(() => window.scrollTo(0, 0));
   }
   await page.click('.check-row >> nth=0'); await page.waitForTimeout(200);
@@ -166,7 +167,7 @@ const data = {
   console.log('after restore items:', await page.$$eval('.deleted-row', (r) => r.length));
   await page.click('[aria-label="뒤로"]'); await page.waitForSelector('.home-hero');
   console.log('url after join:', page.url());
-  await page.click('.tabbar >> text=예약'); await page.waitForSelector('.chips'); await shot('05-all');
+  await page.click('.tabbar >> text=예약'); await page.waitForSelector('.chips'); await shot('05-all'); console.log('tab→body gap:', await page.evaluate(() => { const c=[...document.querySelectorAll('.chip')].pop().getBoundingClientRect(); const h=document.querySelector('.all-group__head').getBoundingClientRect(); return Math.round(h.top - c.bottom); }));
   for (const [t, n] of [['항공권', '05-1-flight'], ['숙소', '05-2-stay'], ['기타', '05-3-other']]) {
     await page.click('.chips >> text=' + t); await page.waitForTimeout(300); await shot(n);
   }
