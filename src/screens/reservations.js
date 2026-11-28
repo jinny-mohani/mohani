@@ -118,7 +118,7 @@ function OtherCard({ data, r }) {
   </div>`;
 }
 
-/** 05 전체 탭 카드 (시안 B): 왼쪽 72px 사진 + 종류·제목·날짜, 상태는 제목 아래 (제목이 잘리지 않게) */
+/** 05 전체 탭 줄 (11.28 피그마 '예약 박스'): 왼쪽 128 사진 + 상태 라벨 겹침, 오른쪽 제목 · 날짜 · 담당 */
 function AllRow({ data, r }) {
   const nights = nightsBetween(r.startAt, r.endAt);
   const when = r.type === '숙소'
@@ -130,16 +130,18 @@ function AllRow({ data, r }) {
   const icon = r.type === '기타' ? OTHER_ICON[r.subType] || 'ticket' : TYPE_ICON[r.type] || 'ticket';
   return html`<div class="all-row">
     <button class="all-row__main" onClick=${() => go('/reservations/' + r.id)} aria-label=${r.title + ' 상세 보기'}>
-      <span class="all-row__thumb">${photo ? html`<img src=${sized(photo, 200)} alt="" loading="lazy" />` : html`<${Icon} name=${icon} size=${28} />`}</span>
+      <span class="all-row__thumb">${photo ? html`<img src=${sized(photo, 300)} alt="" loading="lazy" />` : html`<${Icon} name=${icon} size=${32} />`}</span>
       <span class="all-row__text">
-        <span class="all-row__type"><${Icon} name=${TYPE_ICON[r.type] || 'ticket'} size=${14} />${r.type === '기타' ? r.subType || '기타' : r.type}</span>
         <span class="all-row__title">${r.title}</span>
-        <span class="all-row__meta">${[when, who && '담당 ' + who].filter(Boolean).join(' · ') || '날짜 미정'}</span>
+        <span class="all-row__meta">${when || '날짜 미정'}</span>
+        ${who && html`<span class="all-row__who">담당 : ${who}</span>`}
       </span>
     </button>
     <span class="all-row__status"><${StatusLabel} status=${r.status} onClick=${() => pickStatus(r)} /></span>
   </div>`;
 }
+
+const ALL_HEAD = { 항공권: '항공편', 숙소: '숙소', 기타: '기타 예약' };
 
 /* ───── 05 목록 ───── */
 export function Reservations({ data, query }) {
@@ -163,15 +165,22 @@ export function Reservations({ data, query }) {
         onChange=${(v) => replace(v === '전체' ? '/reservations' : '/reservations?type=' + v)}
       />
       ${list.length
-        ? html`<p class="list-summary">${summary(list, filter)}</p>
-          <ul class=${'res-list res-list--' + (filter === '전체' ? 'all' : filter)}>
-            ${list.map((r) => html`<li key=${r.id}>
-              ${filter === '항공권' ? html`<${FlightCard} r=${r} />`
-                : filter === '숙소' ? html`<${StayCard} r=${r} />`
-                : filter === '기타' ? html`<${OtherCard} data=${data} r=${r} />`
-                : html`<${AllRow} data=${data} r=${r} />`}
-            </li>`)}
-          </ul>`
+        ? html`${filter !== '전체' && html`<p class="list-summary">${summary(list, filter)}</p>`}
+          ${filter === '전체'
+            ? html`<div class="all-groups">${TYPES.map((t) => {
+                const rows = list.filter((r) => r.type === t);
+                return rows.length > 0 && html`<section class="all-group" key=${t}>
+                  <h2 class="all-group__head">${ALL_HEAD[t]}</h2>
+                  <ul class="res-list res-list--all">${rows.map((r) => html`<li key=${r.id}><${AllRow} data=${data} r=${r} /></li>`)}</ul>
+                </section>`;
+              })}</div>`
+            : html`<ul class=${'res-list res-list--' + filter}>
+                ${list.map((r) => html`<li key=${r.id}>
+                  ${filter === '항공권' ? html`<${FlightCard} r=${r} />`
+                    : filter === '숙소' ? html`<${StayCard} r=${r} />`
+                    : html`<${OtherCard} data=${data} r=${r} />`}
+                </li>`)}
+              </ul>`}`
         : html`<${Empty}
             icon=${filter === '전체' ? 'ticket' : TYPE_ICON[filter]}
             title=${filter === '전체' ? '아직 예약이 없어요' : `아직 ${filter} 예약이 없어요`}

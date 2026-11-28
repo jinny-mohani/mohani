@@ -76,16 +76,18 @@
   padding: 0 var(--page-x);
   scroll-padding: 0 var(--page-x);
 }.chips::-webkit-scrollbar { display: none; }
+/* 탭·고르기 칩 (피그마 Chip 11.28): 꺼짐 = 흰 바탕 + 회색 테두리, 켜짐 = 초록 + 흰 글씨. 높이 36, 누르는 영역은 위아래로 넓혀 44 */
 .chip {
-  flex-shrink: 0; min-height: 40px; padding: 8px 14px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface); color: var(--color-text-sub);
-  font-size: var(--fs-small); font-weight: var(--fw-medium); line-height: var(--lh);
+  position: relative; flex-shrink: 0; height: 36px; padding: 0 15px;
+  border: 1px solid var(--color-border); border-radius: 20px;
+  background: var(--color-bg); color: var(--grey-700);
+  font-size: var(--fs-small); font-weight: var(--fw-regular); line-height: var(--lh-small);
 }
-.chip[aria-pressed='true'] { background: var(--color-primary); color: var(--color-on-primary); }
+.chip::after { content: ''; position: absolute; inset: -4px 0; }
+.chip[aria-pressed='true'] { border-color: var(--color-point); background: var(--color-point); color: var(--color-on-point); font-weight: var(--fw-semibold); }
+.chips { padding-top: 4px; padding-bottom: 4px; }
 /* 입력 폼의 고르기 칩 (피그마 Chip): 글자 길이만큼 폭, 선택 = 포인트 초록 */
-.field .chip { height: 40px; min-height: 40px; padding: 0 18px; border: 1px solid var(--color-border); background: var(--color-bg); color: var(--grey-700); font-weight: var(--fw-regular); line-height: var(--lh-small); }
-.field .chip[aria-pressed='true'] { border-color: var(--color-point); background: var(--color-point); color: var(--color-on-point); font-weight: var(--fw-semibold); }
+/* 입력 폼의 고르기 칩도 같은 Chip (11.28: 탭과 같은 36) */
 
 /* ───── 입력칸 ───── */
 /* 입력 묶음 (피그마 Input_tit + Input): 제목 → 12px → 입력칸 → 6px → 도움말 */
@@ -485,11 +487,8 @@ button.status::after { content: ''; position: absolute; inset: -8px; } /* 터치
 .screen--tint {
   background: var(--color-bg-tint);
   min-height: 100%;
-  --color-surface-weak: var(--color-bg);
-  --color-text-weak: var(--color-text-weak-on-surface);
-  --color-text-faint: var(--color-text-weak-on-surface);
+  --color-surface-weak: var(--color-bg); /* 카드는 흰색 + 테두리·그림자 (11.28) */
 }
-.screen--tint .chips .chip[aria-pressed='false'] { background: var(--color-bg); }
 .screen--tint .member-card { border-color: var(--color-bg); }
 .screen--tint .member-card[aria-checked='true'] { border-color: var(--color-primary); }
 

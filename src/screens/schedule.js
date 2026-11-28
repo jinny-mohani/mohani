@@ -1,4 +1,4 @@
-// 08 일정 – Day별 코스 · 08-3 시간 없이 목록만 · 08-4 순서 편집 · 08-1 일정 추가/수정 · 08-2 장소 선택
+// 08 일정 – Day별 코스 (11.28: 시간 없이 순서 번호만 — 시간은 다음 버전) · 08-4 순서 편집 · 08-1 일정 추가/수정 · 08-2 장소 선택
 import { html, useRef, useState } from '../vendor/preact-htm.js';
 import {
   Button, ChipField, ChipGroup, Empty, Icon, Modal, Sheet, StatusLabel, TextArea, TextField,
@@ -11,7 +11,6 @@ import { api } from '../api.js';
 import { saveLater, deleteWithUndo } from '../save.js';
 import { tripDays, dayDate, datePart, formatDay, formatTime, rangeText } from '../date.js';
 import { TYPE_ICON, OTHER_ICON, firstPhoto, sized } from '../reservation-util.js';
-import { TimeField } from '../ui/pickers.js';
 import { toast } from '../ui/toast.js';
 
 const TRANSPORTS = ['도보', '렌터카', '버스', '택시'];
@@ -50,10 +49,18 @@ function timeline(data, day) {
     .filter((r) => !r.deleted && r.startAt && datePart(r.startAt) === date && !added.has(r.id))
     .sort((a, b) => a.startAt.localeCompare(b.startAt));
   const rows = items.map((s) => ({ kind: 'item', s }));
+  const timed = items.some((s) => s.time); // 예전에 시간을 적어 둔 일정이 있으면 그 시간에 맞춰요
+  let morning = 0;
   res.forEach((r) => {
     const t = formatTime(r.startAt);
-    const at = t ? rows.findIndex((x) => x.kind === 'item' && x.s.time && x.s.time > t) : -1;
     const row = { kind: 'res', r };
+    if (!timed) {
+      // 11.28: 일정에 시간을 안 적어요 → 오전 예약(비행기 등)은 맨 앞, 오후 예약(체크인 등)은 맨 뒤
+      if (t && t < '12:00') rows.splice(morning++, 0, row);
+      else rows.push(row);
+      return;
+    }
+    const at = t ? rows.findIndex((x) => x.kind === 'item' && x.s.time && x.s.time > t) : -1;
     if (at < 0) rows.push(row);
     else rows.splice(at, 0, row);
   });
@@ -65,7 +72,6 @@ export function Schedule({ data, query }) {
   const day = Math.min(Math.max(Number(query.day) || 1, 1), days);
   const [editing, setEditing] = useState(false);
   const { rows, items } = timeline(data, day);
-  const timed = items.some((s) => s.time); // 시간이 하나도 없으면 순서 번호로 (08-3)
 
   const add = () => openOverlay(html`<${ScheduleForm} day=${day} />`);
 
@@ -94,7 +100,7 @@ export function Schedule({ data, query }) {
                 if (row.kind === 'res') {
                   const r = row.r;
                   return html`<li class="tl tl--res" key=${'r' + r.id}>
-                    <span class="tl__time">${timed ? formatTime(r.startAt) : i + 1}</span>
+                    <span class="tl__time">${i + 1}</span>
                     <span class=${'tl__rail' + (last ? ' tl__rail--last' : '')}><i></i></span>
                     <button class="tl__res" onClick=${() => go('/reservations/' + r.id)}>
                       <span class="tl__res-title">
@@ -109,7 +115,7 @@ export function Schedule({ data, query }) {
                 const p = placeOf(data, s);
                 const sub = p ? placeLine(p) : [s.transport, s.memo && s.memo.split('\n')[0]].filter(Boolean).join(' · ');
                 return html`<li class="tl" key=${s.id}>
-                  <span class="tl__time">${timed ? s.time || '' : i + 1}</span>
+                  <span class="tl__time">${i + 1}</span>
                   <span class=${'tl__rail' + (last ? ' tl__rail--last' : '')}><i></i></span>
                   <div class="tl__body">
                     <button class="tl__edit" aria-label=${p ? p.name + ' 장소 보기' : (s.placeName || '일정') + ' 수정'}
@@ -122,7 +128,7 @@ export function Schedule({ data, query }) {
                 </li>`;
               })}
             </ol>`
-          : html`<${Empty} icon="calendar-days" title=${`Day ${day} 일정이 없어요`} text="가고 싶은 곳을 순서대로 넣어 봐요. 시간은 비워도 돼요."
+          : html`<${Empty} icon="calendar-days" title=${`Day ${day} 일정이 없어요`} text="가고 싶은 곳을 순서대로 넣어 봐요."
               action=${html`<${Button} onClick=${add}>일정 추가<//>`} />`}
     </div>
   </main>`;
@@ -260,11 +266,6 @@ export function ScheduleForm({ day, row, placeId }) {
       <${ChipField} title="날짜" value=${f.day} onChange=${set('day')}
         options=${Array.from({ length: days }, (_, i) => ({ value: i + 1, label: 'Day ' + (i + 1) }))}
         help=${formatDay(dayDate(data.trip, f.day))} />
-      <div class="field">
-        <${FieldLabel}>시간 (선택)<//>
-        <${TimeField} label="시간" value=${f.time} onChange=${set('time')} placeholder="시간 고르기" />
-        <span class="field__help">비워 두면 순서 번호로 보여요</span>
-      </div>
       <div class="field">
         <${FieldLabel}>장소<//>
         ${place
