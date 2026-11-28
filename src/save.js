@@ -1,9 +1,18 @@
 // 저장 규칙 (기획안 '동기화 규칙')
 // - 내가 저장할 때: 화면에 먼저 반영, 저장은 뒤에서. 실패하면 '저장 안 됨 · 다시 시도'
 // - 같은 항목 동시 수정: 수정시간 비교 → 12 팝업 (상대 글로 두기 / 내 글로 바꾸기)
-import { saveRow, refresh, deleteRow, restoreRow, applyLocal, newId, syncing, failed, touch, uploadPhoto } from './store.js';
+import { saveRow, refresh, deleteRow, restoreRow, applyLocal, newId, syncing, failed, touch, uploadPhoto, getState } from './store.js';
 import { askConflict } from './ui/conflict.js';
 import { toast } from './ui/toast.js';
+
+// 같은 항목의 저장은 한 줄로 세워서 차례로 보내요. 앞 저장이 끝난 뒤의 수정시간을 써야
+// 빠르게 두 번 바꿔도 '내가 나와 충돌'하지 않아요 (11.28 코드 검수)
+const queues = {};
+const latestUpdatedAt = (table, id, fallback) => {
+  const d = getState().data;
+  const row = d && (d[table] || []).find((r) => r.id === id);
+  return (row && row.updatedAt) || fallback;
+};
 
 /**
  * 뒤에서 저장. 화면에는 바로 반영되고, 이 함수는 기다리지 않아도 돼요.
@@ -25,9 +34,10 @@ export function saveLater(table, row, baseUpdatedAt, photos) {
     }
     if (photos) full.photos = items.map((x) => x.url).join(',');
   };
+  let base = baseUpdatedAt;
   const attempt = (force) =>
     uploadAll()
-      .then(() => saveRow(table, full, { baseUpdatedAt, force }))
+      .then(() => saveRow(table, full, { baseUpdatedAt: base, force }))
       .then(() => {
         delete failed[full.id];
         if (hasNew) toast('사진까지 저장했어요');
@@ -49,7 +59,16 @@ export function saveLater(table, row, baseUpdatedAt, photos) {
         touch(); // '저장 안 됨' 표시를 위해 화면 다시 그리기
         toast('연결이 불안정해 저장하지 못했어요', { action: '다시 시도', duration: 8000, onAction: () => failed[full.id] && failed[full.id]() });
       });
-  attempt(false).finally(() => { syncing.count = Math.max(0, syncing.count - 1); });
+  const prev = queues[full.id];
+  const run = () => {
+    if (prev) base = latestUpdatedAt(table, full.id, baseUpdatedAt); // 앞 저장이 받아 온 새 수정시간
+    return attempt(false);
+  };
+  const p = (prev ? prev.then(run, run) : run()).finally(() => {
+    syncing.count = Math.max(0, syncing.count - 1);
+    if (queues[full.id] === p) delete queues[full.id];
+  });
+  queues[full.id] = p;
   return full;
 }
 

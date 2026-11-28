@@ -30,7 +30,7 @@ function Swipe({ items }) {
   };
   return html`<div>
     <div class=${'tk-row' + (n === 1 ? ' tk-row--one' : '')} onScroll=${onScroll}>${items}</div>
-    ${n > 1 && html`<div class="tk-dots" aria-hidden="true">${items.map((_, k) => html`<i class=${k === i ? 'on' : ''}></i>`)}</div>`}
+    ${n > 1 && html`<div class="tk-dots" aria-hidden="true">${items.map((_, k) => html`<i class=${k === Math.min(i, n - 1) ? 'on' : ''}></i>`)}</div>`}
   </div>`;
 }
 

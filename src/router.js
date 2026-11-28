@@ -11,8 +11,13 @@ export const TABS = [
 ];
 
 export function parseRoute() {
-  const hash = decodeURIComponent(location.hash.replace(/^#/, '')) || '/home';
-  const [path, qs] = hash.split('?');
+  // 주소와 물음표 뒤를 먼저 나눈 뒤 풀어요. 깨진 주소(%만 있는 등)여도 앱이 멈추지 않게 (11.28 코드 검수)
+  const raw = location.hash.replace(/^#/, '') || '/home';
+  const cut = raw.indexOf('?');
+  const safe = (s) => { try { return decodeURIComponent(s); } catch (e) { return s; } };
+  const path = safe(cut < 0 ? raw : raw.slice(0, cut)) || '/home';
+  let qs = cut < 0 ? '' : raw.slice(cut + 1);
+  try { new URLSearchParams(qs); } catch (e) { qs = ''; }
   const parts = path.split('/').filter(Boolean);
   return {
     path,

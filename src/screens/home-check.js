@@ -42,7 +42,7 @@ export function HomeChecklist({ data, me }) {
     ${!groups.length
       ? html`<button class="home-add" onClick=${() => openOverlay(html`<${ChecklistSheet} group=${COMMON} />`)}><${Icon} name="plus" size=${18} />할 일을 추가해 보세요</button>`
       : html`
-        ${groups.length > 1 && html`<div class="tk-dots hc-dots" aria-hidden="true">${groups.map((_, k) => html`<i class=${k === at ? 'on' : ''}></i>`)}</div>`}
+        ${groups.length > 1 && html`<div class="tk-dots hc-dots" aria-hidden="true">${groups.map((_, k) => html`<i class=${k === Math.min(at, groups.length - 1) ? 'on' : ''}></i>`)}</div>`}
         <div class=${'hc-row' + (groups.length === 1 ? ' hc-row--one' : '')} onScroll=${onScroll}>
           ${groups.map(({ g, items }) => {
             const done = items.filter((c) => isDone(c, me)).length;

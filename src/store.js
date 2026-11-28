@@ -102,17 +102,22 @@ export function setMe(memberId) {
 }
 
 let inFlight = null;
+// 화면에 먼저 반영한 내 변경(체크·삭제·저장)의 횟수. 불러오는 동안 바뀌었으면 그 결과는 버려요 —
+// 옛 시트 내용이 방금 한 체크를 덮어써서 잠깐 풀려 보이지 않게 (11.28 코드 검수)
+let localEdits = 0;
 /** 시트에서 지금 여행을 다시 불러와요. 실패하면 마지막 데이터로 '보기만' 해요. */
 export function refresh() {
   if (!state.current) return Promise.resolve();
   if (syncing.count > 0) return Promise.resolve(); // 저장이 끝난 뒤 다음 주기에 불러와요
   if (inFlight) return inFlight;
   const code = state.current;
+  const editsAtStart = localEdits;
   set({ status: state.data ? 'syncing' : 'loading' });
   inFlight = api
     .load(code)
     .then((res) => {
       if (code !== state.current) return; // 그사이 다른 여행으로 바꿈
+      if (localEdits !== editsAtStart && state.data) { set({ status: 'ok' }); return; } // 불러오는 사이 내가 바꿈 → 다음 주기에 다시
       const savedAt = Date.now();
       store.set(KEY.cache(code), { data: res, savedAt });
       set({ data: res, lastSync: savedAt, status: 'ok', error: '' });
@@ -212,6 +217,7 @@ export async function saveRow(table, row, opts = {}) {
   });
   const saved = res.row;
   const d = state.data;
+  localEdits++;
   if (d) {
     if (table === 'trips') {
       cacheCurrent({ ...d, trip: saved });
@@ -233,6 +239,7 @@ export async function uploadPhoto(dataUrl, mimeType) {
 function patchRow(table, id, patch) {
   const d = state.data;
   if (!d) return;
+  localEdits++;
   cacheCurrent({ ...d, [table]: d[table].map((r) => (r.id === id ? { ...r, ...patch } : r)) });
 }
 
@@ -302,6 +309,7 @@ export function newId(table) {
 export function applyLocal(table, row) {
   const d = state.data;
   if (!d) return;
+  localEdits++;
   if (table === 'trips') return cacheCurrent({ ...d, trip: { ...d.trip, ...row } });
   const list = d[table] || [];
   const exists = list.some((r) => r.id === row.id);

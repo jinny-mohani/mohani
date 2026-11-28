@@ -97,10 +97,12 @@ export function Schedule({ data, query }) {
           ? html`<ol class="timeline">
               ${rows.map((row, i) => {
                 const last = i === rows.length - 1;
+                // 번호는 내가 넣은 일정만 (순서 편집 화면과 같은 번호 — 11.28 코드 검수). 자동으로 들어온 예약 줄은 번호 없이
+                const num = rows.slice(0, i + 1).filter((x) => x.kind === 'item').length;
                 if (row.kind === 'res') {
                   const r = row.r;
                   return html`<li class="tl tl--res" key=${'r' + r.id}>
-                    <span class="tl__time">${i + 1}</span>
+                    <span class="tl__time" aria-hidden="true"></span>
                     <span class=${'tl__rail' + (last ? ' tl__rail--last' : '')}><i></i></span>
                     <button class="tl__res" onClick=${() => go('/reservations/' + r.id)}>
                       <span class="tl__res-title">
@@ -115,7 +117,7 @@ export function Schedule({ data, query }) {
                 const p = placeOf(data, s);
                 const sub = p ? placeLine(p) : [s.transport, s.memo && s.memo.split('\n')[0]].filter(Boolean).join(' · ');
                 return html`<li class="tl" key=${s.id}>
-                  <span class="tl__time">${i + 1}</span>
+                  <span class="tl__time">${num}</span>
                   <span class=${'tl__rail' + (last ? ' tl__rail--last' : '')}><i></i></span>
                   <div class="tl__body">
                     <button class="tl__edit" aria-label=${p ? p.name + ' 장소 보기' : (s.placeName || '일정') + ' 수정'}
