@@ -150,7 +150,7 @@ const data = {
     const open = await page.$$eval('.tk', (els) => els.map((e) => e.classList.contains('tk--open')));
     await page.click('.tk__more >> nth=0'); await page.waitForTimeout(350);
     await page.$eval('.tk-row', (el) => (el.scrollLeft = 400)); await page.waitForTimeout(400); await shot('03-2-home-ticket-swipe');
-    console.log('home tickets open:', open, '| dots:', await page.$$eval('.tk-dots i', (d) => d.map((x) => x.className).join(',')));
+    console.log('home tickets open:', open, '| dots:', await page.$$eval('.tk-dots:not(.hc-dots) i', (d) => d.map((x) => x.className).join(',')));
     await page.evaluate(() => document.querySelector('.home-etc').scrollIntoView({ block: 'center' })); await page.waitForTimeout(200); await shot('03-5-home-etc');
     await page.evaluate(() => window.scrollTo(0, 0));
   }
@@ -272,7 +272,13 @@ const data = {
   await page.click('[aria-label="체크 리스트 추가"]'); await page.waitForSelector('.sheet'); await shot('03-6-2-mine-add');
   await page.fill('.sheet input[maxlength="40"]', '선크림'); await page.click('.sheet >> text=저장하기'); await page.waitForTimeout(500);
   console.log('mine saved:', JSON.stringify(posts.filter((p) => p.action === 'save' && p.table === 'checklist').pop().row));
-  await page.goto(B + '?t=CODE#/home'); await page.waitForSelector('.check-cards'); await page.evaluate(() => document.querySelector('.check-cards').scrollIntoView()); await shot('03-home-checklist');
+  await page.goto(B + '?t=CODE#/home'); await page.waitForSelector('.hc-row'); await page.evaluate(() => document.querySelector('.hc-row').scrollIntoView({ block: 'center' })); await shot('03-home-checklist');
+  { // 11.28: 체크해도 순서 그대로, 카드 키 같음, 더 보기
+    const before = await page.$$eval('.hc-card >> nth=0', () => 0).catch(() => 0);
+    const titles = async () => page.$$eval('.hc-card:first-child .check-row__label', (e) => e.map((x) => x.textContent));
+    const t1 = await titles(); await page.click('.hc-card:first-child .check-row >> nth=0'); await page.waitForTimeout(300); const t2 = await titles();
+    console.log('home check order kept:', JSON.stringify(t1) === JSON.stringify(t2), '| card heights:', await page.$$eval('.hc-card', (c) => c.map((x) => Math.round(x.getBoundingClientRect().height))), '| more:', await page.$$eval('.hc-more', (m) => m.map((x) => x.textContent.trim())));
+  }
   await page.evaluate(() => { sessionStorage.setItem('showGuide', '1'); localStorage.removeItem('hg.installGuide'); });
   await page.goto(B + '?t=CODE#/home'); await page.reload(); await page.waitForTimeout(1500); await shot('S-2-install');
   console.log('install guide:', !!(await page.$('.guide-steps')));

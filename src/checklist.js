@@ -30,10 +30,3 @@ export function byGroup(items, group) {
     .filter((c) => !c.deleted && groupOf(c) === group)
     .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
 }
-
-/** 홈 카드에 보일 항목: 안 한 일을 목록 순서대로 먼저, 부족하면 위쪽 완료 항목으로 채움 */
-export function homePick(items, meId, max) {
-  const todo = items.filter((c) => !isDone(c, meId));
-  const done = items.filter((c) => isDone(c, meId));
-  return [...todo, ...done].slice(0, max);
-}

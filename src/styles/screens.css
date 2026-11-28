@@ -142,6 +142,29 @@
 .home-etc__date { margin-top: 4px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--grey-700); }
 @media (prefers-reduced-motion: reduce) { .tk__extra, .tk__more .icon, .tk-dots i { transition: none; } }
 
+/* ── 03 홈 체크 리스트 (11.28 확정): 카드를 옆으로 넘기고, 순서 점은 카드 위에 고정 ── */
+.hc-dots { margin: 0 0 12px; }
+.hc-row { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: -4px calc(-1 * var(--page-x)) -16px; padding: 4px var(--page-x) 20px; scroll-padding: 0 var(--page-x); } /* 위아래 여백: 카드 그림자가 잘리지 않게 */
+.hc-row::-webkit-scrollbar { display: none; }
+.hc-card { flex: 0 0 calc(100% - 28px); scroll-snap-align: start; min-width: 0; padding: 18px 20px 0; border: 1px solid var(--color-card-border); border-radius: var(--radius-card); background: var(--color-bg); box-shadow: var(--shadow-card); }
+.hc-row--one .hc-card { flex-basis: 100%; }
+.hc-card__head { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 24px; text-align: left; }
+.hc-card__head h3 { display: flex; align-items: center; gap: 4px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-semibold); }
+.hc-card__head h3 .icon { color: var(--color-icon-faint); }
+.hc-count { display: inline-flex; align-items: baseline; gap: 1px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--grey-600); font-variant-numeric: tabular-nums; }
+.hc-count b { font-weight: var(--fw-semibold); color: var(--color-point); }
+.hc-count i { font-style: normal; font-size: var(--fs-caption); color: var(--grey-500); margin: 0 1px; }
+.hc-bar { height: 4px; margin: 10px 0 6px; border-radius: 2px; background: var(--color-surface); overflow: hidden; }
+.hc-bar i { display: block; height: 100%; border-radius: 2px; background: var(--color-point); transition: width 0.3s ease; }
+.hc-list { display: flex; flex-direction: column; }
+.hc-list .check-row { min-height: 44px; }
+.hc-list--scroll { max-height: 440px; overflow-y: auto; overscroll-behavior: contain; margin-right: -12px; padding-right: 12px; } /* 10개 넘으면 카드 안에서 스크롤 */
+.hc-more { display: flex; align-items: center; justify-content: center; gap: 2px; width: calc(100% + 40px); min-height: 44px; margin: 4px -20px 0; border-top: 1px solid var(--color-divider); font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); color: var(--grey-700); }
+.hc-more .icon { color: var(--grey-500); transition: transform var(--dur); }
+.hc-more[aria-expanded='true'] .icon { transform: rotate(180deg); }
+.hc-more-space { height: 48px; } /* 다른 카드에 '더 보기'가 있으면 키를 맞추는 빈칸 */
+.hc-end { height: 8px; }
+@media (prefers-reduced-motion: reduce) { .hc-bar i, .hc-more .icon { transition: none; } }
 .check-cards { display: flex; flex-direction: column; gap: var(--gap-m); }
 /* 체크 리스트 묶음 카드 (피그마 Nov 20): 안쪽 여백 20, 제목 줄 → 항목 12, 항목 사이 2 */
 .check-card {
