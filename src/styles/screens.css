@@ -617,7 +617,7 @@
 .place-detail__bar--solid .glass-btn { color: var(--color-text); }
 .place-detail__bar--solid .glass-btn > span { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 /* 사진: 화면 위에 고정된 듯 천천히 올라감 (JS가 translateY), 위쪽은 어두운 그라데이션으로 버튼이 잘 보이게 */
-.place-detail__hero { position: relative; height: 360px; background: var(--color-divider); overflow: hidden; will-change: transform; }
+.place-detail__hero { position: relative; height: 300px; /* 11.28: 360 → 300 (예약·장소 상세 같이) */ background: var(--color-divider); overflow: hidden; will-change: transform; }
 .place-detail__hero::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 88px; background: linear-gradient(rgba(34, 34, 34, 0.6), rgba(34, 34, 34, 0)); pointer-events: none; }
 .place-detail__heroimg { display: block; width: 100%; height: 100%; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .place-detail__heroimg-img { animation: fade-in var(--dur) var(--ease); -webkit-user-drag: none; }
