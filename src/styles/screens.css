@@ -333,7 +333,6 @@
 /* ───── 05 예약 ───── */
 .big-title { padding: calc(20px + var(--safe-top)) var(--page-x) 20px; }
 .big-title h1 { font-size: var(--fs-display); line-height: var(--lh-display); font-weight: var(--fw-bold); }
-.list-summary { margin: 20px 0 16px; /* 탭 아래 24 (칩 누르는 영역 4 포함) */ font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); color: var(--color-text-weak); }
 .res-list { display: flex; flex-direction: column; }
 .res-list--all { gap: var(--gap-m); }
 .res-list--항공권, .res-list--숙소, .res-list--기타 { gap: 32px; margin-top: 20px; } /* 탭 → 본문 24 (요약 줄 삭제 11.28) */
@@ -575,6 +574,7 @@
 .place-map span { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.92); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); }
 .place-tile .place-map { top: 136px; right: 0; }
 .place-line .place-map { top: 84px; left: 84px; }
+.place-lines { margin-top: 20px; } /* 탭 → 본문 24 ('N곳' 요약 삭제 11.28) */
 .place-line__memo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ───── 10 장소 상세 ───── */

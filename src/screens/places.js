@@ -83,8 +83,7 @@ export function Places({ data, query }) {
               </button>
               <div class="place-tiles">${l.slice(0, 5).map((p) => html`<${PlaceTile} key=${p.id} p=${p} />`)}</div>
             </section>`)}</div>`
-          : html`<p class="list-summary">${list.length}곳</p>
-            <ul class="res-list res-list--all">${list.map((p) => html`<li key=${p.id}><${PlaceRow} p=${p} /></li>`)}</ul>`}
+          : html`<ul class="res-list res-list--all place-lines">${list.map((p) => html`<li key=${p.id}><${PlaceRow} p=${p} /></li>`)}</ul>`}
     </div>
   </main>`;
 }
