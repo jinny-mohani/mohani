@@ -73,14 +73,72 @@
 .home-section__head h2 { font-size: var(--fs-body); line-height: 20px; font-weight: var(--fw-bold); color: var(--color-text); }
 .home-section__head .icon { color: var(--grey-800); } /* 피그마 ico/chevron 회전 (11.22) */
 
-.res-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.res-card {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
-  height: 112px; padding: 16px 14px; border: 1px solid var(--color-card-border); border-radius: var(--radius-card); background: var(--color-bg); box-shadow: var(--shadow-card); text-align: left;
-}
-.res-card .icon { margin-bottom: 2px; color: var(--color-text); }
-.res-card__name { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-medium); }
-.res-card__count { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-weak); }
+/* ── 03 홈 예약 (11.28 확정): 항공권·숙소 카드를 옆으로 넘기고, 누르면 펼쳐요 ── */
+.home-section__count { margin-left: 6px; font-style: normal; font-size: var(--fs-small); font-weight: var(--fw-semibold); color: var(--color-point); }
+.tk-row { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 calc(-1 * var(--page-x)); padding: 0 var(--page-x) 4px; scroll-padding: 0 var(--page-x); }
+.tk-row::-webkit-scrollbar { display: none; }
+.tk-row > * { flex: 0 0 calc(100% - 28px); scroll-snap-align: start; } /* 다음 카드가 28px 보여서 밀 수 있다는 걸 알려줘요 */
+.tk-row--one > * { flex-basis: 100%; }
+.tk-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+.tk-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--grey-300); transition: width var(--dur), background var(--dur); }
+.tk-dots i.on { width: 16px; background: var(--color-primary); }
+
+.tk { position: relative; display: flex; flex-direction: column; min-height: 268px; padding: 6px 6px 0; border-radius: 20px; overflow: hidden; background: var(--color-divider); }
+.tk--empty { background: linear-gradient(160deg, var(--grey-100), var(--grey-300)); }
+.tk__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.tk__ph { position: absolute; left: 0; right: 0; bottom: 34px; display: flex; justify-content: center; color: var(--grey-400); }
+.tk__panel { position: relative; display: flex; flex-direction: column; padding: 12px 14px 0; border-radius: 16px; background: var(--color-bg); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); cursor: pointer; }
+.tk__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 20px; font-size: var(--fs-caption); line-height: var(--lh-caption); }
+.tk__when { color: var(--color-text-faint); font-weight: var(--fw-medium); }
+.tk__dur { display: inline-flex; align-items: center; gap: 4px; color: var(--color-point); font-weight: var(--fw-bold); }
+.tk__name { min-width: 0; font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-bold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-route { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 8px; margin-top: 8px; }
+.tk-route__end { display: flex; flex-direction: column; min-width: 0; }
+.tk-route__end--to { align-items: flex-end; text-align: right; }
+.tk-route__end b { font-size: var(--fs-display); line-height: var(--lh-display); font-weight: var(--fw-extrabold, 800); letter-spacing: -0.3px; white-space: nowrap; }
+.tk-route__end--date b { font-size: var(--fs-heading); line-height: var(--lh-heading); }
+.tk-route__end small { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--color-text-faint); white-space: nowrap; }
+.tk-arc { position: relative; display: block; height: 40px; margin-bottom: 14px; }
+.tk-arc > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tk-arc__from { position: absolute; left: -1px; bottom: 2px; width: 8px; height: 8px; border-radius: 4px; background: var(--color-point); }
+.tk-arc__to { position: absolute; right: -2px; bottom: 1px; width: 10px; height: 10px; border-radius: 5px; border: 2px solid var(--color-border-strong); background: var(--color-bg); }
+.tk-arc__plane { position: absolute; left: 55%; top: 3px; margin-left: -9px; color: var(--color-text); transform: rotate(84deg); }
+.tk-nights { position: relative; display: flex; align-items: center; justify-content: center; height: 40px; margin-bottom: 14px; }
+.tk-nights::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1.5px dashed var(--color-border); }
+.tk-nights span { position: relative; padding: 2px 10px; border-radius: 12px; background: var(--color-point-weak); color: var(--color-point); font-size: var(--fs-caption); line-height: var(--lh-caption); font-weight: var(--fw-bold); }
+.tk__rule { display: block; height: 1px; margin: 10px 0 8px; background: var(--color-divider); }
+.tk-cells { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.tk-cells > span { display: flex; flex-direction: column; min-width: 0; }
+.tk-cells > span:nth-child(2) { align-items: center; text-align: center; }
+.tk-cells > span:nth-child(3) { align-items: flex-end; text-align: right; }
+.tk-cells small, .tk-box small { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--color-text-faint); }
+.tk-cells b { max-width: 100%; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-semibold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk__more { display: flex; justify-content: center; align-items: center; height: 28px; margin: 0 -14px; color: var(--color-icon-faint); }
+.tk__more .icon { transition: transform var(--dur); }
+.tk--open .tk__more .icon { transform: rotate(180deg); }
+/* 펼친 내용: 높이를 부드럽게 (grid 0fr → 1fr) */
+.tk__extra { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.28s ease; }
+.tk--open .tk__extra { grid-template-rows: 1fr; }
+.tk__extra > div { min-height: 0; overflow: hidden; }
+.tk__extra-in { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; }
+.tk-box { display: flex; padding: 10px 0; border-radius: var(--radius-m); background: var(--grey-50); }
+.tk-box > span { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.tk-box b { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-bold); }
+.tk-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tk-chips > * { padding: 2px 8px; border-radius: 8px; background: var(--color-surface); color: var(--grey-700); font-size: var(--fs-caption); line-height: 20px; }
+.tk-chips a { color: var(--color-text); font-weight: var(--fw-semibold); text-decoration: none; }
+.tk-memo { display: flex; gap: 6px; font-size: var(--fs-helper); line-height: var(--lh-helper); color: var(--grey-700); white-space: pre-line; }
+.tk-memo .icon { flex-shrink: 0; margin-top: 2px; color: var(--grey-500); }
+.tk__link { display: flex; align-items: center; justify-content: center; gap: 2px; min-height: 44px; margin: 0 -14px -10px; border-top: 1px solid var(--color-divider); font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-semibold); color: var(--grey-800); }
+.home-add { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 64px; border: 1px dashed var(--color-border); border-radius: var(--radius-card); font-size: var(--fs-small); line-height: var(--lh-small); color: var(--color-text-sub); }
+.home-etc { padding: 4px 16px; border: 1px solid var(--color-card-border); border-radius: var(--radius-card); background: var(--color-bg); box-shadow: var(--shadow-card); }
+.home-etc li + li { border-top: 1px solid var(--color-divider); }
+.home-etc__row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; text-align: left; }
+.home-etc__ic { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 18px; background: var(--color-surface); color: var(--grey-800); }
+.home-etc__tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.home-etc__tx b { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-etc__tx small { font-size: var(--fs-helper); line-height: var(--lh-helper); color: var(--color-text-faint); }
+@media (prefers-reduced-motion: reduce) { .tk__extra, .tk__more .icon, .tk-dots i { transition: none; } }
 
 .check-cards { display: flex; flex-direction: column; gap: var(--gap-m); }
 /* 체크 리스트 묶음 카드 (피그마 Nov 20): 안쪽 여백 20, 제목 줄 → 항목 12, 항목 사이 2 */

@@ -12,12 +12,8 @@ import { TripSettings } from './trip-settings.js';
 import { sized } from '../reservation-util.js';
 import { PlaceCard, PlaceForm, CATEGORIES } from './places.js';
 import { ChecklistSheet } from './checklist.js';
+import { HomeReservations } from './home-res.js';
 
-const RES_TYPES = [
-  { type: '항공권', icon: 'plane' },
-  { type: '숙소', icon: 'bed-double' },
-  { type: '기타', icon: 'car' },
-];
 
 /** 멤버 캐릭터(전신) — 그림이 없으면 이름 첫 글자 동그라미 */
 function Character({ member, height = 84 }) {
@@ -43,7 +39,6 @@ export function FriendProfile({ member }) {
 export function Home({ data, me }) {
   const { trip } = data;
   const members = activeMembers(data);
-  const reservations = data.reservations.filter((r) => !r.deleted);
   const all = visibleItems(data.checklist.filter((c) => !c.deleted), me); // 개인 항목은 쓴 사람만
   const left = all.filter((c) => !isDone(c, me)).length;
   const places = data.places.filter((p) => !p.deleted).sort((x, y) => (Number(x.order) || 0) - (Number(y.order) || 0));
@@ -88,23 +83,7 @@ export function Home({ data, me }) {
     </section>
 
     <div class="page">
-      <section class="home-section">
-        <button class="home-section__head" onClick=${() => go('/reservations')}>
-          <h2>예약정보</h2>
-          <${Icon} name="select-right" size=${18} stroke=${1.4} label="전체 보기" />
-        </button>
-        <div class="res-cards">
-          ${RES_TYPES.map(({ type, icon }) => {
-            const list = reservations.filter((r) => r.type === type);
-            const done = list.filter((r) => r.status === '예약 완료').length;
-            return html`<button class="res-card" onClick=${() => go('/reservations?type=' + type)}>
-              <${Icon} name=${icon} size=${22} />
-              <span class="res-card__name">${type}</span>
-              <span class="res-card__count">${done} / ${list.length}</span>
-            </button>`;
-          })}
-        </div>
-      </section>
+      <${HomeReservations} data=${data} />
 
       <section class="home-section">
         <button class="home-section__head" onClick=${() => go('/home/checklist')}>

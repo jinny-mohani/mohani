@@ -17,6 +17,7 @@ const data = {
     { id: 'r_2', tripId: 't_1', type: '숙소', title: '난바 오리엔탈 호텔', startAt: '2026-12-19T15:00', endAt: '2026-12-21T11:00', address: '오사카 주오구 난바 1-2', mapUrl: 'https://maps.app.goo.gl/x', roomType: '디럭스 더블', roomSize: '32㎡', checkInTime: '15:00', memo: '주차 가능, 바비큐는 하루 전 신청. 체크인 전에도 짐 보관이 가능하니 도착하면 먼저 맡기기', status: '예약 완료', assignee: 'm_2', order: 2, ...base },
     { id: 'r_3', tripId: 't_1', type: '기타', subType: '렌터카', title: '렌터카', startAt: '2026-12-19T10:00', endAt: '2026-12-21T17:00', address: '간사이공항 픽업', assignee: 'm_2', memo: '아직 예약 전이에요', status: '예약 전', order: 3, ...base },
     { id: 'r_4', tripId: 't_1', type: '기타', subType: '스노클링', title: '협재 스노클링', startAt: '2026-12-20T09:00', status: '보류', order: 4, ...base },
+    { id: 'r_5', tripId: 't_1', type: '항공권', title: '제주항공 7C1302', direction: '오는 편', fromAirport: 'KIX 오사카 간사이', toAirport: 'ICN 인천', fromTerminal: 'T1', toTerminal: 'T1', startAt: '2026-12-21T18:40', endAt: '2026-12-21T20:35', seat: '이코노미', assignee: 'm_2', memo: '특가 뜨면 바로 예약하기', status: '예약 전', order: 5, ...base },
   ],
   checklist: [
     { id: 'c_1', tripId: 't_1', title: '렌터카 예약 확인', group: '여행 전 할 일', assignee: 'm_2', doneBy: '', order: 1, ...base },
@@ -143,6 +144,15 @@ const data = {
   await page.goto(B + '?t=CODE'); await page.waitForSelector('.member-grid'); await shot('01-profile');
   await page.click('.member-card >> nth=1'); await shot('01-1-selected');
   await page.click('text=입장하기'); await page.waitForSelector('.home-hero'); await shot('03-home');
+  { // 03 홈 예약 카드: 펼치기 · 옆으로 넘기기 (11.28)
+    await page.evaluate(() => document.querySelector('.tk').scrollIntoView({ block: 'start' }));
+    await page.click('.tk >> nth=0'); await page.waitForTimeout(400); await shot('03-1-home-ticket-open');
+    const open = await page.$$eval('.tk', (els) => els.map((e) => e.classList.contains('tk--open')));
+    await page.click('.tk__more >> nth=0'); await page.waitForTimeout(350);
+    await page.$eval('.tk-row', (el) => (el.scrollLeft = 400)); await page.waitForTimeout(400); await shot('03-2-home-ticket-swipe');
+    console.log('home tickets open:', open, '| dots:', await page.$$eval('.tk-dots i', (d) => d.map((x) => x.className).join(',')));
+    await page.evaluate(() => window.scrollTo(0, 0));
+  }
   await page.click('.check-row >> nth=0'); await page.waitForTimeout(200);
   console.log('toggle posted:', JSON.stringify(posts.filter((p) => p.action === 'toggle_done').map((p) => [p.id, p.done])));
   console.log('left text:', await page.textContent('.home-section__head >> nth=1'));
