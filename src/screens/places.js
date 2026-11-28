@@ -20,25 +20,6 @@ export const CATEGORIES = ['음식점', '즐길거리', '쇼핑', '디저트'];
 
 const sortPlaces = (list) => [...list].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
 
-/** 사진 카드: 사진 위에 이름 · 메모 1줄 · 운영시간 · 지도 */
-export function PlaceCard({ p }) {
-  const photo = firstPhoto(p);
-  return html`<div class="place-card">
-    <button class="place-card__open" onClick=${() => go('/places/' + p.id)} aria-label=${p.name + ' 상세 보기'}>
-      ${photo ? html`<img src=${sized(photo, 600)} alt="" loading="lazy" />` : html`<span class="place-card__empty"><${Icon} name="image" size=${28} /></span>`}
-      <span class="place-card__shade"></span>
-      <span class="place-card__text">
-        <b>${p.name}</b>
-        ${p.memo && html`<span class="place-card__memo">${p.memo.split('\n')[0]}</span>`}
-        <small>${p.hours || ' '}</small>
-      </span>
-    </button>
-    ${p.mapUrl && html`<a class="place-card__map" href=${p.mapUrl} target="_blank" rel="noopener" aria-label=${p.name + ' 구글 지도에서 보기'}>
-      <${Icon} name="map-pin" size=${18} />
-    </a>`}
-  </div>`;
-}
-
 /** 지도 버튼 (사진 오른쪽 아래) */
 const MapBtn = ({ p }) => p.mapUrl && html`<a class="place-map" href=${p.mapUrl} target="_blank" rel="noopener" aria-label=${p.name + ' 구글 지도에서 보기'}>
   <span><${Icon} name="map-pin" size=${16} /></span>
@@ -46,7 +27,7 @@ const MapBtn = ({ p }) => p.mapUrl && html`<a class="place-map" href=${p.mapUrl}
 const memoLine = (p) => (p.memo ? p.memo.split('\n')[0] : '');
 
 /** 09 전체 탭 카드 (11.28: 홈 '기타 예약'과 같은 모양, 사진 240×180): 사진 + 지도 버튼, 아래에 이름 · 메모 1줄 · 운영시간 */
-function PlaceTile({ p }) {
+export function PlaceTile({ p }) {
   const photo = firstPhoto(p);
   return html`<div class="place-tile">
     <button class="place-tile__open" onClick=${() => go('/places/' + p.id)} aria-label=${p.name + ' 상세 보기'}>

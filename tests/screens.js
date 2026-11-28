@@ -272,7 +272,7 @@ const data = {
   await page.click('[aria-label="체크 리스트 추가"]'); await page.waitForSelector('.sheet'); await shot('03-6-2-mine-add');
   await page.fill('.sheet input[maxlength="40"]', '선크림'); await page.click('.sheet >> text=저장하기'); await page.waitForTimeout(500);
   console.log('mine saved:', JSON.stringify(posts.filter((p) => p.action === 'save' && p.table === 'checklist').pop().row));
-  await page.goto(B + '?t=CODE#/home'); await page.waitForSelector('.hc-row'); await page.evaluate(() => document.querySelector('.hc-row').scrollIntoView({ block: 'center' })); await shot('03-home-checklist');
+  await page.goto(B + '?t=CODE#/home'); await page.waitForSelector('.hc-row'); await page.evaluate(() => document.querySelector('.hc-row').scrollIntoView({ block: 'center' })); await shot('03-home-checklist'); await page.evaluate(() => document.querySelector('.home .place-tiles').scrollIntoView({ block: 'center' })); await page.waitForTimeout(150); await shot('03-9-home-places');
   { // 11.28: 체크해도 순서 그대로, 카드 키 같음, 더 보기
     const before = await page.$$eval('.hc-card >> nth=0', () => 0).catch(() => 0);
     const titles = async () => page.$$eval('.hc-card:first-child .check-row__label', (e) => e.map((x) => x.textContent));

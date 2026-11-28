@@ -7,7 +7,7 @@ import { ddayText, formatDay, nightsLabel } from '../date.js';
 import { activeMembers, profileSrc } from '../members.js';
 import { TripSettings } from './trip-settings.js';
 import { sized } from '../reservation-util.js';
-import { PlaceCard, PlaceForm, CATEGORIES } from './places.js';
+import { PlaceTile, PlaceForm, CATEGORIES } from './places.js';
 import { HomeReservations } from './home-res.js';
 import { HomeChecklist } from './home-check.js';
 
@@ -80,9 +80,9 @@ export function Home({ data, me }) {
       ${places.length
         ? placeGroups(places).map(({ c, list }) => html`<section class="home-section" key=${c}>
             <button class="home-section__head" onClick=${() => go('/places?category=' + encodeURIComponent(c))}>
-              <h2>${c}</h2><${Icon} name="select-right" size=${18} stroke=${1.4} label=${c + ' 전체 보기'} />
+              <h2>${c}<em class="home-section__count">${list.length}</em></h2><${Icon} name="select-right" size=${18} stroke=${1.4} label=${c + ' 전체 보기'} />
             </button>
-            <div class="place-row">${list.slice(0, 5).map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>
+            <div class="place-tiles">${list.slice(0, 5).map((p) => html`<${PlaceTile} key=${p.id} p=${p} />`)}</div>
           </section>`)
         : html`<section class="home-section">
             <button class="home-section__head" onClick=${() => go('/places')}>

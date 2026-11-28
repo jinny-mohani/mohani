@@ -589,21 +589,6 @@
 .place-tile .place-map { top: 136px; right: 0; }
 .place-line .place-map { top: 84px; left: 84px; }
 .place-line__memo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.place-row { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; scroll-padding: 0 20px; }
-.place-row::-webkit-scrollbar { display: none; }
-.place-row .place-card { flex: 0 0 240px; height: 196px; scroll-snap-align: start; }
-.place-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.place-grid .place-card { aspect-ratio: 154 / 180; }
-.place-card { position: relative; border-radius: 18px; overflow: hidden; background: var(--color-divider); }
-.place-card__open { position: absolute; inset: 0; display: block; text-align: left; }
-.place-card__open img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.place-card__empty { position: absolute; inset: 0 0 45% 0; display: flex; align-items: center; justify-content: center; color: var(--color-placeholder); }
-.place-card__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.65) 100%); }
-.place-card__text { position: absolute; left: 0; right: 40px; bottom: 0; display: flex; flex-direction: column; padding: 0 0 12px 12px; color: var(--white); }
-.place-card__text b { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-bold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.place-card__memo { font-size: var(--fs-small); line-height: var(--lh-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.place-card__text small { font-size: var(--fs-small); line-height: var(--lh-small); opacity: 0.9; }
-.place-card__map { position: absolute; right: 2px; bottom: 2px; display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit); color: var(--white); }
 
 /* ───── 10 장소 상세 ───── */
 /* ───── 10 장소 상세 (피그마 11.21 수정본) ───── */
@@ -738,7 +723,6 @@
 .friend .friend__edit { pointer-events: auto; }
 
 /* 03 홈 장소: 카테고리별 한 줄 (최대 5개) */
-.home-section .place-row { margin-top: 0; }
 
 /* 13-1 · 02-1 초대 링크 보내기 아이콘 */
 .share-icons { display: flex; justify-content: center; gap: var(--gap-2xl); margin-top: var(--gap-xl); }
