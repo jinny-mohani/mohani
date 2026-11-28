@@ -572,10 +572,23 @@
 .pick-row__check { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: var(--white); }
 
 /* ───── 09 장소 ───── */
-.place-group { margin-top: 32px; }
-.place-group__head { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: var(--hit); margin-bottom: 8px; }
-.place-group__head h2 { font-size: var(--fs-heading); line-height: var(--lh-heading); font-weight: var(--fw-bold); }
-.place-group__head small { margin-left: 8px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: var(--fw-regular); color: var(--color-text-weak); }
+/* 09 전체 (11.28): 카테고리 제목(홈 섹션과 같음) + 240 폭 사진 카드 가로 스와이프. 탭 → 본문 24 */
+.place-groups { display: flex; flex-direction: column; gap: 32px; margin-top: 20px; }
+.place-tiles { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 calc(-1 * var(--page-x)); padding: 0 var(--page-x); scroll-padding: 0 var(--page-x); }
+.place-tiles::-webkit-scrollbar { display: none; }
+.place-tile { position: relative; flex: 0 0 240px; min-width: 0; scroll-snap-align: start; }
+.place-tile__open { display: flex; flex-direction: column; width: 100%; text-align: left; }
+.place-tile__img { position: relative; display: flex; align-items: center; justify-content: center; height: 180px; border-radius: 15px; overflow: hidden; background: var(--color-divider); color: var(--color-placeholder); }
+.place-tile__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.place-tile__name { margin-top: 10px; font-size: var(--fs-body); line-height: 22px; font-weight: var(--fw-bold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.place-tile__memo, .place-tile__hours { margin-top: 4px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--grey-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.place-tile__hours { margin-top: 0; color: var(--color-text-faint); }
+/* 지도 버튼: 사진 오른쪽 아래 흰 동그라미 (누르는 영역 44) */
+.place-map { position: absolute; display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit); color: var(--color-text); }
+.place-map span { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.92); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); }
+.place-tile .place-map { top: 136px; right: 0; }
+.place-line .place-map { top: 84px; left: 84px; }
+.place-line__memo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .place-row { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -20px; padding: 0 20px; scroll-padding: 0 20px; }
 .place-row::-webkit-scrollbar { display: none; }
 .place-row .place-card { flex: 0 0 240px; height: 196px; scroll-snap-align: start; }

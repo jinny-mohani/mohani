@@ -229,8 +229,8 @@ const data = {
   await page.click('.modal >> text=저장하기'); await page.waitForTimeout(400);
   console.log('schedule saved:', JSON.stringify(posts.filter((p) => p.action === 'save' && p.table === 'schedule').pop().row));
   await page.click('.tabbar >> text=장소'); await page.waitForTimeout(300); await shot('09-places');
-  await page.click('.place-group__head >> nth=0'); await page.waitForTimeout(300); await shot('09-2-category');
-  await page.click('.place-card__open >> nth=0'); await page.waitForSelector('.place-detail'); await shot('10-place-detail');
+  await page.click('.place-group .home-section__head >> nth=0'); await page.waitForTimeout(300); await shot('09-2-category');
+  await page.click('.place-line .all-row__main >> nth=0'); await page.waitForSelector('.place-detail'); await shot('10-place-detail');
   await page.evaluate(() => { document.getElementById('app').scrollTop = 220; }); await page.waitForTimeout(250); await shot('10-place-detail-scroll');
   await page.evaluate(() => { document.getElementById('app').scrollTop = 0; }); await page.waitForTimeout(150);
   const src0 = await page.getAttribute('.place-detail__heroimg img', 'src');
@@ -250,7 +250,7 @@ const data = {
   await page.fill('input[placeholder="예) 자매국수"]', '사진 테스트 카페');
   await page.setInputFiles('.modal input[type=file]', 'icons/icon-512.png'); await page.waitForTimeout(300);
   const t0 = Date.now(); await page.click('.modal >> text=저장하기'); await page.waitForSelector('.modal', { state: 'detached' });
-  console.log('place form closed in ms:', Date.now() - t0, '| preview shown:', await page.$eval('.place-card >> text=사진 테스트 카페', () => true).catch(() => false));
+  console.log('place form closed in ms:', Date.now() - t0, '| preview shown:', await page.$eval('.place-tile >> text=사진 테스트 카페', () => true).catch(() => false));
   await page.waitForTimeout(2500);
   const ps = posts.filter((p) => p.action === 'save' && p.table === 'places').pop();
   console.log('place saved photos:', ps && ps.row.photos, '| toast:', await page.textContent('.toast').catch(() => ''));

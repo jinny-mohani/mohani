@@ -1,4 +1,4 @@
-// 09 장소 목록(전체: 카테고리별 가로 스와이프) · 09-2 카테고리 탭(2열) · 10 장소 상세 · 09-1 장소 등록/수정
+// 09 장소 목록(전체: 카테고리별 240 사진 카드 가로 스와이프 — 11.28) · 09-2 카테고리 탭(128 사진 + 글 목록 — 11.28) · 10 장소 상세 · 09-1 장소 등록/수정
 import { html, useState } from '../vendor/preact-htm.js';
 import {
   Button, ChipField, ChipGroup, Empty, Icon, Modal, PhotoField, Sheet, TextArea, TextField,
@@ -39,6 +39,42 @@ export function PlaceCard({ p }) {
   </div>`;
 }
 
+/** 지도 버튼 (사진 오른쪽 아래) */
+const MapBtn = ({ p }) => p.mapUrl && html`<a class="place-map" href=${p.mapUrl} target="_blank" rel="noopener" aria-label=${p.name + ' 구글 지도에서 보기'}>
+  <span><${Icon} name="map-pin" size=${16} /></span>
+</a>`;
+const memoLine = (p) => (p.memo ? p.memo.split('\n')[0] : '');
+
+/** 09 전체 탭 카드 (11.28: 홈 '기타 예약'과 같은 모양, 사진 240×180): 사진 + 지도 버튼, 아래에 이름 · 메모 1줄 · 운영시간 */
+function PlaceTile({ p }) {
+  const photo = firstPhoto(p);
+  return html`<div class="place-tile">
+    <button class="place-tile__open" onClick=${() => go('/places/' + p.id)} aria-label=${p.name + ' 상세 보기'}>
+      <span class="place-tile__img">${photo ? html`<img src=${sized(photo, 500)} alt="" loading="lazy" />` : html`<${Icon} name="image" size=${32} />`}</span>
+      <b class="place-tile__name">${p.name}</b>
+      ${memoLine(p) && html`<small class="place-tile__memo">${memoLine(p)}</small>`}
+      ${p.hours && html`<small class="place-tile__hours">${p.hours}</small>`}
+    </button>
+    <${MapBtn} p=${p} />
+  </div>`;
+}
+
+/** 09-2 카테고리 탭 줄 (11.28: 예약 '전체'와 같은 모양): 왼쪽 128 사진 + 지도 버튼, 오른쪽 이름 · 메모 · 운영시간 */
+function PlaceRow({ p }) {
+  const photo = firstPhoto(p);
+  return html`<div class="all-row place-line">
+    <button class="all-row__main" onClick=${() => go('/places/' + p.id)} aria-label=${p.name + ' 상세 보기'}>
+      <span class="all-row__thumb">${photo ? html`<img src=${sized(photo, 300)} alt="" loading="lazy" />` : html`<${Icon} name="image" size=${32} />`}</span>
+      <span class="all-row__text">
+        <span class="all-row__title">${p.name}</span>
+        ${memoLine(p) && html`<span class="all-row__meta place-line__memo">${memoLine(p)}</span>`}
+        ${p.hours && html`<span class="all-row__who">${p.hours}</span>`}
+      </span>
+    </button>
+    <${MapBtn} p=${p} />
+  </div>`;
+}
+
 export function Places({ data, query }) {
   const cat = CATEGORIES.includes(query.category) ? query.category : '전체';
   const all = sortPlaces(data.places.filter((p) => !p.deleted));
@@ -60,14 +96,14 @@ export function Places({ data, query }) {
         ? html`<${Empty} icon="map-pin" title=${cat === '전체' ? '아직 장소가 없어요' : `아직 ${cat}이 없어요`}
             text="가고 싶은 곳을 모아 두면 일정에 바로 넣을 수 있어요." action=${html`<${Button} onClick=${add}>장소 등록<//>`} />`
         : cat === '전체'
-          ? groups.map(({ c, list: l }) => html`<section class="place-group" key=${c}>
-              <button class="place-group__head" onClick=${() => replace('/places?category=' + c)}>
-                <h2>${c}<small>${l.length}</small></h2><${Icon} name="chevron-right" size=${20} />
+          ? html`<div class="place-groups">${groups.map(({ c, list: l }) => html`<section class="place-group" key=${c}>
+              <button class="home-section__head" onClick=${() => replace('/places?category=' + c)}>
+                <h2>${c}<em class="home-section__count">${l.length}</em></h2><${Icon} name="select-right" size=${18} stroke=${1.4} label=${c + ' 전체 보기'} />
               </button>
-              <div class="place-row">${l.slice(0, 5).map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>
-            </section>`)
+              <div class="place-tiles">${l.slice(0, 5).map((p) => html`<${PlaceTile} key=${p.id} p=${p} />`)}</div>
+            </section>`)}</div>`
           : html`<p class="list-summary">${list.length}곳</p>
-            <div class="place-grid">${list.map((p) => html`<${PlaceCard} key=${p.id} p=${p} />`)}</div>`}
+            <ul class="res-list res-list--all">${list.map((p) => html`<li key=${p.id}><${PlaceRow} p=${p} /></li>`)}</ul>`}
     </div>
   </main>`;
 }
